@@ -46,7 +46,7 @@
     font-size: 1rem;
   }
   
-  .Login button {
+  .Login-button {
     padding: 10px;
     border: none;
     border-radius: 4px;
@@ -56,11 +56,26 @@
     cursor: pointer;
   }
   
-  .Login button:hover {
+  .Login-button:hover {
     background-color: #0056b3;
   }
   
   .Login p {
     color: red;
     font-size: 0.9rem;
+  }
+
+  .forget-password-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #e70a0a5d;
+    color: #fff;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .forget-password-button:hover {
+    background-color: #e70a0a;
   }
