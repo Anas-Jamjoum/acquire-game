@@ -21,8 +21,8 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check if the password is "123456"
-      if (password === '123456') {
+      // Check if the password is "No Password"
+      if (password === 'No Password') {
         setError('Please change your password.');
       } else {
         navigate('/menu'); // Redirect to Menu component

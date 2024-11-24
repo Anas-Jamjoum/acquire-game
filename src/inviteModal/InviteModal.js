@@ -2,7 +2,7 @@
 import React from 'react';
 import './InviteModal.css';
 import { auth } from '../Firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword , sendPasswordResetEmail } from 'firebase/auth';
 
 const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   if (!isOpen) return null;
@@ -14,6 +14,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
         const password = generateTemporaryPassword();
         await createUserWithEmailAndPassword(auth, inviteEmail, password);
         alert('Invite sent successfully!');
+        await sendPasswordResetEmail(auth, inviteEmail);
         onClose();
       } catch (error) {
         console.error('Error creating user: ', error);
@@ -31,7 +32,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
 
   const generateTemporaryPassword = () => {
     // Generate a temporary password or use a predefined one
-    return '123456';
+    return 'No Password';
   };
 
   return (
