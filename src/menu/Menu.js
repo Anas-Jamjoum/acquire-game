@@ -1,11 +1,36 @@
 // src/menu/Menu.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Menu.css';
 import InviteModal from '../inviteModal/InviteModal';
+import { db } from '../Firebase'; // Update the path to the correct location
+import { collection, getDocs } from 'firebase/firestore';
 
 const Menu = () => {
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [updates, setUpdates] = useState([]);
+
+
+  useEffect(() => {
+    const fetchUpdates = async () => {
+      const updatesCollection = collection(db, 'updates');
+      const updatesSnapshot = await getDocs(updatesCollection);
+      const updatesList = updatesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          date: data.date.toDate() // Convert Firestore Timestamp to JavaScript Date
+        };
+      });
+
+      // Sort updates by date, latest update first
+      updatesList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      setUpdates(updatesList);
+    };
+
+    fetchUpdates();
+  }, []);
 
   const handleInvite = () => {
     setInviteModalOpen(true);
@@ -26,6 +51,8 @@ const Menu = () => {
     window.open('https://renegadegamestudios.com/content/File%20Storage%20for%20site/Rulebooks/Acquire/Acquire_RGS_Rulebook_WEB.pdf?srsltid=AfmBOoqi2ctbl6Htr6JlXmYOrty9IXFHV6jDY0RnQ-_k2gLCr8DhamBo', '_blank'); // Replace with the actual URL
   };
 
+  console.log(updates);
+
   return (
     <div className="MenuContainer">
 
@@ -44,8 +71,14 @@ const Menu = () => {
       </div>
       <div className="Updates">
         <h1>Updates</h1>
-        <p>Latest updates and news will be displayed here.</p>
-      </div>
+        {updates.length > 0 ? (
+          updates.map((update, index) => (
+            <p key={index}>{update.text}</p>
+          ))
+        ) : (
+          <p>No updates available.</p>
+        )}
+        </div>
 
       <InviteModal
         isOpen={isInviteModalOpen}
