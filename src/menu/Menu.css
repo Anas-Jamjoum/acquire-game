@@ -1,29 +1,82 @@
+.MenuContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #70a1c6;
+  font-family: Arial, sans-serif;
+  border: 4px solid #007bff; /* Add blue border at the bottom */
+  border-radius: 10px;
+}
+
+
+
 .Menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #f0f2f5;
-  }
-  
-  .Menu h1 {
-    margin-bottom: 20px;
-    font-size: 2rem;
-    color: #333;
-  }
-  
-  .Menu button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: #007bff;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  
-  .Menu button:hover {
-    background-color: #0056b3;
-  }
+  flex: 1;
+  background-color: #e0f7fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.Menu h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.Menu button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.Menu button:hover {
+  background-color: #45a049;
+}
+
+.GameDescription {
+  flex: 2;
+  /* filter: blur(2px); */
+  background-image: url('LoginPage.jpg'); /* Update this path to your background image */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
+  background-size: cover; /* Ensure the image covers the entire container */
+  margin: 0 20px;
+  padding: 17%;
+  border-radius: 10px;
+}
+
+.GameTitle {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: absolute;
+}
+
+.Updates {
+  flex: 1;
+  max-width: 300px;
+  background-color: #e0f7fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.Updates h1 {
+  text-align: center;
+}
+
+.Updates p {
+  margin-top: 10px;
+  text-align: justify;
+}
