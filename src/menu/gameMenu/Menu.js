@@ -1,9 +1,11 @@
 // src/menu/Menu.js
 import React, { useState, useEffect } from 'react';
 import './Menu.css';
-import InviteModal from '../inviteModal/InviteModal';
-import { db } from '../Firebase'; // Update the path to the correct location
+import InviteModal from '../../inviteModal/InviteModal';
+import { db } from '../../Firebase'; // Update the path to the correct location
 import { collection, getDocs } from 'firebase/firestore';
+import Dashboard from '../dashboard/Dashboard';
+
 
 const Menu = () => {
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
@@ -51,8 +53,6 @@ const Menu = () => {
     window.open('https://renegadegamestudios.com/content/File%20Storage%20for%20site/Rulebooks/Acquire/Acquire_RGS_Rulebook_WEB.pdf?srsltid=AfmBOoqi2ctbl6Htr6JlXmYOrty9IXFHV6jDY0RnQ-_k2gLCr8DhamBo', '_blank'); // Replace with the actual URL
   };
 
-  console.log(updates);
-
   return (
     <div className="MenuContainer">
 
@@ -65,8 +65,10 @@ const Menu = () => {
       </div>
       <div className="GameDescription">
         <div className="GameTitle">
-          <h1>Game Title</h1>
-          <p>Game title will be displayed here.</p>
+        <Dashboard
+        email="player@example.com" // Replace with the actual email
+        imgSrc="path/to/your/image.jpg" // Replace with the actual path to the image
+      />
         </div>
       </div>
       <div className="Updates">

@@ -1,7 +1,8 @@
 // src/menu/InviteModal.js
 import React from 'react';
 import './InviteModal.css';
-import { auth } from '../Firebase';
+import { auth, db } from '../Firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword , sendPasswordResetEmail } from 'firebase/auth';
 
 const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
@@ -15,6 +16,15 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
         await createUserWithEmailAndPassword(auth, inviteEmail, password);
         alert('Invite sent successfully!');
         await sendPasswordResetEmail(auth, inviteEmail);
+        const playerName = await generatePlayerName();
+        // Create a document in the 'players' collection with the email as the document ID
+        const playerDocRef = doc(db, 'players', inviteEmail);
+        await setDoc(playerDocRef, {
+          name: playerName,
+          level: 0,
+          profilePic:"pic1.png"
+        });
+
         onClose();
       } catch (error) {
         console.error('Error creating user: ', error);
@@ -23,6 +33,11 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
     } else {
       alert('Please enter a valid email address.');
     }
+  };
+
+  const generatePlayerName = () => {
+    const randomNumber = Math.floor(Math.random() * 10000); // Generate a random number between 0 and 9999
+    return `Player${randomNumber}`;
   };
 
   const validateEmail = (email) => {

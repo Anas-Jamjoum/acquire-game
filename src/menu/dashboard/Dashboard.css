@@ -1,0 +1,50 @@
+.Dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  
+  .DashboardImage {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  
+  .DashboardName {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .DashboardLevel {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  .ProfilePicContainer, .NameContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .ProfilePicContainer button, .NameContainer button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .ProfilePicContainer button:hover, .NameContainer button:hover {
+    background-color: #0056b3;
+  }
+  
+  .ProfilePicContainer input, .NameContainer input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }

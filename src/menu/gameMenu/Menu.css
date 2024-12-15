@@ -43,7 +43,7 @@
 .GameDescription {
   flex: 2;
   /* filter: blur(2px); */
-  background-image: url('LoginPage.jpg'); /* Update this path to your background image */
+  background-image: url('gameMenu.jpg'); /* Update this path to your background image */
   background-repeat: no-repeat; /* Prevent the image from repeating */
   background-size: cover; /* Ensure the image covers the entire container */
   margin: 0 20px;
