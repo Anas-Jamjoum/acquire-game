@@ -64,37 +64,41 @@ const Dashboard = () => {
 
     return (
         <div className="Dashboard">
-          <h1>Dashboard</h1>
-          <div className="ProfilePicContainer">
-            <img src={profilePic} alt="Profile" className="DashboardImage" />
-            <button onClick={handlePicEdit}>Edit</button>
-          </div>
-          <div className="NameContainer">
-            {isEditingName ? (
-              <div>
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Enter new name"
-                />
-                <button onClick={handleNameSave}>Save</button>
-              </div>
-            ) : (
-              <div>
-                <h2 className="DashboardName">{playerData.name}</h2>
-                <button onClick={handleNameEdit}>Edit</button>
-              </div>
-            )}
-          </div>
-          <p className="DashboardLevel">Level: {playerData.level}</p>
-          <ImageSelectionModal
-            email={email}
-            isOpen={isEditingPic}
-            onClose={() => setIsEditingPic(false)}
-            onSelect={handlePicSave}
-          />
+        <h1>Dashboard</h1>
+        <div className="DashboardInfo">
+        <div className="ProfilePicContainer">
+          <img src={profilePic} alt="Profile" className="DashboardImage" />
+          <button className="edit-button" onClick={handlePicEdit}>Edit</button>
         </div>
+        <div className="NameContainer">
+          {isEditingName ? (
+            <div className="NameEditContainer">
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Enter new name"
+                
+              />
+              <button onClick={handleNameSave}>Save</button>
+            </div>
+          ) : (
+            <div className="NameDisplayContainer">
+              <h2 className="DashboardName">{playerData.name}</h2>
+              <button onClick={handleNameEdit}>Edit</button>
+            </div>
+          )}
+        </div>
+        </div>
+        <p className="DashboardLevel">Level: {playerData.level}</p>
+        <ImageSelectionModal
+          isOpen={isEditingPic}
+          onClose={() => setIsEditingPic(false)}
+          onSelect={handlePicSave}
+          email={email}
+          db={db}
+        />
+      </div>
       );
     };
   
