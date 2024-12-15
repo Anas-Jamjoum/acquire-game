@@ -65,10 +65,7 @@ const Menu = () => {
       </div>
       <div className="GameDescription">
         <div className="GameTitle">
-        <Dashboard
-        email="player@example.com" // Replace with the actual email
-        imgSrc="path/to/your/image.jpg" // Replace with the actual path to the image
-      />
+        <Dashboard/>
         </div>
       </div>
       <div className="Updates">

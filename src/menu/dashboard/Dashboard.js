@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Dashboard.css';
 import { db , auth} from '../../Firebase'; // Update the path to the correct location
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -11,7 +11,8 @@ const Dashboard = () => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingPic, setIsEditingPic] = useState(false);
     const [newName, setNewName] = useState('');
-  
+    const inputRef = useRef(null); // Move useRef inside the component
+
     useEffect(() => {
       const fetchPlayerData = async () => {
         const user = auth.currentUser;
@@ -29,6 +30,13 @@ const Dashboard = () => {
   
       fetchPlayerData();
     }, []);
+
+    useEffect(() => {
+        if (isEditingName && inputRef.current) {
+          inputRef.current.style.width = `${newName.length + 1}ch`;
+          inputRef.current.focus();
+        }
+      }, [isEditingName, newName]);
   
     const handleNameEdit = () => {
       setIsEditingName(true);
@@ -78,7 +86,7 @@ const Dashboard = () => {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Enter new name"
-                
+                ref={inputRef}
               />
               <button onClick={handleNameSave}>Save</button>
             </div>
