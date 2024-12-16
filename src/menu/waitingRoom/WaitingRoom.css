@@ -1,0 +1,20 @@
+.WaitingRoom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+  }
+  
+  .WaitingRoom h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .WaitingRoom p {
+    font-size: 1rem;
+    color: #666;
+  }

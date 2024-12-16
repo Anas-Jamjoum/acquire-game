@@ -4,10 +4,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Menu from './menu/gameMenu/Menu';
 import ProtectedRoute from './authentication/services/ProtectedRoute';
 import { AuthProvider } from './authentication/services/AuthContext';
+import WaitingRoom from './menu/waitingRoom/WaitingRoom';
 
 function App() {
   return (
-    
     <AuthProvider>
       <Router>
         <Routes>
@@ -20,6 +20,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Menu />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/waiting-room/:gameId"
+            element={
+              <ProtectedRoute>
+                <WaitingRoom />
               </ProtectedRoute>
             }
           />
