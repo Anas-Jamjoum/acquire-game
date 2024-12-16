@@ -53,7 +53,7 @@ const Menu = () => {
         <button onClick={handleGameRules}>Game Rules</button>
       </div>
       <div className="GameDescription">
-        <div className="GameTi4tle">
+        <div className="GameTitle">
           {!isJoinRoomOpen && <Dashboard />}
         </div>
         {isJoinRoomOpen && <JoinRoom />}
