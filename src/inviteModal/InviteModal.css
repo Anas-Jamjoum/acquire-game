@@ -35,7 +35,16 @@
     margin-bottom: 20px;
   }
   
-
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
   .ButtonGroup1 {
     position: center;
   }

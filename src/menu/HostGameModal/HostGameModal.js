@@ -63,6 +63,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
           isPrivate,
           password: isPrivate ? password : '',
           maxPlayers: 4,
+          status: 'waiting',
           players: [user.email],
           createdAt: new Date(),
         });

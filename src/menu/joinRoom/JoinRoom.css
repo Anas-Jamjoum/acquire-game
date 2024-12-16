@@ -1,0 +1,140 @@
+.JoinRoom {
+    padding: 20px;
+    margin-top: 0; /* Ensure it starts from the top */
+  }
+
+  .SearchInput {
+    width: 97%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .RoomsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .RoomCard {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    background-color: #e0f7fa;
+    width: 90%;
+    gap: 15%;
+  }
+  
+  .RoomInfo {
+    display: flex;
+    justify-content: space-between;
+    gap: 5%;
+  }
+  
+  .RoomName {
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-width: 40%;
+  }
+  
+  .RoomStatus {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  .RoomPrivacy {
+    font-size: 1rem;
+    color: #666;
+  }
+
+  .JoinRoomButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #28a745; /* Green color */
+    color: white;
+    width: 25%;
+    margin: auto;
+  }
+  
+  .JoinRoomButton:hover {
+    background-color: #218838; /* Darker green on hover */
+  }
+
+  .NoRoomsMessage {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #000000;
+    background-color: #e0f7fabe;
+    border-radius: 5px;
+    
+  }
+  
+  .ErrorMessage {
+    color: red;
+    font-size: 0.9rem;
+  }
+  
+  .PasswordModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .PasswordModalContent {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    max-width: 90%;
+    text-align: center;
+  }
+  
+  .PasswordModalContent input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .PasswordModalContent button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 5px;
+  }
+  
+  .PasswordModalContent button:nth-child(2) {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .PasswordModalContent button:nth-child(2):hover {
+    background-color: #45a049;
+  }
+  
+  .PasswordModalContent button:nth-child(3) {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .PasswordModalContent button:nth-child(3):hover {
+    background-color: #c82333;
+  }

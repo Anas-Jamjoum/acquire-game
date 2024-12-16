@@ -1,9 +1,8 @@
-// src/menu/InviteModal.js
 import React from 'react';
 import './InviteModal.css';
 import { auth, db } from '../Firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword , sendPasswordResetEmail } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   if (!isOpen) return null;
@@ -22,7 +21,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
         await setDoc(playerDocRef, {
           name: playerName,
           level: 0,
-          profilePic:"pic1.png"
+          profilePic: "pic1.png"
         });
 
         onClose();
@@ -53,6 +52,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   return (
     <div className="modalInvite">
       <div className="modal-content">
+        <button className="close-button" onClick={onClose}>×</button>
         <h2>Invite Someone</h2>
         <form onSubmit={handleSubmit}>
           <input
@@ -62,7 +62,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
             onChange={(e) => setInviteEmail(e.target.value)}
             required
           />
-         <div className="ButtonGroup1">
+          <div className="ButtonGroup1">
             <button type="submit" className="SendInviteButton">Send Invite</button>
             <button type="button" className="CancelButton" onClick={onClose}>Cancel</button>
           </div>
