@@ -12,7 +12,8 @@ const HostGameModal = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [isRoomCreated, setIsRoomCreated] = useState(false);
   const [roomId, setRoomId] = useState('');
-  const [error, setError] = useState('');
+  const [roomNameError, setRoomNameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,13 +26,29 @@ const HostGameModal = ({ isOpen, onClose }) => {
       setPassword('');
       setIsRoomCreated(false);
       setRoomId('');
-      setError('');
+      setRoomNameError('');
+      setPasswordError('');
     }
   }, [isOpen]);
 
   const handleCreateGame = async () => {
+    let hasError = false;
+
     if (!roomName.trim()) {
-      setError('Room name cannot be empty');
+      setRoomNameError('Room name cannot be empty');
+      hasError = true;
+    } else {
+      setRoomNameError('');
+    }
+
+    if (isPrivate && !password.trim()) {
+      setPasswordError('Password cannot be empty for private rooms');
+      hasError = true;
+    } else {
+      setPasswordError('');
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -79,7 +96,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
                 placeholder="Enter Room name"
                 maxLength={20} // Set maximum character limit for room name
               />
-              {error && <p className="ErrorMessage">{error}</p>}
+              {roomNameError && <p className="ErrorMessage">{roomNameError}</p>}
             </label>
             <label>
               Room Description:
@@ -105,7 +122,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
               </select>
             </label>
             {isPrivate && (
-              <label>
+              <label className="InputLabel">
                 Password:
                 <input
                   type="password"
@@ -113,6 +130,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                 />
+                {passwordError && <p className="ErrorMessage">{passwordError}</p>}
               </label>
             )}
             <div className="ButtonGroup">

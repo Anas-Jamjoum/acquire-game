@@ -51,7 +51,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   };
 
   return (
-    <div className="modal">
+    <div className="modalInvite">
       <div className="modal-content">
         <h2>Invite Someone</h2>
         <form onSubmit={handleSubmit}>
@@ -62,9 +62,9 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
             onChange={(e) => setInviteEmail(e.target.value)}
             required
           />
-          <div className="button-group">
-            <button type="submit">Send Invite</button>
-            <button type="button" onClick={onClose}>Cancel</button>
+         <div className="ButtonGroup1">
+            <button type="submit" className="SendInviteButton">Send Invite</button>
+            <button type="button" className="CancelButton" onClick={onClose}>Cancel</button>
           </div>
         </form>
       </div>
