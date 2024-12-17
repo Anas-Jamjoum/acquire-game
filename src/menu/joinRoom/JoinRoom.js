@@ -11,6 +11,8 @@ const JoinRoom = () => {
   const [error, setError] = useState('');
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const roomsPerPage = 4; // Number of rooms to display per page
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +73,24 @@ const JoinRoom = () => {
     room.gameName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const indexOfLastRoom = currentPage * roomsPerPage;
+  const indexOfFirstRoom = indexOfLastRoom - roomsPerPage;
+  const currentRooms = filteredRooms.slice(indexOfFirstRoom, indexOfLastRoom);
+
+  const totalPages = Math.ceil(filteredRooms.length / roomsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className="JoinRoom">
       <h1>Join a Room</h1>
@@ -85,17 +105,16 @@ const JoinRoom = () => {
         <div className="RoomCard Header">
           <div className="RoomInfo">
             <div className="RoomName">Room Name</div>
-            {/* <div className="RoomDescreption">Description</div> */}
             <div className="TotalPlayers">Players</div>
             <div className="GameMode">Mode</div>
             <div className="RoomPrivacy">Privacy</div>
             <div className="RoomStatus">Status</div>
           </div>
         </div>        
-        {filteredRooms.length === 0 ? (
+        {currentRooms.length === 0 ? (
           <div className="NoRoomsMessage">There are no rooms available.</div>
         ) : (
-          filteredRooms.map(room => (
+          currentRooms.map(room => (
             <div key={room.id} className="RoomCard">
               <div className="RoomInfo">
                 <div className="RoomName">{room.gameName}</div>
@@ -110,6 +129,12 @@ const JoinRoom = () => {
             </div>
           ))
         )}
+      </div>
+
+      <div className="Pagination">
+        <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
       </div>
 
       {isPasswordModalOpen && (

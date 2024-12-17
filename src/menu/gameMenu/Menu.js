@@ -53,9 +53,11 @@ const Menu = () => {
         <button onClick={handleGameRules}>Game Rules</button>
       </div>
       <div className="GameDescription">
+      {!isJoinRoomOpen && (
         <div className="GameTitle">
-          {!isJoinRoomOpen && <Dashboard />}
+          <Dashboard />
         </div>
+      )}
         {isJoinRoomOpen && <JoinRoom />}
       </div>
       <Update /> {/* Use the Update component */}
