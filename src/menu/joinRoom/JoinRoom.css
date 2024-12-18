@@ -1,6 +1,7 @@
 .JoinRoom {
     padding: 20px;
     margin-top: 0; /* Ensure it starts from the top */
+    min-height: 620px;
   }
 
   .SearchInput {
@@ -10,7 +11,7 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1rem;
-  }
+  } 
   
   .RoomsList {
     display: flex;
