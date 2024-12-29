@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 20px;
   background-color: #f8f9fa;
   min-height: 100vh;
@@ -14,39 +14,53 @@
   color: #343a40;
 }
 
-.WaitingRoom p {
-  font-size: 1.2rem;
+.WaitingRoom .GameDetails {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: #ffffff;
+  text-align: left;
+}
+
+.WaitingRoom .GameDetails p {
   margin: 10px 0;
+  font-size: 1.2rem;
   color: #495057;
 }
 
 .WaitingRoom .PlayersList {
-  margin: 20px 0;
-  padding: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+  padding: 20px;
   border: 1px solid #ced4da;
   border-radius: 5px;
   background-color: #ffffff;
-  width: 100%;
-  max-width: 600px;
   text-align: left;
 }
 
 .WaitingRoom .PlayersList p {
-  margin: 5px 0;
+  margin: 10px 0;
+  font-size: 1.2rem;
+  color: #495057;
 }
 
 .WaitingRoom .PlayerCard {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin: 10px;
+  margin: 10px 0;
 }
 
 .WaitingRoom .PlayerPic {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  margin-bottom: 5px;
+  margin-right: 10px;
 }
 
 .WaitingRoom button {

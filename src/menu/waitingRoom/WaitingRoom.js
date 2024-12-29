@@ -4,7 +4,7 @@ import { db, auth } from '../../Firebase'; // Update the path to the correct loc
 import { doc, getDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import './WaitingRoom.css'; // Import the CSS file for styling
 import images from '../dashboard/imageUtils'; // Import the images
-import { cos } from 'three/tsl';
+import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
 
 const WaitingRoom = () => {
   const { gameId } = useParams();
@@ -13,6 +13,7 @@ const WaitingRoom = () => {
   const [userEmail, setUserEmail] = useState('');
   const [playersData, setPlayersData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchPlayerData = async (email) => {
@@ -42,7 +43,6 @@ const WaitingRoom = () => {
 
           const playersDataPromises = gameData.players.map(player => fetchPlayerData(player.email));
           const playersData = await Promise.all(playersDataPromises);
-          console.log(playersData);
           setPlayersData(playersData.filter(player => player !== null));
         } else {
           console.log('No such document!');
@@ -93,36 +93,51 @@ const WaitingRoom = () => {
       navigate('/menu');
     }
   };
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
   return (
     <div className="WaitingRoom">
       {gameData ? (
         <>
           <h1>Waiting Room</h1>
-          <p>Game Name: {gameData.gameName}</p>
-          <p>Room Description: {gameData.roomDescription}</p>
-          <p>Mode: {gameData.mode}</p>
-          <div className="PlayersList">
-            <p>Players:</p>
-            {playersData.map((player, index) => (
-              <div key={index} className="PlayerCard">
-                <img src={images[player.profilePic]} alt={player.name} className="PlayerPic" />
-                <p>{player.name}{player.email === gameData.host ? ' (Host)' : ''}</p>
-                {console.log(player)}
-
+          {isEditing ? (
+            <EditRoomDetails gameId={gameId} gameData={gameData} onClose={handleEditToggle} />
+          ) : (
+            <>
+              <div className="GameDetails">
+                <p>Game Name: {gameData.gameName}</p>
+                <p>Host: {gameData.host}</p>
+                <p>Private: {gameData.isPrivate ? 'Yes' : 'No'}</p>
+                <p>Mode: {gameData.mode}</p>
+                <p>Room Description: {gameData.roomDescription}</p>
+                {gameData.host === userEmail && (
+                  <button onClick={handleEditToggle}>Edit Game Details</button>
+                )}
               </div>
-
-            ))}
-          </div>
-          <p>Waiting for more players to join...</p>
-          {gameData.host === userEmail && (
-            <button 
-              onClick={handleStartGame} 
-              disabled={gameData.players.length < gameData.maxPlayers}
-            >
-              Start Game
-            </button>
+              <div className="PlayersList">
+                <p>Players:</p>
+                {playersData.map((player, index) => (
+                  <div key={index} className="PlayerCard">
+                    <img src={images[player.profilePic]} alt={player.name} className="PlayerPic" />
+                    <p>{player.name}{player.email === gameData.host ? ' (Host)' : ''}</p>
+                  </div>
+                ))}
+              </div>
+              <p>Waiting for more players to join...</p>
+              {gameData.host === userEmail && (
+                <button 
+                  onClick={handleStartGame} 
+                  disabled={gameData.players.length < gameData.maxPlayers}
+                >
+                  Start Game
+                </button>
+              )}
+              <button className="LeaveButton" onClick={handleLeaveRoom}>Leave Room</button>
+            </>
           )}
-          <button className="LeaveButton" onClick={handleLeaveRoom}>Leave Room</button>
         </>
       ) : (
         <p>Loading game data...</p>

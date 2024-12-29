@@ -57,6 +57,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
       try {
         const userProfile = {
           email: user.email,
+
         };
 
         const roomDocRef = await addDoc(collection(db, 'rooms'), {
