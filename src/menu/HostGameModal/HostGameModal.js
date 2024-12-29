@@ -55,6 +55,10 @@ const HostGameModal = ({ isOpen, onClose }) => {
     const user = auth.currentUser;
     if (user) {
       try {
+        const userProfile = {
+          email: user.email,
+        };
+
         const roomDocRef = await addDoc(collection(db, 'rooms'), {
           host: user.email,
           gameName: roomName,
@@ -64,7 +68,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
           password: isPrivate ? password : '',
           maxPlayers: 4,
           status: 'waiting',
-          players: [user.email],
+          players: [userProfile],
           createdAt: new Date(),
         });
         setRoomId(roomDocRef.id);

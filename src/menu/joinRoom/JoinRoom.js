@@ -40,9 +40,13 @@ const JoinRoom = () => {
     const user = auth.currentUser;
     if (user) {
       try {
+        const userProfile = {
+          email: user.email
+        };
+
         const roomDocRef = doc(db, 'rooms', room.id);
         await updateDoc(roomDocRef, {
-          players: arrayUnion(user.email)
+          players: arrayUnion(userProfile)
         });
         navigate(`/waiting-room/${room.id}`);
       } catch (error) {

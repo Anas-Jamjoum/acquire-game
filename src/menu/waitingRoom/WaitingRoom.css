@@ -1,20 +1,103 @@
 .WaitingRoom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    margin-top: 20px;
-  }
-  
-  .WaitingRoom h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-  }
-  
-  .WaitingRoom p {
-    font-size: 1rem;
-    color: #666;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.WaitingRoom h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #343a40;
+}
+
+.WaitingRoom p {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  color: #495057;
+}
+
+.WaitingRoom .PlayersList {
+  margin: 20px 0;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+}
+
+.WaitingRoom .PlayersList p {
+  margin: 5px 0;
+}
+
+.WaitingRoom .PlayerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+}
+
+.WaitingRoom .PlayerPic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-bottom: 5px;
+}
+
+.WaitingRoom button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.WaitingRoom button:disabled {
+  background-color: #6c757d;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.WaitingRoom button:not(:disabled) {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.WaitingRoom button:not(:disabled):hover {
+  background-color: #0056b3;
+}
+
+.WaitingRoom .LeaveButton {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.WaitingRoom .LeaveButton:hover {
+  background-color: #c82333;
+}
+
+.Popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.PopupContent {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
