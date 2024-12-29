@@ -1,81 +1,81 @@
 .EditRoomDetailsModal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-  }
-  
-  .EditRoomDetailsContent {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 5px;
-    text-align: left;
-    width: 100%;
-    max-width: 600px;
-    position: relative;
-  }
-  
-  .CloseButton {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  
-  .EditRoomDetailsContent form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .EditRoomDetailsContent label {
-    margin: 10px 0;
-    font-size: 1.2rem;
-    color: #495057;
-  }
-  
-  .EditRoomDetailsContent input,
-  .EditRoomDetailsContent textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-size: 1rem;
-  }
-  
-  .EditRoomDetailsContent button {
-    padding: 10px 20px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .EditRoomDetailsContent button[type="submit"] {
-    background-color: #007bff;
-    color: #ffffff;
-  }
-  
-  .EditRoomDetailsContent button[type="submit"]:hover {
-    background-color: #0056b3;
-  }
-  
-  .EditRoomDetailsContent button[type="button"] {
-    background-color: #6c757d;
-    color: #ffffff;
-  }
-  
-  .EditRoomDetailsContent button[type="button"]:hover {
-    background-color: #5a6268;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.EditRoomDetailsContent {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: left;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+
+.CloseButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.EditRoomDetailsContent form {
+  display: flex;
+  flex-direction: column;
+}
+
+.EditRoomDetailsContent label {
+  margin: 10px 0;
+  font-size: 1.2rem;
+  color: #495057;
+}
+
+.EditRoomDetailsContent input,
+.EditRoomDetailsContent textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.EditRoomDetailsContent button {
+  padding: 10px 20px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.EditRoomDetailsContent button[type="submit"] {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.EditRoomDetailsContent button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.EditRoomDetailsContent button[type="button"] {
+  background-color: #6c757d;
+  color: #ffffff;
+}
+
+.EditRoomDetailsContent button[type="button"]:hover {
+  background-color: #5a6268;
+}

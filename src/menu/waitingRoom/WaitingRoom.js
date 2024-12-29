@@ -6,6 +6,7 @@ import './WaitingRoom.css'; // Import the CSS file for styling
 import images from '../dashboard/imageUtils'; // Import the images
 import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
 
+
 const WaitingRoom = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -108,14 +109,15 @@ const WaitingRoom = () => {
           ) : (
             <>
               <div className="GameDetails">
-                <p>Game Name: {gameData.gameName}</p>
-                <p>Host: {gameData.host}</p>
-                <p>Private: {gameData.isPrivate ? 'Yes' : 'No'}</p>
-                <p>Mode: {gameData.mode}</p>
-                <p>Room Description: {gameData.roomDescription}</p>
-                {gameData.host === userEmail && (
-                  <button onClick={handleEditToggle}>Edit Game Details</button>
-                )}
+                <div className="GameDetailsRow">
+                  <p>Game Name: {gameData.gameName}</p>
+                  <p>Private: {gameData.isPrivate ? 'Yes' : 'No'}</p>
+                  <p>Mode: {gameData.mode}</p>
+                  <p>Room Description: {gameData.roomDescription}</p>
+                  {gameData.host === userEmail && (
+                    <button onClick={handleEditToggle}>Edit</button>
+                  )}
+                </div>
               </div>
               <div className="PlayersList">
                 <p>Players:</p>
@@ -128,7 +130,7 @@ const WaitingRoom = () => {
               </div>
               <p>Waiting for more players to join...</p>
               {gameData.host === userEmail && (
-                <button 
+                <button className="StartButton"
                   onClick={handleStartGame} 
                   disabled={gameData.players.length < gameData.maxPlayers}
                 >

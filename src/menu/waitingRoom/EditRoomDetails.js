@@ -38,7 +38,7 @@ class EditRoomDetails extends Component {
       <div className="EditRoomDetailsModal">
         <div className="EditRoomDetailsContent">
           <button className="CloseButton" onClick={onClose}>×</button>
-          <h1>Edit Room Details</h1>
+          <h1>Edit</h1>
           <form onSubmit={this.handleFormSubmit}>
             <label className="InputLabel">
               Game Name:
