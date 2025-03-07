@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db, auth } from '../../Firebase'; // Update the path to the correct location
-import { doc, getDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayRemove } from 'firebase/firestore';
 import './WaitingRoom.css'; // Import the CSS file for styling
 import images from '../dashboard/imageUtils'; // Import the images
 import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
-
 
 const WaitingRoom = () => {
   const { gameId } = useParams();
@@ -15,6 +14,7 @@ const WaitingRoom = () => {
   const [playersData, setPlayersData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [kickedMessage, setKickedMessage] = useState('');
 
   useEffect(() => {
     const fetchPlayerData = async (email) => {
@@ -59,6 +59,31 @@ const WaitingRoom = () => {
     }
   }, [gameId, navigate]);
 
+  useEffect(() => {
+    const checkKickedStatus = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const playerDocRef = doc(db, 'players', user.email);
+        const playerDoc = await getDoc(playerDocRef);
+        if (playerDoc.exists() && playerDoc.data().kicked) {
+          setKickedMessage(playerDoc.data().kickedMessage);
+          setTimeout(async () => {
+            await updateDoc(playerDocRef, {
+              kicked: false,
+              kickedMessage: '',
+            });
+            navigate('/menu');
+          }, 1000); // Redirect after 3 seconds
+
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkKickedStatus, 1000); // Check every 5 seconds
+
+    return () => clearInterval(intervalId); // Clear interval on component unmount
+  }, [navigate]);
+
   const handleStartGame = async () => {
     if (gameData && gameData.host === userEmail) {
       // Start the game (e.g., update the game status to 'started')
@@ -99,8 +124,36 @@ const WaitingRoom = () => {
     setIsEditing(!isEditing);
   };
 
+  const handleRemovePlayer = async (player) => {
+    // Send a message to the kicked player
+    const playerDocRef = doc(db, 'players', player.email); // Assuming player.email is the document ID in the 'players' collection
+    await updateDoc(playerDocRef, {
+      kicked: true,
+      kickedMessage: 'You have been kicked from the room.',
+    })
+    .then(() => {
+      // Remove the player from the room
+      const gameDocRef = doc(db, 'rooms', gameId);
+      return updateDoc(gameDocRef, {
+        players: arrayRemove({ email: player.email }), // Ensure the object structure matches exactly
+      });
+    })
+    .then(() => {
+      // Update the local state
+      setPlayersData(playersData.filter(p => p.email !== player.email));
+    })
+    .catch((error) => {
+      console.error("Error removing player: ", error);
+    });
+  };
+
   return (
     <div className="WaitingRoom">
+      {kickedMessage && (
+        <div className="KickedMessage">
+          <p>{kickedMessage}</p>
+        </div>
+      )}
       {gameData ? (
         <>
           <h1>Waiting Room</h1>
@@ -125,6 +178,9 @@ const WaitingRoom = () => {
                   <div key={index} className="PlayerCard">
                     <img src={images[player.profilePic]} alt={player.name} className="PlayerPic" />
                     <p>{player.name}{player.email === gameData.host ? ' (Host)' : ''}</p>
+                    {gameData.host === userEmail && player.email !== gameData.host && (
+                      <button id="kickButton" onClick={() => handleRemovePlayer(player)}>Kick Player</button>
+                    )}
                   </div>
                 ))}
               </div>
