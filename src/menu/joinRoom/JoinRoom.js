@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../../Firebase'; // Update the path to the correct location
-import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
 import './JoinRoom.css'; // Import the CSS file for styling
 
 const JoinRoom = () => {
@@ -16,15 +16,14 @@ const JoinRoom = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      const roomsCollection = collection(db, 'rooms');
-      const roomsSnapshot = await getDocs(roomsCollection);
-      const roomsList = roomsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const roomsCollection = collection(db, 'rooms');
+    const unsubscribe = onSnapshot(roomsCollection, (snapshot) => {
+      const roomsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       roomsList.sort((a, b) => a.gameName.localeCompare(b.gameName));
       setRooms(roomsList);
-    };
+    });
 
-    fetchRooms();
+    return () => unsubscribe();
   }, []);
 
   const handleJoinRoom = (room) => {

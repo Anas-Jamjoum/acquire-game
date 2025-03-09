@@ -42,6 +42,10 @@ const WaitingRoom = () => {
             }, 3000); // Redirect after 3 seconds
           }
 
+          if (gameData.isStarted) {
+            navigate(`/start-game/${gameId}`, { state: { gameData } }); // Navigate to the new route when the game starts
+          }
+
           const playersDataPromises = gameData.players.map(player => fetchPlayerData(player.email));
           const playersData = await Promise.all(playersDataPromises);
           setPlayersData(playersData.filter(player => player !== null));
@@ -91,7 +95,7 @@ const WaitingRoom = () => {
       await updateDoc(gameDocRef, {
         isStarted: true
       });
-      navigate(`/game/${gameId}`);
+      navigate(`/start-game/${gameId}`); // Navigate to the new route
     } else {
       alert('Only the host can start the game.');
     }
@@ -188,7 +192,7 @@ const WaitingRoom = () => {
               {gameData.host === userEmail && (
                 <button className="StartButton"
                   onClick={handleStartGame} 
-                  disabled={gameData.players.length < gameData.maxPlayers}
+                  // disabled={gameData.players.length < gameData.maxPlayers}
                 >
                   Start Game
                 </button>
