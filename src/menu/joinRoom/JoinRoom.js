@@ -14,8 +14,14 @@ const JoinRoom = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 4; // Number of rooms to display per page
   const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      setUserEmail(user.email);
+    }
+
     const roomsCollection = collection(db, 'rooms');
     const unsubscribe = onSnapshot(roomsCollection, (snapshot) => {
       const roomsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -128,7 +134,13 @@ const JoinRoom = () => {
                   {room.players.length >= room.maxPlayers ? 'Full' : room.isStarted ? 'Started' : 'Waiting'}
                 </div>
               </div>
-              <button className="JoinRoomButton" onClick={() => handleJoinRoom(room)}>Join Room</button>
+              <button
+                className="JoinRoomButton"
+                onClick={() => handleJoinRoom(room)}
+                disabled={!room.players.some(player => player.email === userEmail) && (room.players.length === room.maxPlayers || room.isStarted)}
+              >
+                {room.players.some(player => player.email === userEmail) ? 'Rejoin Room' : 'Join Room'}
+              </button>
             </div>
           ))
         )}
@@ -137,7 +149,7 @@ const JoinRoom = () => {
       <div className="Pagination">
         <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
         <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
+        <button onClick={handleNextPage} disabled={currentPage >= totalPages}>Next</button>
       </div>
 
       {isPasswordModalOpen && (

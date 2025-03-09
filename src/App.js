@@ -5,6 +5,7 @@ import Menu from './menu/gameMenu/Menu';
 import ProtectedRoute from './authentication/services/ProtectedRoute';
 import { AuthProvider } from './authentication/services/AuthContext';
 import WaitingRoom from './menu/waitingRoom/WaitingRoom';
+import StartGame from './game/StartGame'; // Import the new StartGame component
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WaitingRoom />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/start-game/:gameId"
+            element={
+              <ProtectedRoute>
+                <StartGame />
               </ProtectedRoute>
             }
           />

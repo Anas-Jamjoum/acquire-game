@@ -69,6 +69,11 @@
     background-color: #218838; /* Darker green on hover */
   }
 
+  .JoinRoomButton:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+  }
+
   .NoRoomsMessage {
     padding: 20px;
     text-align: center;

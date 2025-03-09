@@ -188,11 +188,14 @@ const WaitingRoom = () => {
                   </div>
                 ))}
               </div>
-              <p>Waiting for more players to join...</p>
-              {gameData.host === userEmail && (
+              {gameData.players.length < gameData.maxPlayers ? (
+                <p>Waiting for more players to join...</p>
+              ) : (
+                <p>Waiting for the host to start...</p>
+              )}              {gameData.host === userEmail && (
                 <button className="StartButton"
                   onClick={handleStartGame} 
-                  // disabled={gameData.players.length < gameData.maxPlayers}
+                  disabled={gameData.players.length < gameData.maxPlayers}
                 >
                   Start Game
                 </button>
