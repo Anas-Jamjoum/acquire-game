@@ -3,6 +3,15 @@
   flex-direction: row;
   align-items: flex-start;
   font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.turn-counter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .game-board {
@@ -22,22 +31,24 @@
   height: 50px;
   background-color: #fff;
   border: 1px solid #999;
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s;
 }
 
-.square:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
+.tile-button {
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.square:hover:not(:disabled) {
-  background-color: #f0f0f0;
+.tile-button:hover {
+  background-color: #0056b3;
 }
 
 .game-info {
@@ -119,5 +130,32 @@
 }
 
 .return-home-button:hover {
+  background-color: #0056b3;
+}
+
+.options {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.options button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.options button:hover {
   background-color: #0056b3;
 }

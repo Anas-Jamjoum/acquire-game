@@ -1,14 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db, auth } from '../Firebase'; // Ensure the path is correct and within the src directory
+import { db, auth } from '../Firebase';
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
-import './StartGame.css'; // Import the CSS file for styling
-import images from '../menu/dashboard/imageUtils'; // Import the images
+import './StartGame.css';
+import images from '../menu/dashboard/imageUtils';
 
 const StartGame = () => {
-  const { gameId } = useParams();
-  const navigate = useNavigate();
-  const [board, setBoard] = useState(Array(108).fill(null)); // Update to 108 squares
+  // -------------------------------
+  // Helpers
+  // -------------------------------
+
+  const getLabel = (row, col) => {
+    const letters = 'ABCDEFGHI';
+    return `${col + 1}${letters[row]}`;  // e.g. "1A", "2B", etc.
+  };
+
+  const shufflePlayers = (players) => {
+    return [...players].sort(() => Math.random() - 0.5);
+  };
+
+  // Create a fresh board of 108 squares, each with a label, color, and used-flag
+  const createInitialBoard = () => {
+    return Array(108).fill().map((_, index) => ({
+      label: getLabel(Math.floor(index / 12), index % 12),
+      color: 'white',
+      used: false,
+    }));
+  };
+
+  // Assign a single new tile to each player if they don't already have tiles
+  const assignInitialTiles = (players, boardToUpdate) => {
+    players.forEach((player, i) => {
+      player.symbol = i === 0 ? 'X' : 'O'; // Example symbols
+      player.money = 6000; // Give each player a starting budget
+      if (!player.tiles || player.tiles.length === 0) {
+        let tile;
+        do {
+          tile = Math.floor(Math.random() * 108);
+        } while (boardToUpdate[tile].used);
+        boardToUpdate[tile].used = true;
+        // Initialize tile array if not present
+        player.tiles = [tile];
+      }
+    });
+  };
+
+  const sortPlayersbyTile = (players) => { 
+    return players.sort((a, b) => a.tiles[0] - b.tiles[0]);
+  }
+
+  const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
     { name: 'Sackson', stocks: 25 },
     { name: 'Tower', stocks: 25 },
@@ -16,207 +57,258 @@ const StartGame = () => {
     { name: 'Festival', stocks: 25 },
     { name: 'WorldWide', stocks: 25 },
     { name: 'Continental', stocks: 25 },
-    { name: 'Imperial', stocks: 25 }
-  ]); // Initialize HQS with 7 headquarters, each having 25 stocks and specific names
+    { name: 'Imperial', stocks: 25 },
+  ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState([]);
   const [winner, setWinner] = useState(null);
-  const [userEmail, setUserEmail] = useState('');
   const [turnCounter, setTurnCounter] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (user) {
-      setUserEmail(user.email);
-    }
+  const [showOptions, setShowOptions] = useState(false);
+  const [selectedTile, setSelectedTile] = useState(null);
 
-    const gameDocRef = doc(db, 'startedGames', gameId);
+  const { gameId } = useParams();
+  const navigate = useNavigate();
 
-    const initializeGame = async () => {
-      const gameDoc = await getDoc(gameDocRef);
-      if (!gameDoc.exists()) {
-        // Fetch players from the room document
-        const roomDocRef = doc(db, 'rooms', gameId);
-        const roomDoc = await getDoc(roomDocRef);
-        if (roomDoc.exists()) {
-          const roomData = roomDoc.data();
-          const players = roomData.players || [];
+  const user = auth.currentUser;
+  const userEmail = user?.email || '';
 
-          if (players.length >= 2) {
-            const validPlayers = await fetchPlayerData(players);
-            const shuffledPlayers = shufflePlayers(validPlayers);
-            assignInitialTiles(shuffledPlayers);
+  // -------------------------------
+  // Initialization function
+  // -------------------------------
 
-            setPlayers(shuffledPlayers);
-
-            await setDoc(gameDocRef, {
-              board: Array(108).fill(null), // Update to 108 squares
-              currentPlayerIndex: 0,
-              winner: null,
-              players: shuffledPlayers,
-              isStarted: true,
-              finished: false,
-              HQS: HQS.map(hq => ({ name: hq.name, stocks: 25 })), // Initialize HQS with 7 headquarters, each having 25 stocks and specific names
-              turnCounter: 0
-            });
-
-            // Update the room document to indicate the game has started
-            await updateDoc(roomDocRef, {
-              isStarted: true,
-            });
-          } else {
-            console.error('Not enough players to start the game');
+  const initializeGame = async (roomData) => {
+    try {
+      const playersFromRoom = roomData.players || [];
+      // Fetch each player's doc from /players collection
+      const fetchedPlayers = await Promise.all(
+        playersFromRoom.map(async (p) => {
+          const playerDocRef = doc(db, 'players', p.email);
+          const snap = await getDoc(playerDocRef);
+          if (snap.exists()) {
+            return {
+              ...snap.data(),
+              email: p.email,
+              // Initialize HQS (stock holdings) and empty tile array
+              headquarters: HQS.map(hq => ({ name: hq.name, stocks: 0 })),
+              tiles: [],
+            };
           }
+          return null;
+        })
+      );
+
+      // Filter out any null players
+      const validPlayers = fetchedPlayers.filter(Boolean);
+
+      // Only proceed if at least 2 valid players exist
+      if (validPlayers.length < 2) {
+        console.error('Not enough players to start the game');
+        return;
+      }
+
+      // Shuffle them and assign tiles
+      const shuffled = shufflePlayers(validPlayers);
+      const newBoard = createInitialBoard();
+
+      assignInitialTiles(shuffled, newBoard);
+
+      const sortPlayers= sortPlayersbyTile(shuffled);
+
+      // Prepare initial game data
+      const gameData = {
+        board: newBoard,
+        currentPlayerIndex: 0,
+        winner: null,
+        players: sortPlayers,
+        isStarted: true,
+        finished: false,
+        HQS: HQS.map(hq => ({ name: hq.name, stocks: 25 })),
+        turnCounter: 0,
+      };
+
+      // Set the data in 'startedGames' collection
+      await setDoc(doc(db, 'startedGames', gameId), gameData);
+
+      // Mark the room as started
+      await updateDoc(doc(db, 'rooms', gameId), {
+        isStarted: true,
+      });
+    } catch (err) {
+      console.error('Error initializing the game:', err);
+    }
+  };
+
+  // -------------------------------
+  // useEffect: Subscribe to game
+  // -------------------------------
+  useEffect(() => {
+    const gameDocRef = doc(db, 'startedGames', gameId);
+    const roomDocRef = doc(db, 'rooms', gameId);
+
+    let unsubscribeGame = null;
+
+    const setupGameSubscription = async () => {
+      const gameSnap = await getDoc(gameDocRef);
+
+      // If the game doesn't exist, check if I'm the host and initialize if so
+      if (!gameSnap.exists()) {
+        const roomSnap = await getDoc(roomDocRef);
+        if (!roomSnap.exists()) {
+          console.error('No room found to initialize the game');
+          return;
+        }
+
+        const roomData = roomSnap.data();
+
+        // Only the host can initialize
+        if (roomData.host === userEmail) {
+          console.log('You are the host. Initializing the game...');
+          await initializeGame(roomData);
         } else {
-          console.error('Room document does not exist');
+          console.log('Game does not exist yet and you are not the host.');
         }
       }
+
+      // Whether newly created or already existing, subscribe to changes
+      unsubscribeGame = onSnapshot(gameDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setBoard(data.board || createInitialBoard());
+          setPlayers(data.players || []);
+          setCurrentPlayerIndex(data.currentPlayerIndex || 0);
+          setWinner(data.winner || null);
+          setHQS(data.HQS || HQS);
+          setTurnCounter(data.turnCounter || 0);
+        }
+      });
     };
 
-    if (!isInitialized) {
-      initializeGame();
-      setIsInitialized(true);
-    }
+    setupGameSubscription();
 
-    const unsubscribe = onSnapshot(gameDocRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        setBoard(data.board || Array(108).fill(null)); // Update to 108 squares
-        setPlayers(data.players || []);
-        setCurrentPlayerIndex(data.currentPlayerIndex || 0);
-        setWinner(data.winner || null);
-        setHQS(data.HQS || HQS.map(hq => ({ name: hq.name, stocks: 25 }))); // Update HQS from the database
-        setTurnCounter(data.turnCounter || 0);
+    return () => {
+      if (unsubscribeGame) {
+        unsubscribeGame();
       }
-    });
+    };
+  }, [gameId, userEmail]);
 
-    return () => unsubscribe();
-  }, []);
+  // -------------------------------
+  // Tile Click / Option Handling
+  // -------------------------------
 
-  const fetchPlayerData = async (players) => {
-    const playerDataPromises = players.map(async (player) => {
-      const playerDocRef = doc(db, 'players', player.email);
-      const playerDoc = await getDoc(playerDocRef);
-      if (playerDoc.exists()) {
-        return { ...playerDoc.data(), email: player.email, headquarters: HQS.map(hq => ({ name: hq.name, stocks: 0 })), tiles: [] }; // Initialize HQ stocks and tiles
-      } else {
-        console.log('No such document!');
-        return null;
-      }
-    });
+  const handleTileClick = (tileIndex) => {
+    if (winner) return;
+    // Ensure only current player can pick a tile
+    if (players[currentPlayerIndex]?.email !== userEmail) return;
 
-    const playerData = await Promise.all(playerDataPromises);
-    return playerData.filter(player => player !== null);
+    setSelectedTile(tileIndex);
+    setShowOptions(true);
   };
 
-  const shufflePlayers = (players) => {
-    return [...players].sort(() => Math.random() - 0.5);
-  };
-
-  const assignInitialTiles = (players) => {
-    const takenTiles = new Set();
-    for (let i = 0; i < players.length; i++) {
-      players[i].symbol = i === 0 ? 'X' : 'O';
-      players[i].money = 6000; // Add money property to each player
-      let tile;
-      do {
-        tile = Math.floor(Math.random() * 108);
-      } while (takenTiles.has(tile));
-      takenTiles.add(tile);
-      players[i].tiles = [tile]; // Assign 1 random tile initially
-    }
-  };
-
-  const checkWinner = (board) => {
-    // Define winning lines for a 9x12 grid
-    const lines = [
-      // Horizontal lines
-      ...Array(9).fill().map((_, row) => Array(12).fill().map((_, col) => row * 12 + col)),
-      // Vertical lines
-      ...Array(12).fill().map((_, col) => Array(9).fill().map((_, row) => row * 12 + col)),
-      // Diagonal lines (top-left to bottom-right)
-      ...Array(9).fill().map((_, row) => Array(12).fill().map((_, col) => row * 12 + col)).filter(line => line.length >= 4),
-      // Diagonal lines (top-right to bottom-left)
-      ...Array(9).fill().map((_, row) => Array(12).fill().map((_, col) => row * 12 + (11 - col))).filter(line => line.length >= 4),
-    ];
-
-    for (let line of lines) {
-      const [a, b, c, d] = line;
-      if (board[a] && board[a] === board[b] && board[a] === board[c] && board[a] === board[d]) {
-        return board[a];
-      }
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    const winner = checkWinner(board);
-    if (winner) {
-      setWinner(winner);
-      const gameDocRef = doc(db, 'startedGames', gameId);
-      updateDoc(gameDocRef, { finished: true });
-    }
-  }, [board, gameId]);
-
-  const handleClick = async (index) => {
-    if (board[index] || winner || players[currentPlayerIndex]?.email !== userEmail) {
-      return;
-    }
-
-    const newBoard = board.slice();
-    newBoard[index] = players[currentPlayerIndex]?.symbol || 'X'; // Default to 'X' if symbol is undefined
-    const newCurrentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-
-    // Determine the number of tiles to assign
-    const tilesToAssign = players.every(player => player.tiles.length === 1) ? 6 : 1;
-
-    // Assign new tiles to the current player
-    const newTiles = assignNewTiles(tilesToAssign, players);
-
-    const updatedPlayers = players.map((player, idx) => {
-      if (idx === currentPlayerIndex) {
-        return { ...player, tiles: [...player.tiles, ...newTiles] };
-      }
-      return player;
-    });
-
-    setBoard(newBoard);
-    setCurrentPlayerIndex(newCurrentPlayerIndex);
-    setPlayers(updatedPlayers);
-
-    // Increment turn counter after all players have played
-    const newTurnCounter = newCurrentPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
-    setTurnCounter(newTurnCounter);
-
-    const gameDocRef = doc(db, 'startedGames', gameId);
-    await updateDoc(gameDocRef, {
-      board: newBoard,
-      currentPlayerIndex: newCurrentPlayerIndex,
-      winner: checkWinner(newBoard) || null, // Ensure winner is not undefined
-      players: updatedPlayers,
-      turnCounter: newTurnCounter
-    });
-  };
-
-  const assignNewTiles = (tilesToAssign, players) => {
+  const assignNewRandomTiles = (tilesToAssign, boardRef) => {
     const newTiles = [];
-    const takenTiles = new Set(players.flatMap(player => player.tiles));
     for (let i = 0; i < tilesToAssign; i++) {
       let tile;
       do {
         tile = Math.floor(Math.random() * 108);
-      } while (takenTiles.has(tile));
-      takenTiles.add(tile);
+      } while (boardRef[tile].used);
+      boardRef[tile].used = true;
       newTiles.push(tile);
     }
     return newTiles;
   };
 
-  const renderSquare = (index, label) => {
+  const handleOptionClick = async (option) => {
+    if (selectedTile == null) return;
+
+    const newBoard = [...board];
+    newBoard[selectedTile] = {
+      ...newBoard[selectedTile],
+      color: 'gray',
+      used: true,
+    };
+
+    // Copy players so we can modify
+    const updatedPlayers = [...players];
+    const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
+
+    // Remove the used tile from current player's hand
+    currPlayer.tiles = currPlayer.tiles.filter(t => t !== selectedTile);
+    updatedPlayers[currentPlayerIndex] = currPlayer;
+
+    // Simple placeholders for buy/sell stock logic:
+    if (option === 'buy') {
+      // Implement buy logic here
+    } else if (option === 'sell') {
+      // Implement sell logic here
+    }
+
+    // After the first "round" (for example), you might deal new tiles
+    // This is just example logic. Adjust to your actual rules:
+    if (turnCounter > 1) {
+      const newTiles = assignNewRandomTiles(1, newBoard);
+      updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
+    }
+
+    // Advance the turn
+    const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    const newTurnCounter = nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
+
+    if (newTurnCounter === 1) {
+      for (let i = 0; i < players.length; i++) {
+        const newTiles = assignNewRandomTiles(6, newBoard);
+        updatedPlayers[i].tiles.push(...newTiles);
+      }
+    }
+
+    setBoard(newBoard);
+    setPlayers(updatedPlayers);
+    setCurrentPlayerIndex(nextPlayerIndex);
+    setTurnCounter(newTurnCounter);
+    setShowOptions(false);
+    setSelectedTile(null);
+
+
+
+    // Persist to Firestore
+    try {
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        board: newBoard,
+        players: updatedPlayers,
+        currentPlayerIndex: nextPlayerIndex,
+        turnCounter: newTurnCounter,
+      });
+    } catch (err) {
+      console.error('Error updating Firestore:', err);
+    }
+  };
+
+  // -------------------------------
+  // Rendering
+  // -------------------------------
+
+  const renderSquare = (index) => {
     return (
-      <button className="square" onClick={() => handleClick(index)} disabled={players[currentPlayerIndex]?.email !== userEmail}>
-        {board[index] || label}
+      <div
+        key={index}
+        className="square"
+        style={{ backgroundColor: board[index].color }}
+      >
+        {board[index].label}
+      </div>
+    );
+  };
+
+  const renderTileButton = (tileIndex) => {
+    return (
+      <button
+        key={tileIndex}
+        className="tile-button"
+        onClick={() => handleTileClick(tileIndex)}
+      >
+        {board[tileIndex].label}
       </button>
     );
   };
@@ -224,14 +316,8 @@ const StartGame = () => {
   const renderStatus = () => {
     if (winner) {
       return `Winner: ${winner}`;
-    } else {
-      return `Next player: ${players[currentPlayerIndex]?.name || 'Loading...'}`;
     }
-  };
-
-  const getLabel = (row, col) => {
-    const letters = 'ABCDEFGHI';
-    return `${col + 1}${letters[row]}`;
+    return `Next player: ${players[currentPlayerIndex]?.name || 'Loading...'}`;
   };
 
   const handleReturnHome = () => {
@@ -241,39 +327,54 @@ const StartGame = () => {
   return (
     <div className="game">
       <div className="turn-counter">Turn: {turnCounter}</div>
+
+      {/* Board */}
       <div className="game-board">
         {Array(9).fill().map((_, row) => (
           <div key={row} className="board-row">
-            {Array(12).fill().map((_, col) => renderSquare(row * 12 + col, getLabel(row, col)))}
+            {Array(12).fill().map((__, col) => renderSquare(row * 12 + col))}
           </div>
         ))}
       </div>
+
+      {/* Game Info */}
       <div className="game-info">
         <div>{renderStatus()}</div>
+
+        {/* Players */}
         <div className="players-info">
-          {players && players.map((player, index) => (
+          {players.map((player, index) => (
             <div key={index} className="player">
-              <img src={images[player.profilePic]} alt={player.name} className="player-image" />
+              {player.profilePic && (
+                <img
+                  src={images[player.profilePic]}
+                  alt={player.name}
+                  className="player-image"
+                />
+              )}
               <div className="player-name">{player.name}</div>
               <div className="player-money">Money: ${player.money}</div>
+
               <div className="player-headquarters">
-                {player.headquarters && player.headquarters.map((hq, hqIndex) => (
+                {player.headquarters?.map((hq, hqIndex) => (
                   <div key={hqIndex} className="hq-stock">
                     {hq.name}: {hq.stocks} stocks
                   </div>
                 ))}
               </div>
-              <div className="player-tiles">
-                <h4>Tiles:</h4>
-                {player.tiles && player.tiles.map((tile, tileIndex) => (
-                  <div key={tileIndex} className="tile">
-                    {getLabel(Math.floor(tile / 12), tile % 12)}
-                  </div>
-                ))}
-              </div>
+
+              {/* Current user's tiles */}
+              {player.email === userEmail && (
+                <div className="player-tiles">
+                  <h4>Your Tiles:</h4>
+                  {player.tiles?.map(tileIndex => renderTileButton(tileIndex))}
+                </div>
+              )}
             </div>
           ))}
         </div>
+
+        {/* Global HQ Info */}
         <div className="hqs-info">
           <h3>Headquarters Stocks</h3>
           {HQS.map((hq, index) => (
@@ -282,8 +383,19 @@ const StartGame = () => {
             </div>
           ))}
         </div>
-        <button className="return-home-button" onClick={handleReturnHome}>Return to Menu</button>
+
+        <button className="return-home-button" onClick={handleReturnHome}>
+          Return to Menu
+        </button>
       </div>
+
+      {/* Options Overlay */}
+      {showOptions && (
+        <div className="options">
+          <button onClick={() => handleOptionClick('buy')}>Buy Stock</button>
+          <button onClick={() => handleOptionClick('sell')}>Sell Stock</button>
+        </div>
+      )}
     </div>
   );
 };
