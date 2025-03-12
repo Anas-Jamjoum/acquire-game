@@ -51,13 +51,13 @@ const StartGame = () => {
 
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
-    { name: 'Sackson', stocks: 25 },
-    { name: 'Tower', stocks: 25 },
-    { name: 'American', stocks: 25 },
-    { name: 'Festival', stocks: 25 },
-    { name: 'WorldWide', stocks: 25 },
-    { name: 'Continental', stocks: 25 },
-    { name: 'Imperial', stocks: 25 },
+    { name: 'Sackson', stocks: 25, tiles: 0, price: 0 },
+    { name: 'Tower', stocks: 25, tiles: 0, price: 0 },
+    { name: 'American', stocks: 25, tiles: 0, price: 0 },
+    { name: 'Festival', stocks: 25, tiles: 0, price: 0 },
+    { name: 'WorldWide', stocks: 25, tiles: 0, price: 0 },
+    { name: 'Continental', stocks: 25, tiles: 0, price: 0 },
+    { name: 'Imperial', stocks: 25, tiles: 0, price: 0 },
   ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -123,7 +123,7 @@ const StartGame = () => {
         players: sortPlayers,
         isStarted: true,
         finished: false,
-        HQS: HQS.map(hq => ({ name: hq.name, stocks: 25 })),
+        HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks , price: hq.price, tiles: hq.tiles})),
         turnCounter: 0,
       };
 
@@ -246,7 +246,7 @@ const StartGame = () => {
 
     // After the first "round" (for example), you might deal new tiles
     // This is just example logic. Adjust to your actual rules:
-    if (turnCounter > 1) {
+    if (turnCounter >= 1) {
       const newTiles = assignNewRandomTiles(1, newBoard);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
@@ -257,8 +257,10 @@ const StartGame = () => {
 
     if (newTurnCounter === 1) {
       for (let i = 0; i < players.length; i++) {
-        const newTiles = assignNewRandomTiles(6, newBoard);
-        updatedPlayers[i].tiles.push(...newTiles);
+        if (updatedPlayers[i].tiles.length === 0){
+            const newTiles = assignNewRandomTiles(6, newBoard);
+            updatedPlayers[i].tiles.push(...newTiles);
+        }
       }
     }
 
@@ -379,7 +381,7 @@ const StartGame = () => {
           <h3>Headquarters Stocks</h3>
           {HQS.map((hq, index) => (
             <div key={index} className="hq-stock">
-              {hq.name}: {hq.stocks} stocks
+              {hq.name}: {hq.stocks} stocks ,price ${hq.price} each ,tiles: {hq.tiles}
             </div>
           ))}
         </div>
