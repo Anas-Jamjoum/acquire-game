@@ -131,7 +131,7 @@ const JoinRoom = () => {
                 <div className="GameMode">{room.mode}</div>
                 <div className="RoomPrivacy">{room.isPrivate ? 'Private' : 'Public'}</div>
                 <div className="RoomStatus">
-                  {room.players.length >= room.maxPlayers ? 'Full' : room.isStarted ? 'Started' : 'Waiting'}
+                  {(room.players.length >= room.maxPlayers && !room.isStarted) ? 'Full' : room.isStarted ? 'Started' : 'Waiting'}
                 </div>
               </div>
               <button

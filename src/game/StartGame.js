@@ -49,15 +49,42 @@ const StartGame = () => {
     return players.sort((a, b) => a.tiles[0] - b.tiles[0]);
   }
 
+  const checkStartHQ = () => {
+    let tileIndex = selectedTile;
+        // The board is 9 rows x 12 columns = 108 squares
+        const row = Math.floor(tileIndex / 12);
+        const col = tileIndex % 12;
+    
+        const directions = [
+          [-1, 0], // up
+          [1, 0],  // down
+          [0, -1], // left
+          [0, 1],  // right
+        ];
+    
+        for (const [dr, dc] of directions) {
+          const r = row + dr;
+          const c = col + dc;
+          // check boundaries
+          if (r >= 0 && r < 9 && c >= 0 && c < 12) {
+            const neighborIndex = r * 12 + c;
+            if (board[neighborIndex].color === 'gray') {
+              return true; // Found an adjacent gray tile
+            }
+          }
+        }
+        return false;
+  }
+
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
-    { name: 'Sackson', stocks: 25, tiles: 0, price: 0 },
-    { name: 'Tower', stocks: 25, tiles: 0, price: 0 },
-    { name: 'American', stocks: 25, tiles: 0, price: 0 },
-    { name: 'Festival', stocks: 25, tiles: 0, price: 0 },
-    { name: 'WorldWide', stocks: 25, tiles: 0, price: 0 },
-    { name: 'Continental', stocks: 25, tiles: 0, price: 0 },
-    { name: 'Imperial', stocks: 25, tiles: 0, price: 0 },
+    { name: 'Sackson', stocks: 25, tiles: 0, price: 0, color:'red' },
+    { name: 'Tower', stocks: 25, tiles: 0, price: 0, color:'yellow' },
+    { name: 'American', stocks: 25, tiles: 0, price: 0, color:'darkblue' },
+    { name: 'Festival', stocks: 25, tiles: 0, price: 0, color:'green' },
+    { name: 'WorldWide', stocks: 25, tiles: 0, price: 0, color:'purple' },
+    { name: 'Continental', stocks: 25, tiles: 0, price: 0, color:'blue' },
+    { name: 'Imperial', stocks: 25, tiles: 0, price: 0, color:'orange' },
   ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -66,6 +93,10 @@ const StartGame = () => {
 
   const [showOptions, setShowOptions] = useState(false);
   const [selectedTile, setSelectedTile] = useState(null);
+  const [selectedHQ, setSelectedHQ] = useState(null);
+
+  const [startHQ, setStartHQ] = useState(false);
+
 
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -123,7 +154,7 @@ const StartGame = () => {
         players: sortPlayers,
         isStarted: true,
         finished: false,
-        HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks , price: hq.price, tiles: hq.tiles})),
+        HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks , price: hq.price, tiles: hq.tiles, color: hq.color})),
         turnCounter: 0,
       };
 
@@ -240,8 +271,21 @@ const StartGame = () => {
     // Simple placeholders for buy/sell stock logic:
     if (option === 'buy') {
       // Implement buy logic here
-    } else if (option === 'sell') {
+      alert('buy');
+
+    } 
+
+    else if (option === 'sell') {
       // Implement sell logic here
+  
+      alert('sell');
+
+    }
+
+    else if (option === 'start hq') {
+      setStartHQ(true);
+      if (selectedHQ === null)
+        return;
     }
 
     // After the first "round" (for example), you might deal new tiles
@@ -250,7 +294,7 @@ const StartGame = () => {
       const newTiles = assignNewRandomTiles(1, newBoard);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
-
+ 
     // Advance the turn
     const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
     const newTurnCounter = nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
@@ -287,6 +331,100 @@ const StartGame = () => {
     }
   };
 
+  function getConnectedGrayTiles(board) {
+    const numRows = 9;
+    const numCols = 12;
+  
+    const visited = new Set();
+    const queue = [selectedTile];
+  
+    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
+    const rowColToIndex = (r, c) => r * numCols + c;
+  
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+  
+      const [row, col] = indexToRowCol(current);
+      const neighbors = [
+        [row - 1, col],
+        [row + 1, col],
+        [row, col - 1],
+        [row, col + 1],
+      ];
+  
+      for (let [nr, nc] of neighbors) {
+        if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
+          const neighborIndex = rowColToIndex(nr, nc);
+          // Only continue BFS if neighbor is "gray"
+          if (board[neighborIndex].color === 'gray') {
+            queue.push(neighborIndex);
+          }
+        }
+      }
+    }
+    return Array.from(visited);
+  }
+
+  const handleHQSelection = async (hqName) => {
+    try {
+      // 1) Find the chosen HQ object
+      const chosenHQ = HQS.find(hq => hq.name === hqName);
+      if (!chosenHQ) {
+        alert('No such HQ found');
+        return;
+      }
+  
+      // 2) BFS from the tile that was placed
+      const connectedTiles = getConnectedGrayTiles(board, selectedTile);
+  
+      // 3) Recolor them to chosen HQ color
+      const newBoard = [...board];
+      connectedTiles.forEach((index) => {
+        newBoard[index] = {
+          ...newBoard[index],
+          color: chosenHQ.color,
+        };
+      });
+  
+      // 4) Update HQ data: tile count, price, minus 1 stock
+      const newHQS = [...HQS];
+      const hqIndex = newHQS.findIndex(h => h.name === hqName);
+      newHQS[hqIndex].tiles += connectedTiles.length;
+      newHQS[hqIndex].price = 100 * newHQS[hqIndex].tiles; // sample formula
+      newHQS[hqIndex].stocks -= 1;
+  
+      // 5) Give the current player 1 free share
+      const newPlayers = [...players];
+      const currPlayer = { ...newPlayers[currentPlayerIndex] };
+      const playerHqIndex = currPlayer.headquarters.findIndex(h => h.name === hqName);
+      if (playerHqIndex !== -1) {
+        currPlayer.headquarters[playerHqIndex].stocks += 1;
+      }
+      newPlayers[currentPlayerIndex] = currPlayer;
+  
+      // 6) Write to Firestore
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        board: newBoard,
+        HQS: newHQS,
+        players: newPlayers,
+      });
+  
+      // 7) Update local state
+      setBoard(newBoard);
+      setHQS(newHQS);
+      setPlayers(newPlayers);
+  
+      // 8) Close the HQ modal
+      setStartHQ(false);
+      alert(`Started HQ ${hqName}!`);
+  
+    } catch (err) {
+      console.error('Error in handleHQSelection:', err);
+    }
+  };
   // -------------------------------
   // Rendering
   // -------------------------------
@@ -394,8 +532,29 @@ const StartGame = () => {
       {/* Options Overlay */}
       {showOptions && (
         <div className="options">
-          <button onClick={() => handleOptionClick('buy')}>Buy Stock</button>
-          <button onClick={() => handleOptionClick('sell')}>Sell Stock</button>
+          {HQS.some(hq => hq.tiles > 0) && (
+            <>
+              <button onClick={() => handleOptionClick('buy')}>Buy Stock</button>
+              <button onClick={() => handleOptionClick('sell')}>Sell Stock</button>
+            </>
+          )}
+          {checkStartHQ() && (
+            <>
+              <button onClick={() => handleOptionClick('start hq')}>Start HQ</button>
+            </>
+          )}
+          <button onClick={() => handleOptionClick('finish turn')}>finish turn</button>
+        </div>
+      )}
+      {startHQ && (
+        <div className="hq-modal">
+          <h3>Select an HQ to Start</h3>
+          {HQS.map((hq, index) => (
+            <button key={index} onClick={() => handleHQSelection(hq.name)}>
+              {hq.name}
+            </button>
+          ))}
+          <button onClick={() => setStartHQ(false)}>Cancel</button>
         </div>
       )}
     </div>
