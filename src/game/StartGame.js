@@ -76,6 +76,46 @@ const StartGame = () => {
         return false;
   }
 
+  const checkNeighborColor = () => {
+    let tileIndex = selectedTile;
+    const row = Math.floor(tileIndex / 12);
+    const col = tileIndex % 12;
+  
+    const directions = [
+      [-1, 0], // up
+      [1, 0],  // down
+      [0, -1], // left
+      [0, 1],  // right
+    ];
+  
+    const neighborColors = [];
+  
+    for (const [dr, dc] of directions) {
+      const r = row + dr;
+      const c = col + dc;
+      // check boundaries
+      if (r >= 0 && r < 9 && c >= 0 && c < 12) {
+        const neighborIndex = r * 12 + c;
+        const color = board[neighborIndex].color;
+        if (color !== 'white' && color !== 'gray') {
+          neighborColors.push(color);
+        }
+      }
+    }
+  
+    // Get unique colors
+    const uniqueColors = [...new Set(neighborColors)];
+    return uniqueColors;
+  };
+
+  const updateHQ = (hq, connectedTiles) => {
+    const newHQS = [...HQS];
+    const hqIndex = newHQS.findIndex(h => h.name === hq.name);
+    newHQS[hqIndex].tiles += connectedTiles.length;
+    newHQS[hqIndex].price = 100 * newHQS[hqIndex].tiles; // sample formula
+    return newHQS;
+  }
+
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
     { name: 'Sackson', stocks: 25, tiles: 0, price: 0, color:'red' },
@@ -289,8 +329,31 @@ const StartGame = () => {
       setStartHQ(true);
       if (selectedHQ === null)
         return;
-    }
+    }    
+    const connectedTiles = getConnectedGrayTiles(board, selectedTile);
+    const neighborColors = checkNeighborColor();
 
+      // Recolor all connected tiles to one color from the HQ colors
+    if (neighborColors.length === 1) {
+      const hqColors = HQS.map(hq => hq.color);
+      const selectedColor = hqColors.find(color => neighborColors.includes(color)) || 'gray';
+      if (selectedColor !== 'gray') {
+          connectedTiles.forEach((index) => {
+            newBoard[index] = {
+              ...newBoard[index],
+              color: selectedColor,
+            };
+          });
+
+          // Update HQ data: tile count and price
+          const newHQS = updateHQ(HQS.find(hq => hq.color === selectedColor), connectedTiles);
+          setHQS(newHQS);
+      }
+    }
+    else {
+      alert('Handel merge');
+    }
+    
     // After the first "round" (for example), you might deal new tiles
     // This is just example logic. Adjust to your actual rules:
     if (turnCounter >= 1) {
@@ -328,6 +391,7 @@ const StartGame = () => {
         players: updatedPlayers,
         currentPlayerIndex: nextPlayerIndex,
         turnCounter: newTurnCounter,
+        HQS: HQS,
       });
     } catch (err) {
       console.error('Error updating Firestore:', err);
