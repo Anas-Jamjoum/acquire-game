@@ -204,23 +204,20 @@ const StartGame = () => {
   const updateHQ = (hq, connectedTiles) => {
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === hq.name);
-    console.log(hq.name, 'before connectedTiles ', connectedTiles);
-    console.log(hq.name, 'before tiles ', newHQS[hqIndex].tiles);
-    newHQS[hqIndex].tiles += connectedTiles.length -1;
-    console.log(hq.name, newHQS[hqIndex].tiles);
-    newHQS[hqIndex].price = updateHQPrice(hq ,newHQS[hqIndex].tiles);
+    newHQS[hqIndex].tiles = [...new Set([...newHQS[hqIndex].tiles, ...connectedTiles])];
+    newHQS[hqIndex].price = updateHQPrice(hq, newHQS[hqIndex].tiles.length);
     return newHQS;
-  }
+  };
 
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
-    { name: 'Sackson', stocks: 25, tiles: 0, price: 0, color:'red' },
-    { name: 'Tower', stocks: 25, tiles: 0, price: 0, color:'yellow' },
-    { name: 'American', stocks: 25, tiles: 0, price: 0, color:'darkblue' },
-    { name: 'Festival', stocks: 25, tiles: 0, price: 0, color:'green' },
-    { name: 'WorldWide', stocks: 25, tiles: 0, price: 0, color:'purple' },
-    { name: 'Continental', stocks: 25, tiles: 0, price: 0, color:'blue' },
-    { name: 'Imperial', stocks: 25, tiles: 0, price: 0, color:'orange' },
+    { name: 'Sackson', stocks: 25, tiles: [], price: 0, color: 'red' },
+    { name: 'Tower', stocks: 25, tiles: [], price: 0, color: 'yellow' },
+    { name: 'American', stocks: 25, tiles: [], price: 0, color: 'darkblue' },
+    { name: 'Festival', stocks: 25, tiles: [], price: 0, color: 'green' },
+    { name: 'WorldWide', stocks: 25, tiles: [], price: 0, color: 'purple' },
+    { name: 'Continental', stocks: 25, tiles: [], price: 0, color: 'blue' },
+    { name: 'Imperial', stocks: 25, tiles: [], price: 0, color: 'orange' },
   ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -264,24 +261,24 @@ const StartGame = () => {
           return null;
         })
       );
-
+  
       // Filter out any null players
       const validPlayers = fetchedPlayers.filter(Boolean);
-
+  
       // Only proceed if at least 2 valid players exist
       if (validPlayers.length < 2) {
         console.error('Not enough players to start the game');
         return;
       }
-
+  
       // Shuffle them and assign tiles
       const shuffled = shufflePlayers(validPlayers);
       const newBoard = createInitialBoard();
-
+  
       assignInitialTiles(shuffled, newBoard);
-
-      const sortPlayers= sortPlayersbyTile(shuffled);
-
+  
+      const sortPlayers = sortPlayersbyTile(shuffled);
+  
       // Prepare initial game data
       const gameData = {
         board: newBoard,
@@ -290,13 +287,13 @@ const StartGame = () => {
         players: sortPlayers,
         isStarted: true,
         finished: false,
-        HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks , price: hq.price, tiles: hq.tiles, color: hq.color})),
+        HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks, price: hq.price, tiles: [], color: hq.color })),
         turnCounter: 0,
       };
-
+  
       // Set the data in 'startedGames' collection
       await setDoc(doc(db, 'startedGames', gameId), gameData);
-
+  
       // Mark the room as started
       await updateDoc(doc(db, 'rooms', gameId), {
         isStarted: true,
@@ -553,8 +550,8 @@ const StartGame = () => {
       // 4) Update HQ data: tile count, price, minus 1 stock
       const newHQS = [...HQS];
       const hqIndex = newHQS.findIndex(h => h.name === hqName);
-      newHQS[hqIndex].tiles += connectedTiles.length;
-      newHQS[hqIndex].price = updateHQPrice(chosenHQ, newHQS[hqIndex].tiles);
+      newHQS[hqIndex].tiles = [...new Set([...newHQS[hqIndex].tiles, ...connectedTiles])];
+      newHQS[hqIndex].price = updateHQPrice(chosenHQ, newHQS[hqIndex].tiles.length);
       newHQS[hqIndex].stocks -= 1;
   
       // 5) Give the current player 1 free share
@@ -580,7 +577,7 @@ const StartGame = () => {
       setPlayers(newPlayers);
   
       // 8) Close the HQ modal
-      setStartHQ(false);  
+      setStartHQ(false);
     } catch (err) {
       console.error('Error in handleHQSelection:', err);
     }
@@ -679,7 +676,7 @@ const StartGame = () => {
           <h3>Headquarters Stocks</h3>
           {HQS.map((hq, index) => (
             <div key={index} className="hq-stock">
-              {hq.name}: {hq.stocks} stocks ,price ${hq.price} each ,tiles: {hq.tiles}
+              {hq.name}: {hq.stocks} stocks ,price ${hq.price} each ,tiles: {hq.tiles.length}
             </div>
           ))}
         </div>
@@ -692,7 +689,7 @@ const StartGame = () => {
       {/* Options Overlay */}
       {showOptions && (
         <div className="options">
-          {HQS.some(hq => hq.tiles > 0) && (
+          {HQS.some(hq => hq.tiles.length > 0) && (
             <>
               <button onClick={() => handleOptionClick('buy')}>Buy Stock</button>
               <button onClick={() => handleOptionClick('sell')}>Sell Stock</button>
@@ -710,7 +707,7 @@ const StartGame = () => {
         <div className="hq-modal">
           <h3>Select an HQ to Start</h3>
           {HQS.map((hq, index) => (
-            hq.tiles === 0 && (
+            hq.tiles.length === 0 && (
               <button key={index} onClick={() => handleHQSelection(hq.name)}>
                 {hq.name}
               </button>
