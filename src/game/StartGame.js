@@ -112,7 +112,6 @@ const StartGame = () => {
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === hq.name);
     if (hq.name === 'Sackson' || hq.name === 'Tower') {
-      console.log('sackson or tower');
       if (tilesLenght === 2) {
         return newHQS[hqIndex].price = 200;
       }
@@ -142,7 +141,6 @@ const StartGame = () => {
       }
     }
     else if (hq.name === 'American' || hq.name === 'Festival' || hq.name === 'WorldWide') {
-      console.log('American or Festival or WorldWide');
       if (tilesLenght === 2) {
         return newHQS[hqIndex].price = 300;
       }
@@ -172,7 +170,6 @@ const StartGame = () => {
       }
     }
     else if (hq.name === 'Continental' || hq.name === 'Imperial') {
-      console.log('Continental or Imperial');
       if (tilesLenght === 2) {
         return newHQS[hqIndex].price = 400;
       }
@@ -201,15 +198,17 @@ const StartGame = () => {
         return newHQS[hqIndex].price = 1200;
       }
     }
-    return 123200;
+    return 404;
   }
 
   const updateHQ = (hq, connectedTiles) => {
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === hq.name);
-    newHQS[hqIndex].tiles += connectedTiles.length - 1;
+    console.log(hq.name, 'before connectedTiles ', connectedTiles);
+    console.log(hq.name, 'before tiles ', newHQS[hqIndex].tiles);
+    newHQS[hqIndex].tiles += connectedTiles.length -1;
+    console.log(hq.name, newHQS[hqIndex].tiles);
     newHQS[hqIndex].price = updateHQPrice(hq ,newHQS[hqIndex].tiles);
-    console.log(updateHQPrice(hq, newHQS[hqIndex].tiles), newHQS[hqIndex].tiles);
     return newHQS;
   }
 
@@ -429,7 +428,6 @@ const StartGame = () => {
     }    
     const connectedTiles = getConnectedGrayTiles(board, selectedTile);
     const neighborColors = checkNeighborColor();
-
       // Recolor all connected tiles to one color from the HQ colors
     if (neighborColors.length === 1) {
       const hqColors = HQS.map(hq => hq.color);
