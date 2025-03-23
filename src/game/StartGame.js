@@ -72,7 +72,7 @@ const StartGame = () => {
             }
           }
         }
-        return false;
+      return false;
   }
 
   const checkNeighborColor = () => {
@@ -107,93 +107,93 @@ const StartGame = () => {
     return uniqueColors;
   };
 
-  const updateHQPrice = (hq, tilesLenght) => {
+  const updateHQPrice = (hq, tilesLength) => {
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === hq.name);
     if (hq.name === 'Sackson' || hq.name === 'Tower') {
-      if (tilesLenght === 2) {
+      if (tilesLength === 2) {
         return newHQS[hqIndex].price = 200;
       }
-      else if (tilesLenght === 3) {
+      else if (tilesLength === 3) {
         return newHQS[hqIndex].price = 300;
       }
-      else if (tilesLenght === 4) {
+      else if (tilesLength === 4) {
         return newHQS[hqIndex].price = 400;
       }
-      else if (tilesLenght === 5) {
+      else if (tilesLength === 5) {
         return newHQS[hqIndex].price = 500;
       }
-      else if (tilesLenght >=6 && tilesLenght <= 10) {
+      else if (tilesLength >=6 && tilesLength <= 10) {
         return newHQS[hqIndex].price = 600;
       }
-      else if (tilesLenght >=11 && tilesLenght <= 20) {
+      else if (tilesLength >=11 && tilesLength <= 20) {
         return newHQS[hqIndex].price = 700;
       }
-      else if (tilesLenght >=21 && tilesLenght <= 30) {
+      else if (tilesLength >=21 && tilesLength <= 30) {
         return newHQS[hqIndex].price = 800;
       }
-      else if (tilesLenght >=31 && tilesLenght <= 40) {
+      else if (tilesLength >=31 && tilesLength <= 40) {
         return newHQS[hqIndex].price = 900;
       }
-      else if (tilesLenght >=41) {
+      else if (tilesLength >=41) {
         return newHQS[hqIndex].price = 1000;
       }
     }
     else if (hq.name === 'American' || hq.name === 'Festival' || hq.name === 'WorldWide') {
-      if (tilesLenght === 2) {
+      if (tilesLength === 2) {
         return newHQS[hqIndex].price = 300;
       }
-      else if (tilesLenght === 3) {
+      else if (tilesLength === 3) {
         return newHQS[hqIndex].price = 400;
       }
-      else if (tilesLenght === 4) {
+      else if (tilesLength === 4) {
         return newHQS[hqIndex].price = 500;
       }
-      else if (tilesLenght === 5) {
+      else if (tilesLength === 5) {
         return newHQS[hqIndex].price = 600;
       }
-      else if (tilesLenght >=6 && tilesLenght <= 10) {
+      else if (tilesLength >=6 && tilesLength <= 10) {
         return newHQS[hqIndex].price = 700;
       }
-      else if (tilesLenght >=11 && tilesLenght <= 20) {
+      else if (tilesLength >=11 && tilesLength <= 20) {
         return newHQS[hqIndex].price = 800;
       }
-      else if (tilesLenght >=21 && tilesLenght <= 30) {
+      else if (tilesLength >=21 && tilesLength <= 30) {
         return newHQS[hqIndex].price = 900;
       }
-      else if (tilesLenght >=31 && tilesLenght <= 40) {
+      else if (tilesLength >=31 && tilesLength <= 40) {
         return newHQS[hqIndex].price = 1000;
       }
-      else if (tilesLenght >=41) {
+      else if (tilesLength >=41) {
         return newHQS[hqIndex].price = 1100;
       }
     }
     else if (hq.name === 'Continental' || hq.name === 'Imperial') {
-      if (tilesLenght === 2) {
+      if (tilesLength === 2) {
         return newHQS[hqIndex].price = 400;
       }
-      else if (tilesLenght === 3) {
+      else if (tilesLength === 3) {
         return newHQS[hqIndex].price = 500;
       }
-      else if (tilesLenght === 4) {
+      else if (tilesLength === 4) {
         return newHQS[hqIndex].price = 600;
       }
-      else if (tilesLenght === 5) {
+      else if (tilesLength === 5) {
         return newHQS[hqIndex].price = 700;
       }
-      else if (tilesLenght >=6 && tilesLenght <= 10) {
+      else if (tilesLength >=6 && tilesLength <= 10) {
         return newHQS[hqIndex].price = 800;
       }
-      else if (tilesLenght >=11 && tilesLenght <= 20) {
+      else if (tilesLength >=11 && tilesLength <= 20) {
         return newHQS[hqIndex].price = 900;
       }
-      else if (tilesLenght >=21 && tilesLenght <= 30) {
+      else if (tilesLength >=21 && tilesLength <= 30) {
         return newHQS[hqIndex].price = 1000;
       }
-      else if (tilesLenght >=31 && tilesLenght <= 40) {
+      else if (tilesLength >=31 && tilesLength <= 40) {
         return newHQS[hqIndex].price = 1100;
       }
-      else if (tilesLenght >=41) {
+      else if (tilesLength >=41) {
         return newHQS[hqIndex].price = 1200;
       }
     }
