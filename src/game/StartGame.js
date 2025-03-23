@@ -68,7 +68,7 @@ const StartGame = () => {
           // check boundaries
           if (r >= 0 && r < 9 && c >= 0 && c < 12) {
             const neighborIndex = r * 12 + c;
-            if (board[neighborIndex].color === 'gray') {
+            if (board[neighborIndex].color === 'gray' && checkNeighborColor().length === 0) {
               return true; // Found an adjacent gray tile
             }
           }
@@ -108,11 +108,108 @@ const StartGame = () => {
     return uniqueColors;
   };
 
+  const updateHQPrice = (hq, tilesLenght) => {
+    const newHQS = [...HQS];
+    const hqIndex = newHQS.findIndex(h => h.name === hq.name);
+    if (hq.name === 'Sackson' || hq.name === 'Tower') {
+      console.log('sackson or tower');
+      if (tilesLenght === 2) {
+        return newHQS[hqIndex].price = 200;
+      }
+      else if (tilesLenght === 3) {
+        return newHQS[hqIndex].price = 300;
+      }
+      else if (tilesLenght === 4) {
+        return newHQS[hqIndex].price = 400;
+      }
+      else if (tilesLenght === 5) {
+        return newHQS[hqIndex].price = 500;
+      }
+      else if (tilesLenght >=6 && tilesLenght <= 10) {
+        return newHQS[hqIndex].price = 600;
+      }
+      else if (tilesLenght >=11 && tilesLenght <= 20) {
+        return newHQS[hqIndex].price = 700;
+      }
+      else if (tilesLenght >=21 && tilesLenght <= 30) {
+        return newHQS[hqIndex].price = 800;
+      }
+      else if (tilesLenght >=31 && tilesLenght <= 40) {
+        return newHQS[hqIndex].price = 900;
+      }
+      else if (tilesLenght >=41) {
+        return newHQS[hqIndex].price = 1000;
+      }
+    }
+    else if (hq.name === 'American' || hq.name === 'Festival' || hq.name === 'WorldWide') {
+      console.log('American or Festival or WorldWide');
+      if (tilesLenght === 2) {
+        return newHQS[hqIndex].price = 300;
+      }
+      else if (tilesLenght === 3) {
+        return newHQS[hqIndex].price = 400;
+      }
+      else if (tilesLenght === 4) {
+        return newHQS[hqIndex].price = 500;
+      }
+      else if (tilesLenght === 5) {
+        return newHQS[hqIndex].price = 600;
+      }
+      else if (tilesLenght >=6 && tilesLenght <= 10) {
+        return newHQS[hqIndex].price = 700;
+      }
+      else if (tilesLenght >=11 && tilesLenght <= 20) {
+        return newHQS[hqIndex].price = 800;
+      }
+      else if (tilesLenght >=21 && tilesLenght <= 30) {
+        return newHQS[hqIndex].price = 900;
+      }
+      else if (tilesLenght >=31 && tilesLenght <= 40) {
+        return newHQS[hqIndex].price = 1000;
+      }
+      else if (tilesLenght >=41) {
+        return newHQS[hqIndex].price = 1100;
+      }
+    }
+    else if (hq.name === 'Continental' || hq.name === 'Imperial') {
+      console.log('Continental or Imperial');
+      if (tilesLenght === 2) {
+        return newHQS[hqIndex].price = 400;
+      }
+      else if (tilesLenght === 3) {
+        return newHQS[hqIndex].price = 500;
+      }
+      else if (tilesLenght === 4) {
+        return newHQS[hqIndex].price = 600;
+      }
+      else if (tilesLenght === 5) {
+        return newHQS[hqIndex].price = 700;
+      }
+      else if (tilesLenght >=6 && tilesLenght <= 10) {
+        return newHQS[hqIndex].price = 800;
+      }
+      else if (tilesLenght >=11 && tilesLenght <= 20) {
+        return newHQS[hqIndex].price = 900;
+      }
+      else if (tilesLenght >=21 && tilesLenght <= 30) {
+        return newHQS[hqIndex].price = 1000;
+      }
+      else if (tilesLenght >=31 && tilesLenght <= 40) {
+        return newHQS[hqIndex].price = 1100;
+      }
+      else if (tilesLenght >=41) {
+        return newHQS[hqIndex].price = 1200;
+      }
+    }
+    return 123200;
+  }
+
   const updateHQ = (hq, connectedTiles) => {
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === hq.name);
-    newHQS[hqIndex].tiles += connectedTiles.length;
-    newHQS[hqIndex].price = 100 * newHQS[hqIndex].tiles; // sample formula
+    newHQS[hqIndex].tiles += connectedTiles.length - 1;
+    newHQS[hqIndex].price = updateHQPrice(hq ,newHQS[hqIndex].tiles);
+    console.log(updateHQPrice(hq, newHQS[hqIndex].tiles), newHQS[hqIndex].tiles);
     return newHQS;
   }
 
@@ -350,7 +447,7 @@ const StartGame = () => {
           setHQS(newHQS);
       }
     }
-    else {
+    else if(neighborColors.length > 1) {
       alert('Handel merge');
     }
     
@@ -459,7 +556,7 @@ const StartGame = () => {
       const newHQS = [...HQS];
       const hqIndex = newHQS.findIndex(h => h.name === hqName);
       newHQS[hqIndex].tiles += connectedTiles.length;
-      newHQS[hqIndex].price = 100 * newHQS[hqIndex].tiles; // sample formula
+      newHQS[hqIndex].price = updateHQPrice(chosenHQ, newHQS[hqIndex].tiles);
       newHQS[hqIndex].stocks -= 1;
   
       // 5) Give the current player 1 free share
@@ -485,9 +582,7 @@ const StartGame = () => {
       setPlayers(newPlayers);
   
       // 8) Close the HQ modal
-      setStartHQ(false);
-      alert(`Started HQ ${hqName}!`);
-  
+      setStartHQ(false);  
     } catch (err) {
       console.error('Error in handleHQSelection:', err);
     }
