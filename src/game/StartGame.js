@@ -254,11 +254,14 @@ const StartGame = () => {
     if (selectedTile == null) return;
 
     const newBoard = [...board];
-    newBoard[selectedTile] = {
-      ...newBoard[selectedTile],
-      color: 'gray',
-      used: true,
-    };
+
+    if (newBoard[selectedTile].color === 'white') {
+      newBoard[selectedTile] = {
+        ...newBoard[selectedTile],
+        color: 'gray',
+        used: true,
+      };
+    }
 
     // Copy players so we can modify
     const updatedPlayers = [...players];
@@ -550,9 +553,11 @@ const StartGame = () => {
         <div className="hq-modal">
           <h3>Select an HQ to Start</h3>
           {HQS.map((hq, index) => (
-            <button key={index} onClick={() => handleHQSelection(hq.name)}>
-              {hq.name}
-            </button>
+            hq.tiles === 0 && (
+              <button key={index} onClick={() => handleHQSelection(hq.name)}>
+                {hq.name}
+              </button>
+            )
           ))}
           <button onClick={() => setStartHQ(false)}>Cancel</button>
         </div>
