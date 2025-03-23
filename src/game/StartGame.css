@@ -177,7 +177,7 @@
   background-color: #ddd;
 }
 
-.hq-modal {
+.hq-modal, .buy-modal, .sell-modal {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -190,11 +190,11 @@
   z-index: 1000;
 }
 
-.hq-modal h3 {
+.hq-modal h3, .buy-modal h3, .sell-modal h3 {
   margin-bottom: 20px;
 }
 
-.hq-modal button {
+.hq-modal button, .buy-modal button, .sell-modal button {
   display: block;
   margin: 10px 0;
   padding: 10px 20px;
@@ -206,6 +206,13 @@
   cursor: pointer;
 }
 
-.hq-modal button:hover {
+.buy-modal select, .buy-modal input, .sell-modal input, .sell-modal select {
+  margin: 10px 0;
+  padding: 5px;
+  width: 60%;
+  box-sizing: border-box;
+}
+
+.hq-modal button:hover, .buy-modal button:hover, .sell-modal button:hover {
   background-color: #0056b3;
 }

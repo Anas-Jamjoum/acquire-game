@@ -31,7 +31,6 @@ const StartGame = () => {
   // Assign a single new tile to each player if they don't already have tiles
   const assignInitialTiles = (players, boardToUpdate) => {
     players.forEach((player, i) => {
-      player.symbol = i === 0 ? 'X' : 'O'; // Example symbols
       player.money = 6000; // Give each player a starting budget
       if (!player.tiles || player.tiles.length === 0) {
         let tile;
@@ -230,6 +229,14 @@ const StartGame = () => {
 
   const [startHQ, setStartHQ] = useState(false);
 
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [selectedHQToBuy, setSelectedHQToBuy] = useState(null);
+  const [buyAmount, setBuyAmount] = useState(0);
+  const [stocksBoughtThisTurn, setStocksBoughtThisTurn] = useState(0);
+
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [selectedHQToSell, setSelectedHQToSell] = useState(null);
+  const [sellAmount, setSellAmount] = useState(0);
 
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -406,16 +413,13 @@ const StartGame = () => {
 
     // Simple placeholders for buy/sell stock logic:
     if (option === 'buy') {
-      // Implement buy logic here
-      alert('buy');
-
+      setShowBuyModal(true);
+      return;
     } 
 
     else if (option === 'sell') {
-      // Implement sell logic here
-  
-      alert('sell');
-
+      setShowSellModal(true);
+      return;
     }
 
     else if (option === 'start hq') {
@@ -472,6 +476,7 @@ const StartGame = () => {
     setTurnCounter(newTurnCounter);
     setShowOptions(false);
     setSelectedTile(null);
+    setStocksBoughtThisTurn(0);
 
 
 
@@ -621,6 +626,93 @@ const StartGame = () => {
     navigate('/menu');
   };
 
+  const handleBuyStock = async () => {
+    if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) return;
+  
+    if (stocksBoughtThisTurn + buyAmount > 3) {
+      alert('You can only buy a total of 3 stocks per turn.');
+      return;
+    }
+  
+    const newHQS = [...HQS];
+    const hqIndex = newHQS.findIndex(h => h.name === selectedHQToBuy);
+    if (hqIndex === -1 || newHQS[hqIndex].stocks < buyAmount) {
+      alert('Not enough stocks available');
+      return;
+    }
+  
+    const updatedPlayers = [...players];
+    const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
+  
+    const totalCost = newHQS[hqIndex].price * buyAmount;
+    if (currPlayer.money < totalCost) {
+      alert('Not enough money');
+      return;
+    }
+  
+    currPlayer.money -= totalCost;
+    currPlayer.headquarters[hqIndex].stocks += buyAmount;
+    newHQS[hqIndex].stocks -= buyAmount;
+  
+    updatedPlayers[currentPlayerIndex] = currPlayer;
+  
+    // Persist to Firestore
+    try {
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        players: updatedPlayers,
+        HQS: newHQS,
+      });
+    } catch (err) {
+      console.error('Error updating Firestore:', err);
+    }
+  
+    setPlayers(updatedPlayers);
+    setHQS(newHQS);
+    setShowBuyModal(false);
+    setSelectedHQToBuy(null);
+    setBuyAmount(0);
+    setStocksBoughtThisTurn(stocksBoughtThisTurn + buyAmount);
+  };
+
+  const handleSellStock = async () => {
+    if (!selectedHQToSell || sellAmount <= 0 ) return;
+  
+    const newHQS = [...HQS];
+    const hqIndex = newHQS.findIndex(h => h.name === selectedHQToSell);
+  
+    const updatedPlayers = [...players];
+    const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
+    if (currPlayer.headquarters[hqIndex].stocks < sellAmount) {
+      alert('Not enough stocks to sell');
+      return;
+    }
+    const totalCost = newHQS[hqIndex].price * sellAmount;
+
+    currPlayer.money += totalCost/2;
+    currPlayer.headquarters[hqIndex].stocks -= sellAmount;
+    newHQS[hqIndex].stocks += sellAmount;
+  
+    updatedPlayers[currentPlayerIndex] = currPlayer;
+  
+    // Persist to Firestore
+    try {
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        players: updatedPlayers,
+        HQS: newHQS,
+      });
+    } catch (err) {
+      console.error('Error updating Firestore:', err);
+    }
+  
+    setPlayers(updatedPlayers);
+    setHQS(newHQS);
+    setShowSellModal(false);
+    setSelectedHQToSell(null);
+    setSellAmount(0);
+  };
+
   return (
     <div className="game">
       <div className="turn-counter">Turn: {turnCounter}</div>
@@ -700,7 +792,7 @@ const StartGame = () => {
               <button onClick={() => handleOptionClick('start hq')}>Start HQ</button>
             </>
           )}
-          <button onClick={() => handleOptionClick('finish turn')}>finish turn</button>
+          <button onClick={() => handleOptionClick('finish turn')}>Finish Turn</button>
         </div>
       )}
       {startHQ && (
@@ -716,6 +808,54 @@ const StartGame = () => {
           <button onClick={() => setStartHQ(false)}>Cancel</button>
         </div>
       )}
+      {showBuyModal && (
+      <div className="buy-modal">
+        <h3>Buy Stocks</h3>
+        <select onChange={(e) => setSelectedHQToBuy(e.target.value)} value={selectedHQToBuy}>
+          <option value="">Select HQ</option>
+          {HQS.map((hq, index) => (
+            hq.tiles.length > 0 &&
+              <option key={index} value={hq.name}>
+              {hq.name} - ${hq.price} per stock
+              </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          min="1"
+          value={buyAmount}
+          onChange={(e) => setBuyAmount(parseInt(e.target.value))}
+          placeholder="Amount"
+        />
+        <button onClick={handleBuyStock}>Buy</button>
+        <button onClick={() => setShowBuyModal(false)}>Cancel</button>
+      </div>
+    )}
+
+    {showSellModal && (
+      <div className="sell-modal">
+        <h3>Sell Stocks</h3>
+        <select onChange={(e) => setSelectedHQToSell(e.target.value)} value={selectedHQToSell}>
+          <option value="">Select HQ</option>
+          {players[currentPlayerIndex].headquarters
+            .filter(hq => hq.stocks > 0)
+            .map((hq, index) => (
+              <option key={index} value={hq.name}>
+                {hq.name} - ${HQS.find(h => h.name === hq.name).price} per stock
+              </option>
+            ))}
+        </select>
+        <input
+          type="number"
+          min="1"
+          value={sellAmount}
+          onChange={(e) => setSellAmount(parseInt(e.target.value))}
+          placeholder="Amount"
+        />
+        <button onClick={handleSellStock}>Sell</button>
+        <button onClick={() => setShowSellModal(false)}>Cancel</button>
+      </div>
+    )}
     </div>
   );
 };
