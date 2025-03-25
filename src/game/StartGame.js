@@ -238,6 +238,9 @@ const StartGame = () => {
   const [selectedHQToSell, setSelectedHQToSell] = useState(null);
   const [sellAmount, setSellAmount] = useState(0);
 
+  const [buyError, setBuyError] = useState('');
+  const [sellError, setSellError] = useState('');
+
   const { gameId } = useParams();
   const navigate = useNavigate();
 
@@ -627,17 +630,21 @@ const StartGame = () => {
   };
 
   const handleBuyStock = async () => {
-    if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) return;
+    setBuyError(''); // clear previous error
+    if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) {
+      setBuyError('Select an HQ and a valid amount (1–3)');
+      return;
+    }
   
     if (stocksBoughtThisTurn + buyAmount > 3) {
-      alert('You can only buy a total of 3 stocks per turn.');
+      setBuyError('You can only buy up to 3 stocks per turn.');
       return;
     }
   
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === selectedHQToBuy);
     if (hqIndex === -1 || newHQS[hqIndex].stocks < buyAmount) {
-      alert('Not enough stocks available');
+      setBuyError('Not enough stocks available.');
       return;
     }
   
@@ -646,7 +653,7 @@ const StartGame = () => {
   
     const totalCost = newHQS[hqIndex].price * buyAmount;
     if (currPlayer.money < totalCost) {
-      alert('Not enough money');
+      setBuyError('Not enough money to complete this purchase.');
       return;
     }
   
@@ -676,7 +683,12 @@ const StartGame = () => {
   };
 
   const handleSellStock = async () => {
-    if (!selectedHQToSell || sellAmount <= 0 ) return;
+    setSellError(''); // clear previous error
+
+    if (!selectedHQToSell || sellAmount <= 0 ) {
+      setSellError('Select an HQ and enter a valid amount to sell.');
+      return;
+    }
   
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex(h => h.name === selectedHQToSell);
@@ -684,7 +696,7 @@ const StartGame = () => {
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
     if (currPlayer.headquarters[hqIndex].stocks < sellAmount) {
-      alert('Not enough stocks to sell');
+      setSellError('You don’t have enough stocks to sell.');
       return;
     }
     const totalCost = newHQS[hqIndex].price * sellAmount;
@@ -809,27 +821,28 @@ const StartGame = () => {
         </div>
       )}
       {showBuyModal && (
-      <div className="buy-modal">
-        <h3>Buy Stocks</h3>
-        <select onChange={(e) => setSelectedHQToBuy(e.target.value)} value={selectedHQToBuy}>
-          <option value="">Select HQ</option>
-          {HQS.map((hq, index) => (
-            hq.tiles.length > 0 &&
+        <div className="buy-modal">
+          <h3>Buy Stocks</h3>
+          <select onChange={(e) => setSelectedHQToBuy(e.target.value)} value={selectedHQToBuy}>
+            <option value="">Select HQ</option>
+            {HQS.map((hq, index) => (
+              hq.tiles.length > 0 &&
               <option key={index} value={hq.name}>
-              {hq.name} - ${hq.price} per stock
+                {hq.name} - ${hq.price} per stock
               </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          min="1"
-          value={buyAmount}
-          onChange={(e) => setBuyAmount(parseInt(e.target.value))}
-          placeholder="Amount"
-        />
-        <button onClick={handleBuyStock}>Buy</button>
-        <button onClick={() => setShowBuyModal(false)}>Cancel</button>
-      </div>
+            ))}
+          </select>
+          <input
+            type="number"
+            min="1"
+            value={buyAmount}
+            onChange={(e) => setBuyAmount(parseInt(e.target.value))}
+            placeholder="Amount"
+          />
+          {buyError && <div className="error-message">{buyError}</div>}
+          <button onClick={handleBuyStock}>Buy</button>
+          <button onClick={() => setShowBuyModal(false)}>Cancel</button>
+        </div>
     )}
 
     {showSellModal && (
@@ -837,13 +850,12 @@ const StartGame = () => {
         <h3>Sell Stocks</h3>
         <select onChange={(e) => setSelectedHQToSell(e.target.value)} value={selectedHQToSell}>
           <option value="">Select HQ</option>
-          {players[currentPlayerIndex].headquarters
-            .filter(hq => hq.stocks > 0)
-            .map((hq, index) => (
-              <option key={index} value={hq.name}>
-                {hq.name} - ${HQS.find(h => h.name === hq.name).price} per stock
-              </option>
-            ))}
+          {HQS.map((hq, index) => (
+            hq.tiles.length > 0 &&
+            <option key={index} value={hq.name}>
+              {hq.name} - ${hq.price} per stock
+            </option>
+          ))}
         </select>
         <input
           type="number"
@@ -852,6 +864,7 @@ const StartGame = () => {
           onChange={(e) => setSellAmount(parseInt(e.target.value))}
           placeholder="Amount"
         />
+        {sellError && <div className="error-message">{sellError}</div>}
         <button onClick={handleSellStock}>Sell</button>
         <button onClick={() => setShowSellModal(false)}>Cancel</button>
       </div>

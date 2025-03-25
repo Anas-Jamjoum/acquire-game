@@ -216,3 +216,9 @@
 .hq-modal button:hover, .buy-modal button:hover, .sell-modal button:hover {
   background-color: #0056b3;
 }
+
+.error-message {
+  color: red;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
