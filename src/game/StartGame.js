@@ -209,6 +209,32 @@ const StartGame = () => {
     return newHQS;
   };
 
+  const handleMerge = (neighborColors, selectedTile) => { 
+      const mergingHQS = HQS.filter(hq=> neighborColors.includes(hq.color));
+      
+      console.log(mergingHQS);
+
+      const hqsWithMoreThan10Tiles = mergingHQS.filter(hq => hq.tiles.length > 10);
+
+      if (hqsWithMoreThan10Tiles.length >= 2) {
+        console.log('No Merge');
+        return false;
+      } else {
+        console.log('Merge');
+        mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
+        const firstTwoHQS = mergingHQS.slice(0, 2);
+        console.log('First two HQs with more than 10 tiles:', firstTwoHQS);
+        const smallerHQ = firstTwoHQS[0];
+        const largerHQ = firstTwoHQS[1];
+        console.log('Smaller HQ:', smallerHQ);
+        console.log('Larger HQ:', largerHQ);
+      }
+
+
+      console.log(mergingHQS);
+      return true;
+  }
+
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
     { name: 'Sackson', stocks: 25, tiles: [], price: 0, color: 'red' },
@@ -393,7 +419,6 @@ const StartGame = () => {
     }
     return newTiles;
   };
-
   const handleOptionClick = async (option) => {
     if (selectedTile == null) return;
 
@@ -450,9 +475,19 @@ const StartGame = () => {
           setHQS(newHQS);
       }
     }
+    // merge logic
     else if(neighborColors.length > 1) {
       console.log(neighborColors);
-      alert('Handel merge');
+      const mergeCheck = handleMerge(neighborColors, selectedTile);
+      if(!mergeCheck) {
+        newBoard[selectedTile] = {
+          ...newBoard[selectedTile],
+          color: 'black',
+        };
+      }
+      else {
+
+      }
     }
     
     // After the first "round" (for example), you might deal new tiles
@@ -872,6 +907,7 @@ const StartGame = () => {
       </div>
     )}
     </div>
+    
   );
 };
 
