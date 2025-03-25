@@ -67,7 +67,8 @@ const StartGame = () => {
           // check boundaries
           if (r >= 0 && r < 9 && c >= 0 && c < 12) {
             const neighborIndex = r * 12 + c;
-            if (board[neighborIndex].color === 'gray' && checkNeighborColor().length === 0) {
+            if (board[neighborIndex].color === 'gray' && checkNeighborColor().length === 0 && HQS.some(hq => hq.tiles.length === 0)
+            ) {
               return true; // Found an adjacent gray tile
             }
           }
@@ -450,6 +451,7 @@ const StartGame = () => {
       }
     }
     else if(neighborColors.length > 1) {
+      console.log(neighborColors);
       alert('Handel merge');
     }
     
