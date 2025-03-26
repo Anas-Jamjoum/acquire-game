@@ -424,6 +424,11 @@ const StartGame = () => {
     setMergeChoiceIndex(nextIndex);
   
     try {
+      if (nextIndex >= mergePlayersOrder.length) {
+        // We've finished every player's choice
+        endMergeProcess();
+        return;
+      }
       const gameDocRef = doc(db, 'startedGames', gameId);
       await updateDoc(gameDocRef, {
         players: players,
@@ -1188,7 +1193,7 @@ if (!mergeInProgress) {
     {/* MERGE-DECISION MODAL */}
     {mergeInProgress && currentSmallerHQ && (
       (() => {
-        const currentMergePlayer = players[mergeChoiceIndex] || {};
+        const currentMergePlayer = players[mergePlayersOrder[mergeChoiceIndex]] || {};
         console.log('currentMergePlayer:', currentMergePlayer);
         console.log('email:', userEmail);
         if (currentMergePlayer.email === userEmail) {
@@ -1201,9 +1206,12 @@ if (!mergeInProgress) {
           );
         } else {
           return (
+          <div className="waiting-overlay">
             <div className="waiting-message">
               Waiting for {currentMergePlayer.name} to decide...
             </div>
+          </div>
+
           );
         }
       })()
