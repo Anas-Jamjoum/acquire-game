@@ -257,6 +257,13 @@ const StartGame = () => {
   const [tieHQs, setTieHQs] = useState(null);
   const [showTieModal, setShowTieModal] = useState(false);
 
+  const [mergeInProgress, setMergeInProgress] = useState(false);
+  const [mergePlayersOrder, setMergePlayersOrder] = useState([]);
+  const [mergeChoiceIndex, setMergeChoiceIndex] = useState(0);
+
+  // Which HQ do we force everyone to sell/swap from?
+  const [currentSmallerHQ, setCurrentSmallerHQ] = useState(null);
+
 
   const handleMerge = (neighborColors, selectedTile) => {
     const mergingHQS = HQS.filter(hq => neighborColors.includes(hq.color));
@@ -287,7 +294,7 @@ const StartGame = () => {
     return true;
   };
 
-  const doMergeLogic = (smallerHQ, biggerHQ) => {
+  const doMergeLogic = async (smallerHQ, biggerHQ) => {
     console.log("Smaller HQ:", smallerHQ);
     console.log("Bigger HQ:", biggerHQ);
 
@@ -309,10 +316,158 @@ const StartGame = () => {
     }
     setPlayers(updatedPlayers);
 
-    
+  // 3) Pause normal gameplay and gather everyone
+  //    (starting with the same person who triggered the merge, i.e. currentPlayerIndex)
+  setMergeInProgress(true);
+  setCurrentSmallerHQ(smallerHQ);
+
+  // Build an array of player indices in normal turn order,
+  // starting with the player who triggered the merge:
+  const order = [];
+  for (let i = 0; i < updatedPlayers.length; i++) {
+    order.push((currentPlayerIndex + i) % updatedPlayers.length);
+  }
+  setMergePlayersOrder(order);
+  setMergeChoiceIndex(0);
+
+  // We end doMergeLogic here. The UI will show a modal for each player in turn.
+  // The game remains “paused” – we do NOT increment `currentPlayerIndex`.
 
     setIsMerging(false);
+
+    await updateDoc(doc(db, 'startedGames', gameId), {
+      mergeInProgress: true,
+      mergePlayersOrder: order,      // the array of player indices
+      mergeChoiceIndex: 0,
+      currentSmallerHQ: smallerHQ.name,
+    });
   };
+
+
+  const renderMergeDecision = () => {
+    // The array of players we are iterating over
+    const order = mergePlayersOrder;
+  
+    // If we've gone past the last player, we are done:
+    if (mergeChoiceIndex >= order.length) {
+      // End the merge process
+      endMergeProcess();
+      return null;
+    }
+  
+    // Which player's turn is it to decide?
+    const playerIndex = order[mergeChoiceIndex];
+    const player = players[playerIndex];
+  
+    // How many stocks do they own in the smaller HQ?
+    const smallerStocks = player.headquarters.find(h => h.name === currentSmallerHQ.name)?.stocks || 0;
+  
+    const handleSellAll = () => {
+      if (smallerStocks > 0) {
+        // Example: total money from selling is smallerStocks * half the smallerHQ price
+        const updatedPlayers = [...players];
+        updatedPlayers[playerIndex] = {
+          ...player,
+          money: player.money + (smallerStocks * currentSmallerHQ.price) / 2,
+          headquarters: player.headquarters.map(hq => {
+            if (hq.name === currentSmallerHQ.name) {
+              return { ...hq, stocks: 0 };
+            }
+            return hq;
+          })
+        };
+        setPlayers(updatedPlayers);
+      }
+  
+      goToNextMergePlayer();
+    };
+  
+    const handleSwapAll = () => {
+      if (smallerStocks > 0) {
+        // For example, you might do a 2:1 or 1:1 swap. Let's pretend 2 smaller = 1 bigger:
+        // We'll do: swapCount = floor(smallerStocks / 2)
+        const swapCount = Math.floor(smallerStocks / 2);
+  
+        const updatedPlayers = [...players];
+        const biggerStocksIndex = player.headquarters.findIndex(h => h.name === bigHQ.name);
+        updatedPlayers[playerIndex] = {
+          ...player,
+          headquarters: player.headquarters.map(hq => {
+            if (hq.name === currentSmallerHQ.name) {
+              return { ...hq, stocks: smallerStocks - (swapCount * 2) };
+            } else if (hq.name === bigHQ.name) {
+              return { ...hq, stocks: hq.stocks + swapCount };
+            }
+            return hq;
+          })
+        };
+  
+        setPlayers(updatedPlayers);
+      }
+  
+      goToNextMergePlayer();
+    };
+  
+    return (
+      <div>
+        <h3>{player.name}, you have {smallerStocks} stock(s) in {currentSmallerHQ.name}.</h3>
+        <p>What do you want to do with them?</p>
+        <button onClick={handleSellAll}>Sell All</button>
+        <button onClick={handleSwapAll}>Swap (2:1 example)</button>
+      </div>
+    );
+  };
+  
+
+  const goToNextMergePlayer = async () => {
+    const nextIndex = mergeChoiceIndex + 1;
+    setMergeChoiceIndex(nextIndex);
+  
+    try {
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        players: players,
+        HQS: HQS,
+        mergeChoiceIndex: nextIndex,
+      });
+    } catch (err) {
+      console.error('Failed to update Firestore for next merge player:', err);
+      // Optionally revert local state or handle error
+    }
+  };
+  
+  
+  const endMergeProcess = () => {
+    // We’ve finished every player’s choice
+    setMergeInProgress(false);
+    setMergePlayersOrder([]);
+    setMergeChoiceIndex(0);
+  
+    // Because doMergeLogic paused the game, we’re still on the same
+    // currentPlayerIndex. We can do any final logic, or let them
+    // continue their turn, etc.
+  
+    // Optionally, save the updated players to Firestore here
+    persistPlayersToFirestore();
+  };
+  
+  const persistPlayersToFirestore = async () => {
+    // Save updated players array (and any changed HQ data) to Firestore
+    try {
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      await updateDoc(gameDocRef, {
+        mergeInProgress: false,
+        mergePlayersOrder : [],
+        mergeChoiceIndex : 0,
+        currentSmallerHQ: null,
+        players: players,
+        HQS: HQS,
+      });
+    } catch (err) {
+      console.error('Error updating Firestore:', err);
+    }
+  };
+  
 
   const handleBiggerHQSelection = (bigger, smaller) => {
     setShowTieModal(false);
@@ -475,6 +630,14 @@ const StartGame = () => {
           setWinner(data.winner || null);
           setHQS(data.HQS || HQS);
           setTurnCounter(data.turnCounter || 0);
+
+          // Merge data
+          setMergeInProgress(data.mergeInProgress || false);
+          setMergePlayersOrder(data.mergePlayersOrder || []);
+          setMergeChoiceIndex(data.mergeChoiceIndex || 0);
+          // If you store the name of the smaller HQ in Firestore, then:
+          const smallerHQ = HQS.find(h => h.name === data.currentSmallerHQ);
+          setCurrentSmallerHQ(smallerHQ || null);
         }
       });
     };
@@ -517,6 +680,12 @@ const StartGame = () => {
     if (selectedTile == null) return;
 
     const newBoard = [...board];
+// Instead of always advancing, do:
+if (!mergeInProgress) {
+  const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  setCurrentPlayerIndex(nextPlayerIndex);
+  // also setTurnCounter logic as you do now
+}
 
     if (newBoard[selectedTile].color === 'white') {
       newBoard[selectedTile] = {
@@ -1014,6 +1183,31 @@ const StartGame = () => {
           </div>
         </>
       )}
+
+
+    {/* MERGE-DECISION MODAL */}
+    {mergeInProgress && currentSmallerHQ && (
+      (() => {
+        const currentMergePlayer = players[mergeChoiceIndex] || {};
+        console.log('currentMergePlayer:', currentMergePlayer);
+        console.log('email:', userEmail);
+        if (currentMergePlayer.email === userEmail) {
+          return (
+            <div className="hq-modal-overlay">
+              <div className="hq-modal">
+                {renderMergeDecision()}
+              </div>
+            </div>
+          );
+        } else {
+          return (
+            <div className="waiting-message">
+              Waiting for {currentMergePlayer.name} to decide...
+            </div>
+          );
+        }
+      })()
+    )}
     </div>
   );
 };
