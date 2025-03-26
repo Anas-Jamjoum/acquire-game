@@ -747,8 +747,12 @@ if (!mergeInProgress) {
     }
     else if(neighborColors.length > 1) {
       console.log(neighborColors);
-      handleMerge(neighborColors, selectedTile);
+      let checkMerge = handleMerge(neighborColors, selectedTile);
       alert('Handel merge');
+      if (checkMerge === true) {
+        // maybe delete this
+        return;
+      }
     }
     
     // After the first "round" (for example), you might deal new tiles
@@ -759,7 +763,7 @@ if (!mergeInProgress) {
     }
  
     // Advance the turn
-    const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
     const newTurnCounter = nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
 
     if (newTurnCounter === 1) {
@@ -778,7 +782,6 @@ if (!mergeInProgress) {
     setShowOptions(false);
     setSelectedTile(null);
     setStocksBoughtThisTurn(0);
-
 
 
     // Persist to Firestore
