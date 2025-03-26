@@ -1200,28 +1200,31 @@ console.log('Option: 2', currentPlayerIndex);
         <div>{renderStatus()}</div>
 
         {/* Players */}
-        <div className="players-info">
-          {players.map((player, index) => (
-            <div key={index} className="player">
-              {player.profilePic && (
-                <img
-                  src={images[player.profilePic]}
-                  alt={player.name}
-                  className="player-image"
-                />
-              )}
-              <div className="player-name">{player.name}</div>
-              <div className="player-money">Money: ${player.money}</div>
+          <div className="players-info">
+            {players.map((player, index) => (
+              <div key={index} className="player">
+                {player.profilePic && (
+            <img
+              src={images[player.profilePic]}
+              alt={player.name}
+              className="player-image"
+            />
+                )}
+                <div className="player-name">{player.name}</div>
+                <div className="player-money">Money: ${player.money}</div>
 
-              <div className="player-headquarters">
-                {player.headquarters?.map((hq, hqIndex) => (
-                  <div key={hqIndex} className="hq-stock">
-                    {hq.name}: {hq.stocks} stocks
-                  </div>
-                ))}
-              </div>
+                <div className="player-headquarters">
+                {player.headquarters?.map((hq, hqIndex) => {
+              const hqColor = HQS.find(h => h.name === hq.name)?.color || 'black';
+              return (
+                <div key={hqIndex} className="hq-stock">
+                  <span style={{ color: hqColor }}>■</span> {hq.name}: {hq.stocks} stocks
+                </div>
+              );
+            })}
+                </div>
 
-              {/* Current user's tiles */}
+                {/* Current user's tiles */}
               {player.email === userEmail && (
                 <div className="player-tiles">
                   <h4>Your Tiles:</h4>
@@ -1237,7 +1240,8 @@ console.log('Option: 2', currentPlayerIndex);
           <h3>Headquarters Stocks</h3>
           {HQS.map((hq, index) => (
             <div key={index} className="hq-stock">
-              {hq.name}: {hq.stocks} stocks ,price ${hq.price} each ,tiles: {hq.tiles.length}
+              <span style={{ color: hq.color }}>■</span> {hq.name}: 
+              {hq.stocks} stocks, ${hq.price} each, {hq.tiles.length} tiles
             </div>
           ))}
         </div>
