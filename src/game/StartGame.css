@@ -222,3 +222,30 @@
   margin-top: 5px;
   font-size: 0.9rem;
 }
+
+
+
+/* Example .hq-modal CSS */
+.hq-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 2px solid #666;
+  border-radius: 5px;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.hq-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+

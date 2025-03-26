@@ -209,31 +209,125 @@ const StartGame = () => {
     return newHQS;
   };
 
-  const handleMerge = (neighborColors, selectedTile) => { 
-      const mergingHQS = HQS.filter(hq=> neighborColors.includes(hq.color));
-      
-      console.log(mergingHQS);
+  const getTop2PlayersWithMostStocks = (hqName) => {
+    // Sort players based on their stock holdings in the specified HQ
+    const sortedPlayers = [...players].sort((a, b) => {
+      const aStocks = a.headquarters.find(hq => hq.name === hqName)?.stocks || 0;
+      const bStocks = b.headquarters.find(hq => hq.name === hqName)?.stocks || 0;
+      return bStocks - aStocks;
+    });
+  
+    // Return the top 2 players
+    return sortedPlayers.slice(0, 2);
+  };
 
-      const hqsWithMoreThan10Tiles = mergingHQS.filter(hq => hq.tiles.length > 10);
 
-      if (hqsWithMoreThan10Tiles.length >= 2) {
-        console.log('No Merge');
-        return false;
-      } else {
-        console.log('Merge');
-        mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
-        const firstTwoHQS = mergingHQS.slice(0, 2);
-        console.log('First two HQs with more than 10 tiles:', firstTwoHQS);
-        const smallerHQ = firstTwoHQS[0];
-        const largerHQ = firstTwoHQS[1];
-        console.log('Smaller HQ:', smallerHQ);
-        console.log('Larger HQ:', largerHQ);
+
+
+  const [showMergeModal, setShowMergeModal] = useState(false);
+  const [mergeOptions, setMergeOptions] = useState({ smallerHQ: null, largerHQ: null });
+  const [playersWithStocks, setPlayersWithStocks] = useState([]);
+
+  const handleSellOrSwap = (playerEmail, action) => {
+    const updatedPlayers = [...players];
+    const playerIndex = updatedPlayers.findIndex(player => player.email === playerEmail);
+    if (playerIndex !== -1) {
+      const player = updatedPlayers[playerIndex];
+      const smallerHQIndex = player.headquarters.findIndex(hq => hq.name === mergeOptions.smallerHQ.name);
+      const largerHQIndex = player.headquarters.findIndex(hq => hq.name === mergeOptions.largerHQ.name);
+  
+      if (action === 'sell') {
+        const stocksToSell = player.headquarters[smallerHQIndex].stocks;
+        player.money += stocksToSell * mergeOptions.smallerHQ.price / 2;
+        player.headquarters[smallerHQIndex].stocks = 0;
+      } else if (action === 'swap') {
+        const stocksToSwap = Math.floor(player.headquarters[smallerHQIndex].stocks / 2);
+        player.headquarters[smallerHQIndex].stocks -= stocksToSwap * 2;
+        player.headquarters[largerHQIndex].stocks += stocksToSwap;
       }
+  
+      updatedPlayers[playerIndex] = player;
+      setPlayers(updatedPlayers);
+    }
+  };
+
+  const [isMerging, setIsMerging] = useState(false);
+  const [bigHQ, setBigHQ] = useState(null);
+
+  const [tieHQs, setTieHQs] = useState(null);
+  const [showTieModal, setShowTieModal] = useState(false);
 
 
-      console.log(mergingHQS);
-      return true;
-  }
+  const handleMerge = (neighborColors, selectedTile) => {
+    const mergingHQS = HQS.filter(hq => neighborColors.includes(hq.color));
+    const hqsWithMoreThan10Tiles = mergingHQS.filter(hq => hq.tiles.length > 10);
+
+    if (hqsWithMoreThan10Tiles.length >= 2) {
+      console.log("No Merge");
+      return false;
+    }
+
+    console.log("Merge");
+    setIsMerging(true);
+
+    mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
+    const firstTwoHQS = mergingHQS.slice(0, 2);
+
+    // Check tie
+    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length) {
+      // Store them and open modal
+      setTieHQs(firstTwoHQS);
+      setShowTieModal(true);
+      return;
+    }
+
+    // Not a tie, proceed directly
+    let [smaller, bigger] = firstTwoHQS;
+    doMergeLogic(smaller, bigger);
+    return true;
+  };
+
+  const doMergeLogic = (smallerHQ, biggerHQ) => {
+    console.log("Smaller HQ:", smallerHQ);
+    console.log("Bigger HQ:", biggerHQ);
+
+    setBigHQ(biggerHQ);
+
+    // Stock bonus logic
+    const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
+    const firstPlayerBonus = smallerHQ.price * 10;
+    const secondPlayerBonus = smallerHQ.price * 5;
+
+    const updatedPlayers = [...players];
+    if (top2Players[0]) {
+      const idx = updatedPlayers.findIndex(p => p.email === top2Players[0].email);
+      if (idx !== -1) updatedPlayers[idx].money += firstPlayerBonus;
+    }
+    if (top2Players[1]) {
+      const idx = updatedPlayers.findIndex(p => p.email === top2Players[1].email);
+      if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
+    }
+    setPlayers(updatedPlayers);
+
+    
+
+    setIsMerging(false);
+  };
+
+  const handleBiggerHQSelection = (bigger, smaller) => {
+    setShowTieModal(false);
+    setTieHQs(null);
+    doMergeLogic(smaller, bigger);
+  };
+
+  const handleTieModalCancel = () => {
+    setShowTieModal(false);
+    setTieHQs(null);
+    setIsMerging(false);
+  };
+  
+
+
 
   const [board, setBoard] = useState(createInitialBoard());
   const [HQS, setHQS] = useState([
@@ -455,7 +549,8 @@ const StartGame = () => {
       setStartHQ(true);
       if (selectedHQ === null)
         return;
-    }    
+    }
+        
     const connectedTiles = getConnectedGrayTiles(board, selectedTile);
     const neighborColors = checkNeighborColor();
       // Recolor all connected tiles to one color from the HQ colors
@@ -473,21 +568,13 @@ const StartGame = () => {
           // Update HQ data: tile count and price
           const newHQS = updateHQ(HQS.find(hq => hq.color === selectedColor), connectedTiles);
           setHQS(newHQS);
-      }
-    }
-    // merge logic
-    else if(neighborColors.length > 1) {
-      console.log(neighborColors);
-      const mergeCheck = handleMerge(neighborColors, selectedTile);
-      if(!mergeCheck) {
-        newBoard[selectedTile] = {
-          ...newBoard[selectedTile],
-          color: 'black',
-        };
-      }
-      else {
 
       }
+    }
+    else if(neighborColors.length > 1) {
+      console.log(neighborColors);
+      handleMerge(neighborColors, selectedTile);
+      alert('Handel merge');
     }
     
     // After the first "round" (for example), you might deal new tiles
@@ -906,8 +993,28 @@ const StartGame = () => {
         <button onClick={() => setShowSellModal(false)}>Cancel</button>
       </div>
     )}
+
+
+{showTieModal && tieHQs && (
+        <>
+          {/* Optional overlay */}
+          <div className="hq-modal-overlay" onClick={handleTieModalCancel} />
+
+          <div className="hq-modal">
+            <h3>Both HQs have the same number of tiles!</h3>
+            <p>Which one should be considered the Bigger HQ?</p>
+
+            <button onClick={() => handleBiggerHQSelection(tieHQs[0], tieHQs[1])}>
+              {tieHQs[0].name}
+            </button>
+            <button onClick={() => handleBiggerHQSelection(tieHQs[1], tieHQs[0])}>
+              {tieHQs[1].name}
+            </button>
+            <button onClick={handleTieModalCancel}>Cancel</button>
+          </div>
+        </>
+      )}
     </div>
-    
   );
 };
 
