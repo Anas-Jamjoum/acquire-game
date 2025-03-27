@@ -282,3 +282,30 @@
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 9998; /* just behind .waiting-message */
 }
+
+
+
+.winner-overlay {
+  position: fixed;       /* stay in same spot even if user scrolls */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* Dark semi-transparent background over the entire screen */
+  background-color: rgba(0, 0, 0, 0.7);
+
+  /* Ensure this sits on top of other elements */
+  z-index: 9999;
+
+  /* Flexbox to center the text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Winner text styling */
+  color: white;
+  font-size: 3rem;       /* or bigger if you prefer */
+  font-weight: bold;
+  text-align: center;
+}

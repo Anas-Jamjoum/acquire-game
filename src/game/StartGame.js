@@ -48,6 +48,21 @@ const StartGame = () => {
     return players.sort((a, b) => a.tiles[0] - b.tiles[0]);
   }
 
+  const checkCanEnd = () => {
+    console.log('Checking if the game can end...');
+    
+    // Check if any HQ has more than 40 tiles
+    const hqWithMoreThan40Tiles = HQS.some(hq => hq.tiles.length > 40);
+  
+    if (hqWithMoreThan40Tiles) {
+      console.log('An HQ has more than 40 tiles. The game can end.');
+      return true; // Player can end the game
+    }
+  
+    console.log('No HQ has more than 40 tiles. The game cannot end.');
+    return false; // Player cannot end the game
+  };
+
   const checkStartHQ = () => {
     let tileIndex = selectedTile;
         // The board is 9 rows x 12 columns = 108 squares
@@ -860,6 +875,44 @@ const StartGame = () => {
   }, [gameId, userEmail]);
   
   
+  const checkForWinner = async (updatedPlayers, updatedHQS) => {
+    console.log('Checking for winner...');
+    // 1) Check the condition: "No tiles left" 
+    //    (assuming you have a helper for all unused tiles).
+    const unusedTiles = getAllUnusedTiles(); 
+    const noTilesLeft = (unusedTiles.length === 0);
+  
+    // 2) Check the condition: "All HQs have more than 10 tiles"
+    const allHqsOver10 = updatedHQS.every(hq => hq.tiles.length > 10);
+  
+    // If either condition is met, end the game and pick the winner
+    if (noTilesLeft || allHqsOver10) {
+      // 3) Find the single top-money player
+      let richest = updatedPlayers[0];
+      for (let i = 1; i < updatedPlayers.length; i++) {
+        if (updatedPlayers[i].money > richest.money) {
+          richest = updatedPlayers[i];
+        }
+      }
+  
+      const theWinner = richest.name; // or richest.email, etc.
+  
+      // 4) Store in local state so React knows the game is finished
+      setWinner(theWinner);
+  
+      // 5) Also persist to Firestore so that all clients see the game ended
+      try {
+        const gameDocRef = doc(db, 'startedGames', gameId);
+        await updateDoc(gameDocRef, {
+          winner: theWinner,
+        });
+      } catch (err) {
+        console.error('Error updating winner in Firestore:', err);
+      }
+    }
+  };
+  
+
   /**
    * handleRandomMove - If the player runs out of time, do something valid:
    * e.g. place a random tile from the player’s hand and then "finish turn."
@@ -926,7 +979,7 @@ const StartGame = () => {
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
     console.log('connectedTiles');
-    const connectedTiles = getConnectedGrayTiles(board, tileIndex);
+    const connectedTiles = getConnectedGrayTiles(newBoard, tileIndex);
     console.log('neighborColors');
     const neighborColors = checkNeighborColor(tileIndex);
       // Recolor all connected tiles to one color from the HQ colors
@@ -996,6 +1049,7 @@ const StartGame = () => {
     } catch (err) {
       console.error('Error updating Firestore:', err);
     }
+    checkForWinner(updatedPlayers, HQS);
   }
 
 
@@ -1150,6 +1204,30 @@ console.log('Option: 2', currentPlayerIndex);
       if (selectedHQ === null)
         return;
     }
+    else if (option === 'end game') {
+      let richest = updatedPlayers[0];
+      for (let i = 1; i < updatedPlayers.length; i++) {
+        if (updatedPlayers[i].money > richest.money) {
+          richest = updatedPlayers[i];
+        }
+      }
+  
+      const theWinner = richest.name; // or richest.email, etc.
+  
+      // 4) Store in local state so React knows the game is finished
+      setWinner(theWinner);
+      try {
+        const gameDocRef = doc(db, 'startedGames', gameId);
+        await updateDoc(gameDocRef, {
+          winner: theWinner,
+        });
+  
+      } catch (err) {
+        console.error('Error updating Firestore:', err);
+      }
+      return;
+    }
+
     console.log('Option: 5', currentPlayerIndex);
     if(isMerging)
       return;
@@ -1197,9 +1275,11 @@ console.log('Option: 2', currentPlayerIndex);
         turnCounter: newTurnCounter,
         HQS: HQS,
       });
+
     } catch (err) {
       console.error('Error updating Firestore:', err);
     }
+    checkForWinner(updatedPlayers, HQS);
   };
 
   function getConnectedGrayTiles(board) {
@@ -1326,7 +1406,7 @@ console.log('Option: 2', currentPlayerIndex);
     if (winner) {
       return `Winner: ${winner}`;
     }
-    return `Next player: ${players[currentPlayerIndex]?.name || 'Loading...'}`;
+    return `Current player turn: ${players[currentPlayerIndex]?.name || 'Loading...'} `;
   };
 
   const handleReturnHome = () => {
@@ -1441,7 +1521,6 @@ console.log('Option: 2', currentPlayerIndex);
   return (
     <div className="game">
       <div className="turn-counter">Turn: {turnCounter}</div>
-      {renderCountdown() /* show the countdown if it's your turn in online mode */}
       {/* Board */}
       <div className="game-board">
         {Array(9).fill().map((_, row) => (
@@ -1453,8 +1532,16 @@ console.log('Option: 2', currentPlayerIndex);
 
       {/* Game Info */}
       <div className="game-info">
-        <div>{renderStatus()}</div>
+        <div>{renderStatus()} {renderCountdown() /* show the countdown if it's your turn in online mode */}</div>
 
+        {winner && (
+  <div className="winner-overlay">
+    <div>
+      <h1>Winner: {winner}</h1>
+      <button onClick={handleReturnHome}>Return to Home</button>
+    </div>
+  </div>
+)}
         {/* Players */}
           <div className="players-info">
             {players.map((player, index) => (
@@ -1521,6 +1608,11 @@ console.log('Option: 2', currentPlayerIndex);
               <button onClick={() => handleOptionClick('start hq')}>Start HQ</button>
             </>
           )}
+          {checkCanEnd() && (
+            <>
+              <button onClick={() => handleOptionClick('end game')}>End Game</button>
+            </>
+            )}
           <button onClick={() => handleOptionClick('finish turn')}>Finish Turn</button>
         </div>
       )}
@@ -1634,7 +1726,6 @@ console.log('Option: 2', currentPlayerIndex);
               Waiting for {currentMergePlayer.name} to decide...
             </div>
           </div>
-
           );
         }
       })()
