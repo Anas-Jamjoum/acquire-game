@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../Firebase';
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
@@ -76,8 +76,7 @@ const StartGame = () => {
       return false;
   }
 
-  const checkNeighborColor = () => {
-    let tileIndex = selectedTile;
+  const checkNeighborColor = (tileIndex) => {
     const row = Math.floor(tileIndex / 12);
     const col = tileIndex % 12;
   
@@ -649,6 +648,7 @@ const StartGame = () => {
   const [selectedHQ, setSelectedHQ] = useState(null);
 
   const [startHQ, setStartHQ] = useState(false);
+  const [tilesAssignedThisTurn, setTilesAssignedThisTurn] = useState(false);
 
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [selectedHQToBuy, setSelectedHQToBuy] = useState(null);
@@ -661,6 +661,10 @@ const StartGame = () => {
 
   const [buyError, setBuyError] = useState('');
   const [sellError, setSellError] = useState('');
+
+  const [isOnlineMode, setIsOnlineMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const timerRef = useRef(null); // We'll keep a ref so we can clearInterval easily
 
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -720,6 +724,7 @@ const StartGame = () => {
         finished: false,
         HQS: HQS.map(hq => ({ name: hq.name, stocks: hq.stocks, price: hq.price, tiles: [], color: hq.color })),
         turnCounter: 0,
+        mode: roomData.mode,
       };
   
       // Set the data in 'startedGames' collection
@@ -737,7 +742,47 @@ const StartGame = () => {
   // -------------------------------
   // useEffect: Subscribe to game
   // -------------------------------
+
   useEffect(() => {
+    // Early return conditions
+    if (!isOnlineMode || 
+        !players[currentPlayerIndex] || 
+        players[currentPlayerIndex].email !== userEmail || 
+        winner || 
+        mergeInProgress) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+  
+    // Initialize timer only if not already running
+    if (!timerRef.current) {
+      setTimeLeft(30); // Reset to initial time
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+            handleRandomMove();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  
+    // Cleanup
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isOnlineMode, currentPlayerIndex, players, userEmail, winner, mergeInProgress,tilesAssignedThisTurn]);
+
+ useEffect(() => {
     const gameDocRef = doc(db, 'startedGames', gameId);
     const roomDocRef = doc(db, 'rooms', gameId);
 
@@ -765,16 +810,33 @@ const StartGame = () => {
         }
       }
 
+
       // Whether newly created or already existing, subscribe to changes
       unsubscribeGame = onSnapshot(gameDocRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data();
           setBoard(data.board || createInitialBoard());
           setPlayers(data.players || []);
-          setCurrentPlayerIndex(data.currentPlayerIndex || 0);
+          const newIndex = data.currentPlayerIndex || 0;
+
+          // Compare newIndex with the old value in currentPlayerIndexRef
+          if (newIndex !== currentPlayerIndex.current) {
+            setTilesAssignedThisTurn(false);
+          }
+      
+          // Now update local state, etc.
+          setCurrentPlayerIndex(newIndex);
           setWinner(data.winner || null);
           setHQS(data.HQS || HQS);
           setTurnCounter(data.turnCounter || 0);
+
+
+          if (data.mode === 'online') {
+            setIsOnlineMode(true);
+          }
+          else {
+            setIsOnlineMode(false);
+          }
 
           // Merge data
           setMergeInProgress(data.mergeInProgress || false);
@@ -787,6 +849,7 @@ const StartGame = () => {
       });
     };
 
+
     setupGameSubscription();
 
     return () => {
@@ -795,6 +858,159 @@ const StartGame = () => {
       }
     };
   }, [gameId, userEmail]);
+  
+  
+  /**
+   * handleRandomMove - If the player runs out of time, do something valid:
+   * e.g. place a random tile from the player’s hand and then "finish turn."
+   */
+  const handleRandomMove = () => {
+    console.log('Running random move for:', players[currentPlayerIndex]?.email);
+    const currPlayer = players[currentPlayerIndex];
+    if (!currPlayer) return;
+
+    // Example approach: if user has tiles, pick one at random, place it, then finish turn
+    if (currPlayer.tiles && currPlayer.tiles.length > 0) {
+      const randomTileIndex = Math.floor(Math.random() * currPlayer.tiles.length);
+      const tileToPlace = currPlayer.tiles[randomTileIndex];
+
+
+      // We'll forcibly place this tile on the board.
+      // Then let's just call handleOptionClick('finish turn') to wrap up.
+      // But we need to replicate some of the logic from handleTileClick or handleOptionClick.
+      // For simplicity, let's call handleOptionClick directly after setting the tile.
+      // Because setSelectedTile is async, we might want to do everything inline:
+
+      // You might do something simpler:
+      // * Place the tile as "gray" if it's white
+      // * Decrement from their hand
+      // * Then "finish turn"
+
+      // For demonstration, let's do a minimal approach:
+      setTimeout(() => {
+        console.log('Finishing turn after random move');
+        handleOptionClickRandom('finish turn', tileToPlace);
+      }, 0);
+    } else {
+      console.log('No tiles to place. Finishing turn.');
+      // No tiles? Just finish turn
+      handleOptionClickRandom('finish turn');
+    }
+  };
+
+
+  const handleOptionClickRandom =  (option, tileIndex) => {
+    console.log('random pick');
+    if (tileIndex == null) return;
+
+    console.log(option, tileIndex);
+
+    const newBoard = [...board];
+// Instead of always advancing, do:
+
+
+    if (newBoard[tileIndex].color === 'white') {
+      newBoard[tileIndex] = {
+        ...newBoard[tileIndex],
+        color: 'gray',
+        used: true,
+      };
+    }
+
+    // Copy players so we can modify
+    const updatedPlayers = [...players];
+    const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
+
+    // Remove the used tile from current player's hand
+    currPlayer.tiles = currPlayer.tiles.filter(t => t !== tileIndex);
+    updatedPlayers[currentPlayerIndex] = currPlayer;
+
+    console.log('connectedTiles');
+    const connectedTiles = getConnectedGrayTiles(board, tileIndex);
+    console.log('neighborColors');
+    const neighborColors = checkNeighborColor(tileIndex);
+      // Recolor all connected tiles to one color from the HQ colors
+    console.log('hqs');
+    if (neighborColors.length === 1) {
+      const hqColors = HQS.map(hq => hq.color);
+      const selectedColor = hqColors.find(color => neighborColors.includes(color)) || 'gray';
+      if (selectedColor !== 'gray') {
+          connectedTiles.forEach((index) => {
+            newBoard[index] = {
+              ...newBoard[index],
+              color: selectedColor,
+            };
+          });
+
+          // Update HQ data: tile count and price
+          const newHQS = updateHQ(HQS.find(hq => hq.color === selectedColor), connectedTiles);
+          setHQS(newHQS);
+
+      }
+    }
+
+    // After the first "round" (for example), you might deal new tiles
+    // This is just example logic. Adjust to your actual rules:
+    console.log('assignNewRandomTiles');
+    if (turnCounter >= 1) {
+      const newTiles = assignNewRandomTiles(1, newBoard);
+      updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
+    }
+ 
+    // Advance the turn
+    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    const newTurnCounter = nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
+
+    if (newTurnCounter === 1) {
+      for (let i = 0; i < players.length; i++) {
+        if (updatedPlayers[i].tiles.length === 0){
+            const newTiles = assignNewRandomTiles(6, newBoard);
+            updatedPlayers[i].tiles.push(...newTiles);
+        }
+      }
+    }
+    console.log('sets');
+
+    setBoard(newBoard);
+    setPlayers(updatedPlayers);
+    setCurrentPlayerIndex(nextPlayerIndex);
+    setTurnCounter(newTurnCounter);
+    setShowOptions(false);
+    setSelectedTile(null);
+    setStocksBoughtThisTurn(0);
+
+
+
+
+    // Persist to Firestore
+    try {
+      console.log('updateDoc');
+      const gameDocRef = doc(db, 'startedGames', gameId);
+      updateDoc(gameDocRef, {
+        board: newBoard,
+        players: updatedPlayers,
+        currentPlayerIndex: nextPlayerIndex,
+        turnCounter: newTurnCounter,
+        HQS: HQS,
+      });
+    } catch (err) {
+      console.error('Error updating Firestore:', err);
+    }
+  }
+
+
+  // ------------------------------------------------
+  // Render a countdown if `timeLeft` is set
+  // ------------------------------------------------
+  const renderCountdown = () => {
+    console.log('Render countdown:', timeLeft);
+    console.log('Countdown:', isOnlineMode && players[currentPlayerIndex]?.email === userEmail && timeLeft !== null);
+    if (isOnlineMode && players[currentPlayerIndex]?.email === userEmail && timeLeft !== null) {
+      return <div className="countdown">Time left: {timeLeft}s</div>;
+    }
+    return null;
+  };
+
 
   // -------------------------------
   // Tile Click / Option Handling
@@ -809,20 +1025,60 @@ const StartGame = () => {
     setShowOptions(true);
   };
 
-  const assignNewRandomTiles = (tilesToAssign, boardRef) => {
+  const getAllUnusedTiles = () => {
+    // Create a set of all tiles currently held by players
+    const playerTiles = new Set(players.flatMap(player => player.tiles));
+  
+    // Filter the board to find tiles that are not used and not held by any player
+    const unusedTiles = board.filter(tile => {
+      const tileIndex = board.indexOf(tile);
+      return tile.color === 'white' && !playerTiles.has(tileIndex);
+    });
+  
+    // Optionally log the unused tiles for debugging
+    console.log("Unused tiles:", unusedTiles);
+  
+    // Return the array of unused tiles
+    return unusedTiles;
+  };
+
+  const assignNewRandomTiles = (tilesToAssign) => {
+    // Get all unused tiles
+    const unusedTiles = getAllUnusedTiles();
+  
+    // Check if there are enough unused tiles to assign
+    if (unusedTiles.length === 0) {
+      console.log("No unused tiles available to assign.");
+      return [];
+    }
+  
     const newTiles = [];
     for (let i = 0; i < tilesToAssign; i++) {
-      let tile;
-      do {
-        tile = Math.floor(Math.random() * 108);
-      } while (boardRef[tile].used);
-      boardRef[tile].used = true;
-      newTiles.push(tile);
+      if (unusedTiles.length === 0) {
+        console.log("Ran out of unused tiles.");
+        break;
+      }
+  
+      // Randomly select a tile from the unused tiles
+      const randomIndex = Math.floor(Math.random() * unusedTiles.length);
+      const selectedTile = unusedTiles[randomIndex];
+  
+      // Mark the tile as used
+      selectedTile.used = true;
+  
+      // Add the tile index to the new tiles array
+      const tileIndex = board.indexOf(selectedTile);
+      newTiles.push(tileIndex);
+  
+      // Remove the selected tile from the unused tiles array
+      unusedTiles.splice(randomIndex, 1);
     }
+  
+    console.log("Assigned tiles:", newTiles);
     return newTiles;
   };
+
   const handleOptionClick = async (option) => {
-    console.log('Option: 1', currentPlayerIndex);
     if (selectedTile == null) return;
 
     const newBoard = [...board];
@@ -848,7 +1104,7 @@ console.log('Option: 2', currentPlayerIndex);
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
     const connectedTiles = getConnectedGrayTiles(board, selectedTile);
-    const neighborColors = checkNeighborColor();
+    const neighborColors = checkNeighborColor(selectedTile);
       // Recolor all connected tiles to one color from the HQ colors
     if (neighborColors.length === 1) {
       const hqColors = HQS.map(hq => hq.color);
@@ -1185,7 +1441,7 @@ console.log('Option: 2', currentPlayerIndex);
   return (
     <div className="game">
       <div className="turn-counter">Turn: {turnCounter}</div>
-
+      {renderCountdown() /* show the countdown if it's your turn in online mode */}
       {/* Board */}
       <div className="game-board">
         {Array(9).fill().map((_, row) => (
