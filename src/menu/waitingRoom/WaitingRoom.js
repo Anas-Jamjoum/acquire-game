@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db, auth } from '../../Firebase'; // Update the path to the correct location
-import { doc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayRemove, collection, getDocs, arrayUnion} from 'firebase/firestore';
 import './WaitingRoom.css'; // Import the CSS file for styling
 import images from '../dashboard/imageUtils'; // Import the images
 import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
@@ -151,6 +151,23 @@ const WaitingRoom = () => {
     });
   };
 
+  const handleAddBotPlayer = async () => {
+    const botsCollectionRef = collection(db, 'bots');
+    const botsSnapshot = await getDocs(botsCollectionRef);
+    const botsList = botsSnapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+    const availableBots = botsList.filter(bot => !playersData.some(player => player.email === bot.email));
+
+    if (availableBots.length > 0) {
+      const randomBot = availableBots[Math.floor(Math.random() * availableBots.length)];
+      const gameDocRef = doc(db, 'rooms', gameId);
+      await updateDoc(gameDocRef, {
+        players: arrayUnion({ email: randomBot.email}),
+      });
+      setPlayersData([...playersData, randomBot]); // Update local state with the new bot player
+    }
+  };
+  
+
   return (
     <div className="WaitingRoom">
       {kickedMessage && (
@@ -187,6 +204,11 @@ const WaitingRoom = () => {
                     )}
                   </div>
                 ))}
+                {gameData.host === userEmail && playersData.length < 4 && (
+  <button className="AddBotButton" onClick={handleAddBotPlayer}>
+    Add Bot Player
+  </button>
+)}
               </div>
               {gameData.players.length < gameData.maxPlayers ? (
                 <p>Waiting for more players to join...</p>
