@@ -660,7 +660,7 @@ const StartGame = () => {
 
   const [showOptions, setShowOptions] = useState(false);
   const [selectedTile, setSelectedTile] = useState(null);
-  const [selectedHQ, setSelectedHQ] = useState(null);
+  const [selectedHQ, _setSelectedHQ] = useState(null);
 
   const [startHQ, setStartHQ] = useState(false);
   const [tilesAssignedThisTurn, setTilesAssignedThisTurn] = useState(false);
@@ -758,11 +758,12 @@ const StartGame = () => {
   // useEffect: Subscribe to game
   // -------------------------------
 
+
+
   useEffect(() => {
     // Early return conditions
     if (!isOnlineMode || 
         !players[currentPlayerIndex] || 
-        players[currentPlayerIndex].email !== userEmail || 
         winner || 
         mergeInProgress) {
       if (timerRef.current) {
@@ -771,7 +772,20 @@ const StartGame = () => {
       }
       return;
     }
-  
+
+  // Check if it's a bot's turn
+  if (players[currentPlayerIndex].email.startsWith('bot')) {
+    console.log('Bot turn detected. Adding delay before making a move.');
+
+    // Add a delay before executing the bot's move
+    const botMoveTimeout = setTimeout(() => {
+      handleRandomMove();
+    }, 2000); // 2000ms = 2 seconds delay
+
+    // Cleanup timeout if the component unmounts or dependencies change
+    return () => clearTimeout(botMoveTimeout);
+  }
+
     // Initialize timer only if not already running
     if (!timerRef.current) {
       setTimeLeft(30); // Reset to initial time
