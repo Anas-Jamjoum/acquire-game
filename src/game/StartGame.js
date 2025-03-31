@@ -660,7 +660,6 @@ const StartGame = () => {
 
   const [showOptions, setShowOptions] = useState(false);
   const [selectedTile, setSelectedTile] = useState(null);
-  const [selectedHQ, _setSelectedHQ] = useState(null);
 
   const [startHQ, setStartHQ] = useState(false);
   const [tilesAssignedThisTurn, setTilesAssignedThisTurn] = useState(false);
@@ -1215,7 +1214,6 @@ console.log('Option: 2', currentPlayerIndex);
 
     else if (option === 'start hq') {
       setStartHQ(true);
-      if (selectedHQ === null)
         return;
     }
     else if (option === 'end game') {
