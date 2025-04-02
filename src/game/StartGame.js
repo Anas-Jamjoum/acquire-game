@@ -760,6 +760,20 @@ const StartGame = () => {
 
 
   useEffect(() => {
+
+      // Check if it's a bot's turn
+  if (players[currentPlayerIndex] && players[currentPlayerIndex].email.startsWith('bot')) {
+    console.log('Bot turn detected. Adding delay before making a move.');
+
+    // Add a delay before executing the bot's move
+    const botMoveTimeout = setTimeout(() => {
+      handleRandomMove();
+    }, 2000); // 2000ms = 2 seconds delay
+
+    // Cleanup timeout if the component unmounts or dependencies change
+    return () => clearTimeout(botMoveTimeout);
+  }
+
     // Early return conditions
     if (!isOnlineMode || 
         !players[currentPlayerIndex] || 
@@ -772,18 +786,6 @@ const StartGame = () => {
       return;
     }
 
-  // Check if it's a bot's turn
-  if (players[currentPlayerIndex].email.startsWith('bot')) {
-    console.log('Bot turn detected. Adding delay before making a move.');
-
-    // Add a delay before executing the bot's move
-    const botMoveTimeout = setTimeout(() => {
-      handleRandomMove();
-    }, 2000); // 2000ms = 2 seconds delay
-
-    // Cleanup timeout if the component unmounts or dependencies change
-    return () => clearTimeout(botMoveTimeout);
-  }
 
     // Initialize timer only if not already running
     if (!timerRef.current) {
@@ -995,9 +997,11 @@ const StartGame = () => {
     const connectedTiles = getConnectedGrayTiles(newBoard, tileIndex);
     console.log('neighborColors');
     const neighborColors = checkNeighborColor(tileIndex);
+    console.log('neighborColors', neighborColors);
       // Recolor all connected tiles to one color from the HQ colors
     console.log('hqs');
     if (neighborColors.length === 1) {
+      console.log('hqs neighborColors');
       const hqColors = HQS.map(hq => hq.color);
       const selectedColor = hqColors.find(color => neighborColors.includes(color)) || 'gray';
       if (selectedColor !== 'gray') {
@@ -1565,7 +1569,7 @@ console.log('Option: 2', currentPlayerIndex);
               className="player-image"
             />
                 )}
-                <div className="player-name">{player.name}</div>
+                <div className="player-name">{player.email.startsWith('bot') ? player.name + ' (Bot)' : player.name}</div>
                 <div className="player-money">Money: ${player.money}</div>
 
                 <div className="player-headquarters">

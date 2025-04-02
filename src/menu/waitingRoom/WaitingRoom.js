@@ -198,8 +198,9 @@ const WaitingRoom = () => {
                 {playersData.map((player, index) => (
                   <div key={index} className="PlayerCard">
                     <img src={images[player.profilePic]} alt={player.name} className="PlayerPic" />
-                    <p>{player.name}{player.email === gameData.host ? ' (Host)' : ''}</p>
-                    {gameData.host === userEmail && player.email !== gameData.host && (
+                    <p>
+                    {player.email.startsWith('bot') ? player.name + ' (Bot)' : player.name}                    {player.email === gameData.host ? ' (Host)' : ''}
+</p>                    {gameData.host === userEmail && player.email !== gameData.host && (
                       <button id="kickButton" onClick={() => handleRemovePlayer(player)}>Kick Player</button>
                     )}
                   </div>
