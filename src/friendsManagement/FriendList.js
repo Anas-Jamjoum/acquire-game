@@ -8,6 +8,11 @@ import {
   onSnapshot,
   arrayUnion,
   arrayRemove,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    limit,
 } from "firebase/firestore";
 import { MessageSquare, UserPlus, UserMinus, Check, X } from "lucide-react";
 import images from "../menu/dashboard/imageUtils"; // Import the images
@@ -23,8 +28,7 @@ const FriendList = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [chatWith, setChatWith] = useState(null);
-
-
+  const [unseenCounts, setUnseenCounts] = useState({});
 
   const user = auth.currentUser;
 
@@ -65,6 +69,53 @@ const FriendList = () => {
 
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    if (!user || friends.length === 0) return;
+  
+    const unsubscribes = [];
+  
+    friends.forEach((friend) => {
+      const chatId = [user.email, friend.email].sort().join("_");
+      const chatRef = doc(db, "chats", chatId);
+      const messagesRef = collection(db, "chats", chatId, "messages");
+  
+      const unsub = onSnapshot(messagesRef, async (snapshot) => {
+        if (chatWith === friend.email){
+            console.log("Chat is open, skipping unseen count update.");
+            return; // Skip if the chat is already open
+        }
+      
+        const chatSnap = await getDoc(chatRef);
+        const chatData = chatSnap.exists() ? chatSnap.data() : {};
+        const lastSeen = chatData?.lastSeen?.[user.email.split(".")[0]]?.com?.toMillis() || 0;
+        const now = Date.now();
+        const oneHourAgo = now - 60 * 60 * 1000;
+        
+        const unseen = snapshot.docs.filter((doc) => {
+          const ts = doc.data().timestamp?.toMillis();
+          return (
+            ts > lastSeen &&
+            ts > oneHourAgo &&
+            doc.data().from !== user.email
+          );
+        });
+        
+      
+        setUnseenCounts((prev) => ({
+          ...prev,
+          [friend.email]: unseen.length,
+        }));
+      });
+      
+  
+      unsubscribes.push(unsub);
+    });
+  
+    return () => unsubscribes.forEach((unsub) => unsub());
+  }, [user, friends]);
+  
+  
 
   const togglePanel = () => setIsOpen(!isOpen);
 
@@ -164,6 +215,7 @@ const FriendList = () => {
 
   const openChatWith = (email) => {
     setChatWith(email);
+    setUnseenCounts((prev) => ({ ...prev, [email]: 0 })); // Reset unseen count when opening chat
   };
   
 
@@ -188,7 +240,12 @@ const FriendList = () => {
                 <div className="friend-actions">
                 <button className="chat-action-btn" onClick={() => openChatWith(f.email)}>
   <MessageSquare size={16} />
+  {unseenCounts[f.email] > 0 && chatWith !== f.email && (
+  <span className="chat-unread-badge">{unseenCounts[f.email]}</span>
+)}
+
 </button>
+
 
 <button className="remove-action-btn" onClick={() => removeFriend(f.email)}>
   <UserMinus size={16} />

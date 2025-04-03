@@ -10,6 +10,8 @@ import {
   serverTimestamp,
     doc,
     getDoc,
+    setDoc,
+    updateDoc,
 } from "firebase/firestore";
 import "./FriendChat.css";
 import images from "../menu/dashboard/imageUtils"; // ✅ Adjust path if needed
@@ -29,14 +31,37 @@ const FriendChat = ({ friendEmail, onClose }) => {
   useEffect(() => {
     const msgRef = collection(db, "chats", chatId, "messages");
     const q = query(msgRef, orderBy("timestamp", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+  
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const msgs = snapshot.docs.map((doc) => doc.data());
       setMessages(msgs);
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  
+      const chatRef = doc(db, "chats", chatId);
+  
+      try {
+        const snap = await getDoc(chatRef);
+  
+        if (!snap.exists()) {
+          await setDoc(chatRef, {
+            lastSeen: {
+              [user.email]: new Date(), // fallback client timestamp
+            },
+          });
+        } else {
+          await updateDoc(chatRef, {
+            [`lastSeen.${user.email}`]: serverTimestamp(),
+          });
+        }
+      } catch (err) {
+        console.error("Error updating lastSeen:", err);
+      }
     });
-
+  
     return () => unsubscribe();
-  }, [chatId]);
+  }, [chatId, user.email]);
+  
+  
 
   useEffect(() => {
     const fetchProfiles = async () => {
