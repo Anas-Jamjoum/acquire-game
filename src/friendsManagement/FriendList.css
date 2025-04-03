@@ -98,3 +98,26 @@
     cursor: pointer;
   }
   
+  .friend-success-message {
+    background-color: #d1fae5;
+    color: #065f46;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  
+  .friend-error-message {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  
+  

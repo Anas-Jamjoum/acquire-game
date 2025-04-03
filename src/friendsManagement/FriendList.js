@@ -18,6 +18,10 @@ const FriendList = () => {
   const [friends, setFriends] = useState([]);
   const [pending, setPending] = useState([]);
   const [newFriend, setNewFriend] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -63,30 +67,44 @@ const FriendList = () => {
   const sendFriendRequest = async () => {
     const email = newFriend.trim().toLowerCase();
     if (!email || email === user.email) return;
-
-    const playerRef = doc(db, "players", email);
-    const playerSnap = await getDoc(playerRef);
-    if (!playerSnap.exists()) {
-      alert("User not found.");
-      return;
+  
+    try {
+      const playerRef = doc(db, "players", email);
+      const playerSnap = await getDoc(playerRef);
+  
+      if (!playerSnap.exists()) {
+        setErrorMessage("❌ User not found.");
+        setTimeout(() => setErrorMessage(""), 3000);
+        return;
+      }
+  
+      const receiverRef = doc(db, "friends", email);
+      const receiverSnap = await getDoc(receiverRef);
+  
+      if (!receiverSnap.exists()) {
+        await setDoc(receiverRef, {
+          friends: [],
+          pendingRequests: [user.email],
+        });
+      } else {
+        await updateDoc(receiverRef, {
+          pendingRequests: arrayUnion(user.email),
+        });
+      }
+  
+      setSuccessMessage("✔️ Friend request has been sent!");
+      setNewFriend("");
+  
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+    } catch (err) {
+      setErrorMessage("Something went wrong.");
+      setTimeout(() => setErrorMessage(""), 3000);
+      console.error(err);
     }
-
-    const receiverRef = doc(db, "friends", email);
-    const receiverSnap = await getDoc(receiverRef);
-    if (!receiverSnap.exists()) {
-      await setDoc(receiverRef, {
-        friends: [],
-        pendingRequests: [user.email],
-      });
-    } else {
-      await updateDoc(receiverRef, {
-        pendingRequests: arrayUnion(user.email),
-      });
-    }
-
-    alert("Friend request sent!");
-    setNewFriend("");
   };
+  
 
   const acceptFriendRequest = async (requesterEmail) => {
     const myRef = doc(db, "friends", user.email);
@@ -118,16 +136,27 @@ const FriendList = () => {
   };
 
   const removeFriend = async (friendEmail) => {
-    const myRef = doc(db, "friends", user.email);
-    await updateDoc(myRef, {
-      friends: arrayRemove(friendEmail),
-    });
-
-    const friendRef = doc(db, "friends", friendEmail);
-    await updateDoc(friendRef, {
-      friends: arrayRemove(user.email),
-    });
+    try {
+      const myRef = doc(db, "friends", user.email);
+      await updateDoc(myRef, {
+        friends: arrayRemove(friendEmail),
+      });
+  
+      const friendRef = doc(db, "friends", friendEmail);
+      await updateDoc(friendRef, {
+        friends: arrayRemove(user.email),
+      });
+  
+      setSuccessMessage("✅ Friend removed successfully!");
+  
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+    } catch (err) {
+      console.error("Error removing friend:", err);
+    }
   };
+  
 
   const chatWith = (email) => {
     alert(`Start chat with ${email}`);
@@ -200,6 +229,15 @@ const FriendList = () => {
           </div>
         </div>
       )}
+{successMessage && (
+  <div className="friend-success-message">{successMessage}</div>
+)}
+
+{errorMessage && (
+  <div className="friend-error-message">{errorMessage}</div>
+)}
+
+
     </div>
   );
 };
