@@ -5,6 +5,8 @@ import { doc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayRemove, collection,
 import './WaitingRoom.css'; // Import the CSS file for styling
 import images from '../dashboard/imageUtils'; // Import the images
 import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
+import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
+
 
 const WaitingRoom = () => {
   const { gameId } = useParams();
@@ -170,6 +172,7 @@ const WaitingRoom = () => {
 
   return (
     <div className="WaitingRoom">
+      <FriendList /> {/* Include the FriendList component here */}
       {kickedMessage && (
         <div className="KickedMessage">
           <p>{kickedMessage}</p>
