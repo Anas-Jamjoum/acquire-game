@@ -12,6 +12,8 @@ import {
 import { MessageSquare, UserPlus, UserMinus, Check, X } from "lucide-react";
 import images from "../menu/dashboard/imageUtils"; // Import the images
 import "./FriendList.css";
+import FriendChat from "./FriendChat";
+
 
 const FriendList = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +22,8 @@ const FriendList = () => {
   const [newFriend, setNewFriend] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [chatWith, setChatWith] = useState(null);
+
 
 
   const user = auth.currentUser;
@@ -158,9 +162,10 @@ const FriendList = () => {
   };
   
 
-  const chatWith = (email) => {
-    alert(`Start chat with ${email}`);
+  const openChatWith = (email) => {
+    setChatWith(email);
   };
+  
 
   return (
     <div className="friend-list-container">
@@ -181,9 +186,10 @@ const FriendList = () => {
                   <span>{f.name}</span>
                 </div>
                 <div className="friend-actions">
-                  <button onClick={() => chatWith(f.email)}>
-                    <MessageSquare size={16} />
-                  </button>
+                <button onClick={() => openChatWith(f.email)}>
+  <MessageSquare size={16} />
+</button>
+
                   <button onClick={() => removeFriend(f.email)}>
                     <UserMinus size={16} />
                   </button>
@@ -236,6 +242,14 @@ const FriendList = () => {
 {errorMessage && (
   <div className="friend-error-message">{errorMessage}</div>
 )}
+
+{chatWith && (
+  <FriendChat
+    friendEmail={chatWith}
+    onClose={() => setChatWith(null)}
+  />
+)}
+
 
 
     </div>

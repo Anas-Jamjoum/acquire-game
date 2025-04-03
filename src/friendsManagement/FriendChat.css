@@ -1,0 +1,109 @@
+.chat-container {
+    position: fixed;
+    bottom: 16px;
+    left: 344px; /* 👈 pushed to the right of friend list */
+    width: 300px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  
+  .chat-header {
+    padding: 4px;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  .chat-body {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+    max-height: 250px;
+  }
+  
+  .chat-message {
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    max-width: 80%;
+  }
+  
+  .from-me {
+    background: #d1fae5;
+    align-self: flex-end;
+    text-align: right;
+  }
+  
+  .from-them {
+    background: #f3f4f6;
+    align-self: flex-start;
+    text-align: left;
+  }
+  
+  .chat-input {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-top: 1px solid #eee;
+  }
+  
+  .chat-input input {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+  
+  .chat-input button {
+    padding: 6px 12px;
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .chat-header-pic {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: 8px;
+  }
+  
+  .chat-close-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .chat-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  
