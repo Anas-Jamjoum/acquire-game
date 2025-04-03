@@ -9,10 +9,6 @@ import {
   arrayUnion,
   arrayRemove,
     collection,
-    getDocs,
-    query,
-    orderBy,
-    limit,
 } from "firebase/firestore";
 import { MessageSquare, UserPlus, UserMinus, Check, X } from "lucide-react";
 import images from "../menu/dashboard/imageUtils"; // Import the images
@@ -236,30 +232,32 @@ const FriendList = () => {
         <div className="friend-panel">
           <h3 className="friend-panel-title">My Friends</h3>
 
-          <ul className="friend-list">
-            {friends.map((f) => (
-              <li key={f.email} className="friend-item">
-                <div className="friend-info">
-                  <img src={images[f.profilePic]} alt={f.name} className="friend-pic" />
-                  <span>{f.name}</span>
-                </div>
-                <div className="friend-actions">
-                <button className="chat-action-btn" onClick={() => openChatWith(f.email)}>
-  <MessageSquare size={16} />
-  {unseenCounts[f.email] > 0 && chatWith !== f.email && (
-  <span className="chat-unread-badge">{unseenCounts[f.email]}</span>
+          {friends.length === 0 ? (
+  <p className="friend-empty-message">You have no friends yet 😢</p>
+) : (
+  <ul className="friend-list">
+    {friends.map((f) => (
+      <li key={f.email} className="friend-item">
+        <div className="friend-info">
+          <img src={images[f.profilePic]} alt={f.name} className="friend-pic" />
+          <span>{f.name}</span>
+        </div>
+        <div className="friend-actions">
+          <button className="chat-action-btn" onClick={() => openChatWith(f.email)}>
+            <MessageSquare size={16} />
+            {unseenCounts[f.email] > 0 && chatWith !== f.email && (
+              <span className="chat-unread-badge">{unseenCounts[f.email]}</span>
+            )}
+          </button>
+          <button className="remove-action-btn" onClick={() => removeFriend(f.email)}>
+            <UserMinus size={16} />
+          </button>
+        </div>
+      </li>
+    ))}
+  </ul>
 )}
 
-</button>
-
-
-<button className="remove-action-btn" onClick={() => removeFriend(f.email)}>
-  <UserMinus size={16} />
-</button>
-                </div>
-              </li>
-            ))}
-          </ul>
 
           {pending.length > 0 && (
             <>
@@ -272,13 +270,14 @@ const FriendList = () => {
                       <span>{f.name}</span>
                     </div>
                     <div className="friend-actions">
-                      <button onClick={() => acceptFriendRequest(f.email)}>
-                        <Check size={16} color="green" />
-                      </button>
-                      <button onClick={() => declineFriendRequest(f.email)}>
-                        <X size={16} color="red" />
-                      </button>
-                    </div>
+  <button className="accept-request-btn" onClick={() => acceptFriendRequest(f.email)}>
+    <Check size={16} color="green" />
+  </button>
+  <button className="decline-request-btn" onClick={() => declineFriendRequest(f.email)}>
+    <X size={16} color="red" />
+  </button>
+</div>
+
                   </li>
                 ))}
               </ul>
