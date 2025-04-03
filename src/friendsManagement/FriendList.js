@@ -217,13 +217,19 @@ const FriendList = () => {
     setChatWith(email);
     setUnseenCounts((prev) => ({ ...prev, [email]: 0 })); // Reset unseen count when opening chat
   };
-  
+
+  const totalUnseenMessages = Object.values(unseenCounts).reduce((sum, count) => sum + count, 0);
+
 
   return (
     <div className="friend-list-container">
       <button className="friend-toggle-button" onClick={togglePanel}>
         Friends
-        {pending.length > 0 && <span className="badge">{pending.length}</span>}
+{(pending.length > 0 || totalUnseenMessages > 0) && (
+  <span className="badge">
+    {pending.length + totalUnseenMessages}
+  </span>
+)}
       </button>
 
       {isOpen && (
