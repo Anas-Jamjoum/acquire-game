@@ -4,6 +4,7 @@ import { db , auth} from '../../Firebase'; // Update the path to the correct loc
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import images from './imageUtils'; // Import the images
 import ImageSelectionModal from './ImageSelectionModal';
+import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
 
 const Dashboard = () => {
     const [playerData, setPlayerData] = useState({ name: '', level: 0, profilePic: '' });
@@ -106,6 +107,7 @@ const Dashboard = () => {
           email={email}
           db={db}
         />
+        <FriendList />
       </div>
       );
     };

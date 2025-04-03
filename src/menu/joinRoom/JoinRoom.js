@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../../Firebase'; // Update the path to the correct location
 import { collection, doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
 import './JoinRoom.css'; // Import the CSS file for styling
+import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
+
 
 const JoinRoom = () => {
   const [rooms, setRooms] = useState([]);
@@ -102,6 +104,7 @@ const JoinRoom = () => {
 
   return (
     <div className="JoinRoom">
+      <FriendList /> {/* Include the FriendList component here */}
       <h1>Join a Room</h1>
       <input
         type="text"

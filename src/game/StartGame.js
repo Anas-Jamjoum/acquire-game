@@ -4,6 +4,8 @@ import { db, auth } from '../Firebase';
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import './StartGame.css';
 import images from '../menu/dashboard/imageUtils';
+import FriendList from '../friendsManagement/FriendList'; // Import the FriendList component
+
 
 const StartGame = () => {
   // -------------------------------
@@ -1536,6 +1538,7 @@ console.log('Option: 2', currentPlayerIndex);
 
   return (
     <div className="game">
+      <FriendList />
       <div className="turn-counter">Turn: {turnCounter}</div>
       {/* Board */}
       <div className="game-board">
