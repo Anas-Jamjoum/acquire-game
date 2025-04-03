@@ -120,4 +120,46 @@
     font-weight: 500;
   }
   
+  .chat-action-btn,
+.remove-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-action-btn:hover {
+  background-color: #e0f2fe; /* light blue */
+}
+
+.remove-action-btn:hover {
+  background-color: #fee2e2; /* light red */
+}
+
+.chat-action-btn:hover svg {
+    color: #2563eb; /* blue */
+  }
+  
+  .remove-action-btn:hover svg {
+    color: #dc2626; /* red */
+  }
+  
+  .send-request-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .send-request-btn:hover {
+    background-color: #dcfce7; /* light green */
+  }
+  
+  .send-request-btn:hover svg {
+    color: #16a34a; /* green-600 */
+  }
   

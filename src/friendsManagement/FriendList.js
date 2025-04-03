@@ -186,13 +186,13 @@ const FriendList = () => {
                   <span>{f.name}</span>
                 </div>
                 <div className="friend-actions">
-                <button onClick={() => openChatWith(f.email)}>
+                <button className="chat-action-btn" onClick={() => openChatWith(f.email)}>
   <MessageSquare size={16} />
 </button>
 
-                  <button onClick={() => removeFriend(f.email)}>
-                    <UserMinus size={16} />
-                  </button>
+<button className="remove-action-btn" onClick={() => removeFriend(f.email)}>
+  <UserMinus size={16} />
+</button>
                 </div>
               </li>
             ))}
@@ -229,9 +229,9 @@ const FriendList = () => {
               value={newFriend}
               onChange={(e) => setNewFriend(e.target.value)}
             />
-            <button onClick={sendFriendRequest}>
-              <UserPlus size={16} />
-            </button>
+<button className="send-request-btn" onClick={sendFriendRequest}>
+  <UserPlus size={16} />
+</button>
           </div>
         </div>
       )}
