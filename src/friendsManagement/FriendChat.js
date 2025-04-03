@@ -19,7 +19,8 @@ const FriendChat = ({ friendEmail, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const [friendInfo, setFriendInfo] = useState(null);
-
+  const [myInfo, setMyInfo] = useState(null);
+  
   const user = auth.currentUser;
   const scrollRef = useRef(null);
 
@@ -38,16 +39,22 @@ const FriendChat = ({ friendEmail, onClose }) => {
   }, [chatId]);
 
   useEffect(() => {
-    const fetchFriendInfo = async () => {
-      const ref = doc(db, "players", friendEmail);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        setFriendInfo(snap.data());
-      }
+    const fetchProfiles = async () => {
+      const friendRef = doc(db, "players", friendEmail);
+      const meRef = doc(db, "players", user.email);
+  
+      const [friendSnap, meSnap] = await Promise.all([
+        getDoc(friendRef),
+        getDoc(meRef),
+      ]);
+  
+      if (friendSnap.exists()) setFriendInfo(friendSnap.data());
+      if (meSnap.exists()) setMyInfo(meSnap.data());
     };
   
-    fetchFriendInfo();
-  }, [friendEmail]);
+    fetchProfiles();
+  }, [friendEmail, user.email]);
+  
   
 
   const sendMessage = async () => {
@@ -81,16 +88,32 @@ const FriendChat = ({ friendEmail, onClose }) => {
 </div>
 
       <div className="chat-body">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`chat-message ${
-              msg.from === user.email ? "from-me" : "from-them"
-            }`}
-          >
-            {msg.text}
-          </div>
-        ))}
+      {messages.map((msg, index) => {
+  const isMe = msg.from === user.email;
+  const senderInfo = isMe ? myInfo : friendInfo;
+
+  return (
+    <div
+      key={index}
+      className={`chat-message ${isMe ? "from-me" : "from-them"}`}
+    >
+      <div className="chat-message-meta">
+        {senderInfo && (
+          <>
+            <img
+              src={images[senderInfo.profilePic]}
+              alt={senderInfo.name}
+              className="chat-msg-pic"
+            />
+            <span className="chat-msg-name">{senderInfo.name}</span>
+          </>
+        )}
+      </div>
+      <div>{msg.text}</div>
+    </div>
+  );
+})}
+
         <div ref={scrollRef}></div>
       </div>
 
