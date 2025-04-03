@@ -1,70 +1,48 @@
-# Getting Started with Create React App
+# 🧠 Acquire Online
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Acquire Online** is a modern web-based version of the classic strategy board game *Acquire*. The project brings the traditional gameplay into an interactive, online environment with support for solo play (AI), real-time multiplayer, and asynchronous offline mode.
 
-## Available Scripts
+## 🎯 What is Acquire?
 
-In the project directory, you can run:
+*Acquire* is a strategy game focused on:
+- Buying and merging hotel chains (companies)
+- Investing in stocks
+- Earning profits through smart mergers and acquisitions
 
-### `npm start`
+The player with the most wealth at the end of the game wins by making clever business decisions.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🌐 About the Project
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Acquire Online is a **web app** that allows players to enjoy the game across devices directly from their browsers. It offers:
 
-### `npm test`
+- ✅ **Single-player** mode with AI bots
+- 👥 **Multiplayer** (Real-time or turn-based offline)
+- 💬 Built-in chat and friend list system
+- 📱 Cross-device support (Desktop, Tablet, Mobile)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🕹️ How to Play (Online)
 
-### `npm run build`
+1. **Log In / Sign Up:** Create your account or log in using your email.
+2. **Start a Game:**
+   - Choose between playing solo (vs AI) or with friends.
+   - Select the number of players (up to 4).
+3. **Gameplay:**
+   - On your turn, place a tile to expand or merge chains.
+   - Buy stocks in active hotel chains.
+   - Earn bonuses during mergers based on your shares.
+4. **Winning:** The game ends when the largest chains have merged. The player with the most money (cash + stocks) wins.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 💡 Key Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Smooth single and multiplayer experiences
+- Email notifications for offline games
+- Clean and responsive design for all screen sizes
+- Social features: friends list and in-game chat
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🌍 Requirements
 
-### `npm run eject`
+- Works on any modern browser (Chrome, Edge)
+- Internet connection required for multiplayer mode
+- No installation needed — just open and play!
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
