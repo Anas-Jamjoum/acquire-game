@@ -7,20 +7,16 @@ import images from "../menu/dashboard/imageUtils";
 import FriendList from "../friendsManagement/FriendList";
 
 const StartGame = () => {
-  // -------------------------------
-  // Helpers
-  // -------------------------------
-
   const getLabel = (row, col) => {
     const letters = "ABCDEFGHI";
-    return `${col + 1}${letters[row]}`; // e.g. "1A", "2B", etc.
+    return `${col + 1}${letters[row]}`;
   };
 
   const shufflePlayers = (players) => {
     return [...players].sort(() => Math.random() - 0.5);
   };
 
-  // Create a fresh board of 108 squares, each with a label, color, and used-flag
+
   const createInitialBoard = () => {
     return Array(108)
       .fill()
@@ -31,17 +27,16 @@ const StartGame = () => {
       }));
   };
 
-  // Assign a single new tile to each player if they don't already have tiles
+
   const assignInitialTiles = (players, boardToUpdate) => {
     players.forEach((player, i) => {
-      player.money = 6000; // Give each player a starting budget
+      player.money = 6000;
       if (!player.tiles || player.tiles.length === 0) {
         let tile;
         do {
           tile = Math.floor(Math.random() * 108);
         } while (boardToUpdate[tile].used);
         boardToUpdate[tile].used = true;
-        // Initialize tile array if not present
         player.tiles = [tile];
       }
     });
@@ -54,35 +49,32 @@ const StartGame = () => {
   const checkCanEnd = () => {
     console.log("Checking if the game can end...");
 
-    // Check if any HQ has more than 40 tiles
     const hqWithMoreThan40Tiles = HQS.some((hq) => hq.tiles.length > 40);
 
     if (hqWithMoreThan40Tiles) {
       console.log("An HQ has more than 40 tiles. The game can end.");
-      return true; // Player can end the game
+      return true;
     }
 
     console.log("No HQ has more than 40 tiles. The game cannot end.");
-    return false; // Player cannot end the game
+    return false;
   };
 
   const checkStartHQ = () => {
     let tileIndex = selectedTile;
-    // The board is 9 rows x 12 columns = 108 squares
     const row = Math.floor(tileIndex / 12);
     const col = tileIndex % 12;
 
     const directions = [
-      [-1, 0], // up
-      [1, 0], // down
-      [0, -1], // left
-      [0, 1], // right
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
     ];
 
     for (const [dr, dc] of directions) {
       const r = row + dr;
       const c = col + dc;
-      // check boundaries
       if (r >= 0 && r < 9 && c >= 0 && c < 12) {
         const neighborIndex = r * 12 + c;
         if (
@@ -90,7 +82,7 @@ const StartGame = () => {
           checkNeighborColor().length === 0 &&
           HQS.some((hq) => hq.tiles.length === 0)
         ) {
-          return true; // Found an adjacent gray tile
+          return true;
         }
       }
     }
@@ -102,10 +94,10 @@ const StartGame = () => {
     const col = tileIndex % 12;
 
     const directions = [
-      [-1, 0], // up
-      [1, 0], // down
-      [0, -1], // left
-      [0, 1], // right
+      [-1, 0], 
+      [1, 0],
+      [0, -1],
+      [0, 1],
     ];
 
     const neighborColors = [];
@@ -113,7 +105,6 @@ const StartGame = () => {
     for (const [dr, dc] of directions) {
       const r = row + dr;
       const c = col + dc;
-      // check boundaries
       if (r >= 0 && r < 9 && c >= 0 && c < 12) {
         const neighborIndex = r * 12 + c;
         const color = board[neighborIndex].color;
@@ -123,7 +114,6 @@ const StartGame = () => {
       }
     }
 
-    // Get unique colors
     const uniqueColors = [...new Set(neighborColors)];
     return uniqueColors;
   };
@@ -210,7 +200,6 @@ const StartGame = () => {
   };
 
   const getTop2PlayersWithMostStocks = (hqName) => {
-    // Sort players based on their stock holdings in the specified HQ
     const sortedPlayers = [...players].sort((a, b) => {
       const aStocks =
         a.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
@@ -219,7 +208,6 @@ const StartGame = () => {
       return bStocks - aStocks;
     });
 
-    // Return the top 2 players
     return sortedPlayers.slice(0, 2);
   };
 
@@ -233,7 +221,6 @@ const StartGame = () => {
   const [mergePlayersOrder, setMergePlayersOrder] = useState([]);
   const [mergeChoiceIndex, setMergeChoiceIndex] = useState(0);
 
-  // Which HQ do we force everyone to sell/swap from?
   const [currentSmallerHQ, setCurrentSmallerHQ] = useState(null);
 
   const handleMerge = (neighborColors, selectedTile) => {
@@ -293,16 +280,12 @@ const StartGame = () => {
     }
     setPlayers(updatedPlayers);
 
-    // 3) Pause normal gameplay and gather everyone
-    //    (starting with the same person who triggered the merge, i.e. currentPlayerIndex)
     setMergeInProgress(true);
     setCurrentSmallerHQ(smallerHQ);
 
-    // Build an array of player indices in normal turn order,
-    // starting with the player who triggered the merge:
+
     const smallerName = smallerHQ.name;
 
-    // 1) Gather all player indices who own smaller HQ shares
     let owners = [];
     for (let i = 0; i < updatedPlayers.length; i++) {
       const stocksInSmaller =
@@ -313,35 +296,26 @@ const StartGame = () => {
       }
     }
 
-    // 2) If we want to rotate this list so that `currentPlayerIndex` is first
-    // (only if that player is in `owners`):
     const startIndex = owners.indexOf(currentPlayerIndex);
     if (startIndex > 0) {
-      // Rotate the array so that `currentPlayerIndex` is front
-      // Example rotation approach:
+
       const front = owners.splice(0, startIndex);
       owners = [...owners, ...front];
     }
 
     if (owners.length === 0) {
-      // No players to merge, so end the merge process
       endMergeProcess();
       return;
     }
-    // 3) Now `owners` contains only the players who have smaller HQ stock,
-    // in the order starting from `currentPlayerIndex` (if they have shares).
-    // This becomes your mergePlayersOrder
+
     setMergePlayersOrder(owners);
     setMergeChoiceIndex(0);
-
-    // We end doMergeLogic here. The UI will show a modal for each player in turn.
-    // The game remains “paused” – we do NOT increment `currentPlayerIndex`.
 
     setIsMerging(false);
 
     await updateDoc(doc(db, "startedGames", gameId), {
       mergeInProgress: true,
-      mergePlayersOrder: owners, // the array of player indices
+      mergePlayersOrder: owners,
       mergeChoiceIndex: 0,
       currentSmallerHQ: smallerHQ.name,
       players: updatedPlayers,
@@ -351,28 +325,22 @@ const StartGame = () => {
   const [sellSwapAmount, setSellSwapAmount] = useState(0);
 
   const renderMergeDecision = () => {
-    // The array of players we are iterating over
     const order = mergePlayersOrder;
 
-    // If we've gone past the last player, we are done:
     if (mergeChoiceIndex >= order.length || order.length === 0) {
       console.log("All players have made their choice 222");
-      // End the merge process
       endMergeProcess();
       return null;
     }
 
-    // Which player's turn is it to decide?
     const playerIndex = order[mergeChoiceIndex];
     const player = players[playerIndex];
 
-    // How many stocks do they own in the smaller HQ?
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)
         ?.stocks || 0;
     console.log("Player:", player.name, "Stocks:", smallerStocks);
     if (smallerStocks === 0) {
-      // If they have no stocks left, move on
       goToNextMergePlayer();
       return;
     }
@@ -381,7 +349,6 @@ const StartGame = () => {
       if (sellSwapAmount <= 0) return;
       if (sellSwapAmount > smallerStocks) return;
 
-      // 1) Update the player's money & smaller HQ shares
       const updatedPlayers = [...players];
       const newMoney = player.money + sellSwapAmount * currentSmallerHQ.price;
       updatedPlayers[playerIndex] = {
@@ -400,30 +367,25 @@ const StartGame = () => {
 
       setPlayers(updatedPlayers);
 
-      // 2) Update global HQS pool:
       const newHQS = [...HQS];
       const smallHQIndex = newHQS.findIndex(
         (hq) => hq.name === currentSmallerHQ.name
       );
-      // e.g., each sold share goes back into the smaller HQ’s “pool”
       newHQS[smallHQIndex].stocks += sellSwapAmount;
 
       setHQS(newHQS);
 
-      // 3) Check if they still have shares left in the smaller HQ
       const stillHasStocks =
         updatedPlayers[playerIndex].headquarters.find(
           (h) => h.name === currentSmallerHQ.name
         )?.stocks || 0;
 
       if (stillHasStocks === 0) {
-        // Move on if they've sold everything
         goToNextMergePlayer();
       } else {
-        setSellSwapAmount(0); // reset input
+        setSellSwapAmount(0);
       }
 
-      // 4) Update Firestore
       persistGameToFirestore(updatedPlayers, newHQS);
     };
 
@@ -431,9 +393,9 @@ const StartGame = () => {
       if (sellSwapAmount <= 0) return;
       if (sellSwapAmount > smallerStocks) return;
 
-      // 2 smaller => 1 bigger example
+
       const swapCount = Math.floor(sellSwapAmount / 2);
-      if (swapCount <= 0) return; // not enough to do a swap
+      if (swapCount <= 0) return;
 
       const updatedPlayers = [...players];
       updatedPlayers[playerIndex] = {
@@ -456,23 +418,18 @@ const StartGame = () => {
 
       setPlayers(updatedPlayers);
 
-      // Also update the global HQS
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex(
         (hq) => hq.name === currentSmallerHQ.name
       );
       const bigIndex = newHQS.findIndex((hq) => hq.name === bigHQ.name);
 
-      // For each 2 smaller shares swapped, we put them “back” into smaller HQ’s pool
       newHQS[smallIndex].stocks += swapCount * 2;
 
-      // And remove 1 share from big HQ’s pool for each swap
-      // (assuming you need to have them in that HQ’s pool to give to the player)
       newHQS[bigIndex].stocks -= swapCount;
 
       setHQS(newHQS);
 
-      // Check if still has smaller HQ left
       const stillHasStocks =
         updatedPlayers[playerIndex].headquarters.find(
           (h) => h.name === currentSmallerHQ.name
@@ -514,7 +471,6 @@ const StartGame = () => {
       await updateDoc(gameDocRef, {
         players: updatedPlayers,
         HQS: updatedHQS,
-        // If you also want to store mergeChoiceIndex or other fields, do it here
       });
     } catch (err) {
       console.error("Error updating Firestore:", err);
@@ -529,7 +485,6 @@ const StartGame = () => {
 
     try {
       if (nextIndex >= mergePlayersOrder.length) {
-        // We've finished every player's choice
         console.log("All players have made their choice");
         endMergeProcess();
         return;
@@ -540,12 +495,10 @@ const StartGame = () => {
       });
     } catch (err) {
       console.error("Failed to update Firestore for next merge player:", err);
-      // Optionally revert local state or handle error
     }
   };
 
   const endMergeProcess = () => {
-    // 2) Absorb smaller HQ tiles into the bigger HQ
     const newHQS = [...HQS];
     const newBoard = [...board];
 
@@ -559,7 +512,6 @@ const StartGame = () => {
 
       console.log("Bigger:", biggerIndex, "Smaller:", smallerIndex);
       if (biggerIndex !== -1 && smallerIndex !== -1) {
-        // Merge all tiles from smaller HQ into bigger HQ
         newHQS[biggerIndex].tiles = [
           ...new Set([
             ...newHQS[biggerIndex].tiles,
@@ -573,15 +525,13 @@ const StartGame = () => {
           newHQS[biggerIndex].tiles.length
         );
 
-        // Optionally reset the smaller HQ to reflect that it has been "absorbed"
         newHQS[smallerIndex].tiles = [];
-        newHQS[smallerIndex].price = 0; // or some “defunct” marker, depending on your rules
-        newHQS[smallerIndex].stocks = 25; // or some “defunct” marker, depending on your rules
+        newHQS[smallerIndex].price = 0; 
+        newHQS[smallerIndex].stocks = 25;
       }
 
       if (smallerIndex !== -1 && biggerIndex !== -1) {
         const biggerTileIndices = HQS[biggerIndex].tiles;
-        // or newHQS[smallerIndex].tiles if you haven't reset them yet
         const biggerColor = newHQS[biggerIndex].color;
 
         biggerTileIndices.forEach((tileIndex) => {
@@ -602,13 +552,11 @@ const StartGame = () => {
 
     setMergeInProgress(false);
     setMergePlayersOrder([]);
-    // 3) Update local state
     persistPlayersToFirestore(newHQS, newBoard);
   };
 
   const persistPlayersToFirestore = async (newHQS, newBoard) => {
     console.log("Persisting players to Firestore:", players);
-    // Save updated players array (and any changed HQ data) to Firestore
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
       await updateDoc(gameDocRef, {
@@ -672,7 +620,7 @@ const StartGame = () => {
 
   const [isOnlineMode, setIsOnlineMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
-  const timerRef = useRef(null); // We'll keep a ref so we can clearInterval easily
+  const timerRef = useRef(null);
 
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -680,14 +628,9 @@ const StartGame = () => {
   const user = auth.currentUser;
   const userEmail = user?.email || "";
 
-  // -------------------------------
-  // Initialization function
-  // -------------------------------
-
   const initializeGame = async (roomData) => {
     try {
       const playersFromRoom = roomData.players || [];
-      // Fetch each player's doc from /players collection
       const fetchedPlayers = await Promise.all(
         playersFromRoom.map(async (p) => {
           const playerDocRef = doc(db, "players", p.email);
@@ -696,7 +639,6 @@ const StartGame = () => {
             return {
               ...snap.data(),
               email: p.email,
-              // Initialize HQS (stock holdings) and empty tile array
               headquarters: HQS.map((hq) => ({ name: hq.name, stocks: 0 })),
               tiles: [],
             };
@@ -705,16 +647,13 @@ const StartGame = () => {
         })
       );
 
-      // Filter out any null players
       const validPlayers = fetchedPlayers.filter(Boolean);
 
-      // Only proceed if at least 2 valid players exist
       if (validPlayers.length < 2) {
         console.error("Not enough players to start the game");
         return;
       }
 
-      // Shuffle them and assign tiles
       const shuffled = shufflePlayers(validPlayers);
       const newBoard = createInitialBoard();
 
@@ -722,7 +661,6 @@ const StartGame = () => {
 
       const sortPlayers = sortPlayersbyTile(shuffled);
 
-      // Prepare initial game data
       const gameData = {
         board: newBoard,
         currentPlayerIndex: 0,
@@ -741,10 +679,8 @@ const StartGame = () => {
         mode: roomData.mode,
       };
 
-      // Set the data in 'startedGames' collection
       await setDoc(doc(db, "startedGames", gameId), gameData);
 
-      // Mark the room as started
       await updateDoc(doc(db, "rooms", gameId), {
         isStarted: true,
       });
@@ -753,28 +689,21 @@ const StartGame = () => {
     }
   };
 
-  // -------------------------------
-  // useEffect: Subscribe to game
-  // -------------------------------
 
   useEffect(() => {
-    // Check if it's a bot's turn
     if (
       players[currentPlayerIndex] &&
       players[currentPlayerIndex].email.startsWith("bot")
     ) {
       console.log("Bot turn detected. Adding delay before making a move.");
 
-      // Add a delay before executing the bot's move
       const botMoveTimeout = setTimeout(() => {
         handleRandomMove();
-      }, 2000); // 2000ms = 2 seconds delay
+      }, 2000);
 
-      // Cleanup timeout if the component unmounts or dependencies change
       return () => clearTimeout(botMoveTimeout);
     }
 
-    // Early return conditions
     if (
       !isOnlineMode ||
       !players[currentPlayerIndex] ||
@@ -788,9 +717,8 @@ const StartGame = () => {
       return;
     }
 
-    // Initialize timer only if not already running
     if (!timerRef.current) {
-      setTimeLeft(30); // Reset to initial time
+      setTimeLeft(30); 
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -804,7 +732,6 @@ const StartGame = () => {
       }, 1000);
     }
 
-    // Cleanup
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -830,7 +757,6 @@ const StartGame = () => {
     const setupGameSubscription = async () => {
       const gameSnap = await getDoc(gameDocRef);
 
-      // If the game doesn't exist, check if I'm the host and initialize if so
       if (!gameSnap.exists()) {
         const roomSnap = await getDoc(roomDocRef);
         if (!roomSnap.exists()) {
@@ -840,7 +766,6 @@ const StartGame = () => {
 
         const roomData = roomSnap.data();
 
-        // Only the host can initialize
         if (roomData.host === userEmail) {
           console.log("You are the host. Initializing the game...");
           await initializeGame(roomData);
@@ -849,7 +774,6 @@ const StartGame = () => {
         }
       }
 
-      // Whether newly created or already existing, subscribe to changes
       unsubscribeGame = onSnapshot(gameDocRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data();
@@ -857,12 +781,10 @@ const StartGame = () => {
           setPlayers(data.players || []);
           const newIndex = data.currentPlayerIndex || 0;
 
-          // Compare newIndex with the old value in currentPlayerIndexRef
           if (newIndex !== currentPlayerIndex.current) {
             setTilesAssignedThisTurn(false);
           }
 
-          // Now update local state, etc.
           setCurrentPlayerIndex(newIndex);
           setWinner(data.winner || null);
           setHQS(data.HQS || HQS);
@@ -874,11 +796,9 @@ const StartGame = () => {
             setIsOnlineMode(false);
           }
 
-          // Merge data
           setMergeInProgress(data.mergeInProgress || false);
           setMergePlayersOrder(data.mergePlayersOrder || []);
           setMergeChoiceIndex(data.mergeChoiceIndex || 0);
-          // If you store the name of the smaller HQ in Firestore, then:
           const smallerHQ = HQS.find((h) => h.name === data.currentSmallerHQ);
           setCurrentSmallerHQ(smallerHQ || null);
         }
@@ -896,17 +816,13 @@ const StartGame = () => {
 
   const checkForWinner = async (updatedPlayers, updatedHQS) => {
     console.log("Checking for winner...");
-    // 1) Check the condition: "No tiles left"
-    //    (assuming you have a helper for all unused tiles).
+
     const unusedTiles = getAllUnusedTiles();
     const noTilesLeft = unusedTiles.length === 0;
 
-    // 2) Check the condition: "All HQs have more than 10 tiles"
     const allHqsOver10 = updatedHQS.every((hq) => hq.tiles.length > 10);
 
-    // If either condition is met, end the game and pick the winner
     if (noTilesLeft || allHqsOver10) {
-      // 3) Find the single top-money player
       let richest = updatedPlayers[0];
       for (let i = 1; i < updatedPlayers.length; i++) {
         if (updatedPlayers[i].money > richest.money) {
@@ -914,12 +830,10 @@ const StartGame = () => {
         }
       }
 
-      const theWinner = richest.name; // or richest.email, etc.
+      const theWinner = richest.name;
 
-      // 4) Store in local state so React knows the game is finished
       setWinner(theWinner);
 
-      // 5) Also persist to Firestore so that all clients see the game ended
       try {
         const gameDocRef = doc(db, "startedGames", gameId);
         await updateDoc(gameDocRef, {
@@ -931,40 +845,23 @@ const StartGame = () => {
     }
   };
 
-  /**
-   * handleRandomMove - If the player runs out of time, do something valid:
-   * e.g. place a random tile from the player’s hand and then "finish turn."
-   */
+
   const handleRandomMove = () => {
     const currPlayer = players[currentPlayerIndex];
     if (!currPlayer) return;
 
-    // Example approach: if user has tiles, pick one at random, place it, then finish turn
     if (currPlayer.tiles && currPlayer.tiles.length > 0) {
       const randomTileIndex = Math.floor(
         Math.random() * currPlayer.tiles.length
       );
       const tileToPlace = currPlayer.tiles[randomTileIndex];
 
-      // We'll forcibly place this tile on the board.
-      // Then let's just call handleOptionClick('finish turn') to wrap up.
-      // But we need to replicate some of the logic from handleTileClick or handleOptionClick.
-      // For simplicity, let's call handleOptionClick directly after setting the tile.
-      // Because setSelectedTile is async, we might want to do everything inline:
-
-      // You might do something simpler:
-      // * Place the tile as "gray" if it's white
-      // * Decrement from their hand
-      // * Then "finish turn"
-
-      // For demonstration, let's do a minimal approach:
       setTimeout(() => {
         console.log("Finishing turn after random move");
         handleOptionClickRandom("finish turn", tileToPlace);
       }, 0);
     } else {
       console.log("No tiles to place. Finishing turn.");
-      // No tiles? Just finish turn
       handleOptionClickRandom("finish turn");
     }
   };
@@ -1019,7 +916,6 @@ const StartGame = () => {
         updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
       }
   
-      // Advance the turn
       let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
       const newTurnCounter =
         nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
@@ -1057,9 +953,7 @@ const StartGame = () => {
     checkForWinner(updatedPlayers, HQS);
   };
 
-  // ------------------------------------------------
-  // Render a countdown if `timeLeft` is set
-  // ------------------------------------------------
+
   const renderCountdown = () => {
     if (
       isOnlineMode &&
@@ -1071,13 +965,9 @@ const StartGame = () => {
     return null;
   };
 
-  // -------------------------------
-  // Tile Click / Option Handling
-  // -------------------------------
 
   const handleTileClick = (tileIndex) => {
     if (winner) return;
-    // Ensure only current player can pick a tile
     if (players[currentPlayerIndex]?.email !== userEmail) return;
 
     setSelectedTile(tileIndex);
@@ -1085,10 +975,8 @@ const StartGame = () => {
   };
 
   const getAllUnusedTiles = () => {
-    // Create a set of all tiles currently held by players
     const playerTiles = new Set(players.flatMap((player) => player.tiles));
 
-    // Filter the board to find tiles that are not used and not held by any player
     const unusedTiles = board.filter((tile) => {
       const tileIndex = board.indexOf(tile);
       return tile.color === "white" && !playerTiles.has(tileIndex);
@@ -1098,10 +986,8 @@ const StartGame = () => {
   };
 
   const assignNewRandomTiles = (tilesToAssign) => {
-    // Get all unused tiles
     const unusedTiles = getAllUnusedTiles();
 
-    // Check if there are enough unused tiles to assign
     if (unusedTiles.length === 0) {
       console.log("No unused tiles available to assign.");
       return [];
@@ -1114,18 +1000,14 @@ const StartGame = () => {
         break;
       }
 
-      // Randomly select a tile from the unused tiles
       const randomIndex = Math.floor(Math.random() * unusedTiles.length);
       const selectedTile = unusedTiles[randomIndex];
 
-      // Mark the tile as used
       selectedTile.used = true;
 
-      // Add the tile index to the new tiles array
       const tileIndex = board.indexOf(selectedTile);
       newTiles.push(tileIndex);
 
-      // Remove the selected tile from the unused tiles array
       unusedTiles.splice(randomIndex, 1);
     }
 
@@ -1137,7 +1019,6 @@ const StartGame = () => {
     if (selectedTile == null) return;
 
     const newBoard = [...board];
-    // Instead of always advancing, do:
 
     console.log("Option: 2", currentPlayerIndex);
 
@@ -1150,17 +1031,15 @@ const StartGame = () => {
     }
     console.log("Option: 3", currentPlayerIndex);
 
-    // Copy players so we can modify
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
-    // Remove the used tile from current player's hand
     currPlayer.tiles = currPlayer.tiles.filter((t) => t !== selectedTile);
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
     const connectedTiles = getConnectedGrayTiles(board, selectedTile);
     const neighborColors = checkNeighborColor(selectedTile);
-    // Recolor all connected tiles to one color from the HQ colors
+
     if (neighborColors.length === 1) {
       const hqColors = HQS.map((hq) => hq.color);
       const selectedColor =
@@ -1173,7 +1052,6 @@ const StartGame = () => {
           };
         });
 
-        // Update HQ data: tile count and price
         const newHQS = updateHQ(
           HQS.find((hq) => hq.color === selectedColor),
           connectedTiles
@@ -1185,13 +1063,11 @@ const StartGame = () => {
       let checkMerge = handleMerge(neighborColors, selectedTile);
       alert("Handel merge");
       if (checkMerge === true) {
-        // maybe delete this
         return;
       }
     }
     console.log("Option: 4", currentPlayerIndex);
 
-    // Simple placeholders for buy/sell stock logic:
     if (option === "buy") {
       setShowBuyModal(true);
       return;
@@ -1209,9 +1085,8 @@ const StartGame = () => {
         }
       }
 
-      const theWinner = richest.name; // or richest.email, etc.
+      const theWinner = richest.name;
 
-      // 4) Store in local state so React knows the game is finished
       setWinner(theWinner);
       try {
         const gameDocRef = doc(db, "startedGames", gameId);
@@ -1227,14 +1102,12 @@ const StartGame = () => {
     console.log("Option: 5", currentPlayerIndex);
     if (isMerging) return;
 
-    // After the first "round" (for example), you might deal new tiles
-    // This is just example logic. Adjust to your actual rules:
+
     if (turnCounter >= 1) {
       const newTiles = assignNewRandomTiles(1, newBoard);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
 
-    // Advance the turn
     let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
     const newTurnCounter =
       nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
@@ -1259,7 +1132,6 @@ const StartGame = () => {
 
     console.log("Option: 7", currentPlayerIndex);
 
-    // Persist to Firestore
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
       await updateDoc(gameDocRef, {
@@ -1301,7 +1173,6 @@ const StartGame = () => {
       for (let [nr, nc] of neighbors) {
         if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
           const neighborIndex = rowColToIndex(nr, nc);
-          // Only continue BFS if neighbor is "gray"
           if (board[neighborIndex].color === "gray") {
             queue.push(neighborIndex);
           }
@@ -1313,17 +1184,14 @@ const StartGame = () => {
 
   const handleHQSelection = async (hqName) => {
     try {
-      // 1) Find the chosen HQ object
       const chosenHQ = HQS.find((hq) => hq.name === hqName);
       if (!chosenHQ) {
         alert("No such HQ found");
         return;
       }
 
-      // 2) BFS from the tile that was placed
       const connectedTiles = getConnectedGrayTiles(board, selectedTile);
 
-      // 3) Recolor them to chosen HQ color
       const newBoard = [...board];
       connectedTiles.forEach((index) => {
         newBoard[index] = {
@@ -1332,7 +1200,6 @@ const StartGame = () => {
         };
       });
 
-      // 4) Update HQ data: tile count, price, minus 1 stock
       const newHQS = [...HQS];
       const hqIndex = newHQS.findIndex((h) => h.name === hqName);
       newHQS[hqIndex].tiles = [
@@ -1344,7 +1211,6 @@ const StartGame = () => {
       );
       newHQS[hqIndex].stocks -= 1;
 
-      // 5) Give the current player 1 free share
       const newPlayers = [...players];
       const currPlayer = { ...newPlayers[currentPlayerIndex] };
       const playerHqIndex = currPlayer.headquarters.findIndex(
@@ -1355,7 +1221,6 @@ const StartGame = () => {
       }
       newPlayers[currentPlayerIndex] = currPlayer;
 
-      // 6) Write to Firestore
       const gameDocRef = doc(db, "startedGames", gameId);
       await updateDoc(gameDocRef, {
         board: newBoard,
@@ -1363,20 +1228,15 @@ const StartGame = () => {
         players: newPlayers,
       });
 
-      // 7) Update local state
       setBoard(newBoard);
       setHQS(newHQS);
       setPlayers(newPlayers);
 
-      // 8) Close the HQ modal
       setStartHQ(false);
     } catch (err) {
       console.error("Error in handleHQSelection:", err);
     }
   };
-  // -------------------------------
-  // Rendering
-  // -------------------------------
 
   const renderSquare = (index) => {
     return (
@@ -1417,7 +1277,7 @@ const StartGame = () => {
 
   const handleBuyStock = async () => {
     console.log("buy current player index", currentPlayerIndex);
-    setBuyError(""); // clear previous error
+    setBuyError("");
     if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) {
       setBuyError("Select an HQ and a valid amount (1–3)");
       return;
@@ -1454,7 +1314,7 @@ const StartGame = () => {
 
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
-    // Persist to Firestore
+
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
       await updateDoc(gameDocRef, {
@@ -1474,7 +1334,7 @@ const StartGame = () => {
   };
 
   const handleSellStock = async () => {
-    setSellError(""); // clear previous error
+    setSellError("");
 
     if (!selectedHQToSell || sellAmount <= 0) {
       setSellError("Select an HQ and enter a valid amount to sell.");
@@ -1502,7 +1362,6 @@ const StartGame = () => {
 
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
-    // Persist to Firestore
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
       await updateDoc(gameDocRef, {
@@ -1524,7 +1383,6 @@ const StartGame = () => {
     <div className="game">
       <FriendList />
       <div className="turn-counter">Turn: {turnCounter}</div>
-      {/* Board */}
       <div className="game-board">
         {Array(9)
           .fill()
@@ -1537,12 +1395,11 @@ const StartGame = () => {
           ))}
       </div>
 
-      {/* Game Info */}
       <div className="game-info">
         <div>
           {renderStatus()}{" "}
           {
-            renderCountdown() /* show the countdown if it's your turn in online mode */
+            renderCountdown()
           }
         </div>
 
@@ -1554,7 +1411,7 @@ const StartGame = () => {
             </div>
           </div>
         )}
-        {/* Players */}
+
         <div className="players-info">
           {players.map((player, index) => (
             <div key={index} className="player">
@@ -1585,7 +1442,6 @@ const StartGame = () => {
                 })}
               </div>
 
-              {/* Current user's tiles */}
               {player.email === userEmail && (
                 <div className="player-tiles">
                   <h4>Your Tiles:</h4>
@@ -1598,7 +1454,6 @@ const StartGame = () => {
           ))}
         </div>
 
-        {/* Global HQ Info */}
         <div className="hqs-info">
           <h3>Headquarters Stocks</h3>
           {HQS.map((hq, index) => (
@@ -1614,7 +1469,6 @@ const StartGame = () => {
         </button>
       </div>
 
-      {/* Options Overlay */}
       {showOptions && (
         <div className="options">
           {HQS.some((hq) => hq.tiles.length > 0) && (
@@ -1660,6 +1514,7 @@ const StartGame = () => {
           <button onClick={() => setStartHQ(false)}>Cancel</button>
         </div>
       )}
+
       {showBuyModal && (
         <div className="buy-modal">
           <h3>Buy Stocks</h3>
@@ -1722,7 +1577,6 @@ const StartGame = () => {
 
       {showTieModal && tieHQs && (
         <>
-          {/* Optional overlay */}
           <div className="hq-modal-overlay" onClick={handleTieModalCancel} />
 
           <div className="hq-modal">
@@ -1744,7 +1598,6 @@ const StartGame = () => {
         </>
       )}
 
-      {/* MERGE-DECISION MODAL */}
       {mergeInProgress &&
         currentSmallerHQ &&
         (() => {
