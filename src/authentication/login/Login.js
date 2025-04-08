@@ -25,7 +25,10 @@ const Login = () => {
       if (password === 'No Password') {
         setError('Please change your password.');
       } else {
-        navigate('/menu'); // Redirect to Menu component
+        if (user) {
+          setMessage('Login successful!');
+          navigate('/menu'); // Redirect to Menu component
+        }
       }
     } catch (err) {
       setError('Invalid email or password');
