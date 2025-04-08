@@ -936,7 +936,6 @@ const StartGame = () => {
    * e.g. place a random tile from the player’s hand and then "finish turn."
    */
   const handleRandomMove = () => {
-    console.log("Running random move for:", players[currentPlayerIndex]?.email, players[currentPlayerIndex].tiles);
     const currPlayer = players[currentPlayerIndex];
     if (!currPlayer) return;
 
@@ -971,7 +970,6 @@ const StartGame = () => {
   };
 
   const handleOptionClickRandom = (option, tileIndex) => {
-    console.log("random pick");
     if (tileIndex == null) return;
     const newBoard = [...board];
 
