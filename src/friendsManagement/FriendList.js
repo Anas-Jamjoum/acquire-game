@@ -117,7 +117,11 @@ const FriendList = () => {
 
   const sendFriendRequest = async () => {
     const email = newFriend.trim().toLowerCase();
-    if (!email || email === user.email) return;
+    if (!email || email === user.email) {
+      setErrorMessage("❌ Invalid email.");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
   
     try {
       const playerRef = doc(db, "players", email);
