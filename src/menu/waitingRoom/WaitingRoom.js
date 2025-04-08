@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { db, auth } from '../../Firebase'; // Update the path to the correct location
-import { doc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayRemove, collection, getDocs, arrayUnion} from 'firebase/firestore';
-import './WaitingRoom.css'; // Import the CSS file for styling
-import images from '../dashboard/imageUtils'; // Import the images
-import EditRoomDetails from './EditRoomDetails'; // Import the EditRoomDetails component
-import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
-
+import { db, auth } from '../../Firebase';
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  arrayRemove,
+  collection,
+  getDocs,
+  arrayUnion,
+} from 'firebase/firestore';
+import './WaitingRoom.css';
+import images from '../dashboard/imageUtils';
+import EditRoomDetails from './EditRoomDetails';
+import FriendList from '../../friendsManagement/FriendList';
 
 const WaitingRoom = () => {
   const { gameId } = useParams();
@@ -23,7 +32,7 @@ const WaitingRoom = () => {
       const playerDocRef = doc(db, 'players', email);
       const playerDoc = await getDoc(playerDocRef);
       if (playerDoc.exists()) {
-        return { ...playerDoc.data(), email }; // Include the email in the returned data
+        return { ...playerDoc.data(), email };
       } else {
         console.log('No such document!');
         return null;
@@ -41,16 +50,18 @@ const WaitingRoom = () => {
             setShowPopup(true);
             setTimeout(() => {
               navigate('/menu');
-            }, 3000); // Redirect after 3 seconds
+            }, 3000);
           }
 
           if (gameData.isStarted) {
-            navigate(`/start-game/${gameId}`, { state: { gameData } }); // Navigate to the new route when the game starts
+            navigate(`/start-game/${gameId}`, { state: { gameData } });
           }
 
-          const playersDataPromises = gameData.players.map(player => fetchPlayerData(player.email));
+          const playersDataPromises = gameData.players.map((player) =>
+            fetchPlayerData(player.email)
+          );
           const playersData = await Promise.all(playersDataPromises);
-          setPlayersData(playersData.filter(player => player !== null));
+          setPlayersData(playersData.filter((player) => player !== null));
         } else {
           console.log('No such document!');
         }
@@ -79,25 +90,23 @@ const WaitingRoom = () => {
               kickedMessage: '',
             });
             navigate('/menu');
-          }, 1000); // Redirect after 3 seconds
-
+          }, 1000);
         }
       }
     };
 
-    const intervalId = setInterval(checkKickedStatus, 1000); // Check every 5 seconds
+    const intervalId = setInterval(checkKickedStatus, 1000);
 
-    return () => clearInterval(intervalId); // Clear interval on component unmount
+    return () => clearInterval(intervalId);
   }, [navigate]);
 
   const handleStartGame = async () => {
     if (gameData && gameData.host === userEmail) {
-      // Start the game (e.g., update the game status to 'started')
       const gameDocRef = doc(db, 'rooms', gameId);
       await updateDoc(gameDocRef, {
-        isStarted: true
+        isStarted: true,
       });
-      navigate(`/start-game/${gameId}`); // Navigate to the new route
+      navigate(`/start-game/${gameId}`);
     } else {
       alert('Only the host can start the game.');
     }
@@ -106,21 +115,21 @@ const WaitingRoom = () => {
   const handleLeaveRoom = async () => {
     const gameDocRef = doc(db, 'rooms', gameId);
     if (gameData.host === userEmail) {
-      // If the user is the host, mark the room as closed and delete the room
       await updateDoc(gameDocRef, {
-        isClosed: true
+        isClosed: true,
       });
       setShowPopup(true);
       setTimeout(async () => {
         await deleteDoc(gameDocRef);
         navigate('/menu');
-      }, 3000); // Redirect after 3 seconds
+      }, 3000);
     } else {
-      // If the user is not the host, remove them from the room
-      const updatedPlayers = gameData.players.filter(player => player.email !== userEmail);
+      const updatedPlayers = gameData.players.filter(
+        (player) => player.email !== userEmail
+      );
       await updateDoc(gameDocRef, {
         players: updatedPlayers,
-        currentPlayers: gameData.currentPlayers - 1
+        currentPlayers: gameData.currentPlayers - 1,
       });
       navigate('/menu');
     }
@@ -131,48 +140,50 @@ const WaitingRoom = () => {
   };
 
   const handleRemovePlayer = async (player) => {
-    // Send a message to the kicked player
-    const playerDocRef = doc(db, 'players', player.email); // Assuming player.email is the document ID in the 'players' collection
+    const playerDocRef = doc(db, 'players', player.email);
     await updateDoc(playerDocRef, {
       kicked: true,
       kickedMessage: 'You have been kicked from the room.',
     })
-    .then(() => {
-      // Remove the player from the room
-      const gameDocRef = doc(db, 'rooms', gameId);
-      return updateDoc(gameDocRef, {
-        players: arrayRemove({ email: player.email }), // Ensure the object structure matches exactly
+      .then(() => {
+        const gameDocRef = doc(db, 'rooms', gameId);
+        return updateDoc(gameDocRef, {
+          players: arrayRemove({ email: player.email }),
+        });
+      })
+      .then(() => {
+        setPlayersData(playersData.filter((p) => p.email !== player.email));
+      })
+      .catch((error) => {
+        console.error('Error removing player: ', error);
       });
-    })
-    .then(() => {
-      // Update the local state
-      setPlayersData(playersData.filter(p => p.email !== player.email));
-    })
-    .catch((error) => {
-      console.error("Error removing player: ", error);
-    });
   };
 
   const handleAddBotPlayer = async () => {
     const botsCollectionRef = collection(db, 'bots');
     const botsSnapshot = await getDocs(botsCollectionRef);
-    const botsList = botsSnapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
-    const availableBots = botsList.filter(bot => !playersData.some(player => player.email === bot.email));
+    const botsList = botsSnapshot.docs.map((doc) => ({
+      email: doc.id,
+      ...doc.data(),
+    }));
+    const availableBots = botsList.filter(
+      (bot) => !playersData.some((player) => player.email === bot.email)
+    );
 
     if (availableBots.length > 0) {
-      const randomBot = availableBots[Math.floor(Math.random() * availableBots.length)];
+      const randomBot =
+        availableBots[Math.floor(Math.random() * availableBots.length)];
       const gameDocRef = doc(db, 'rooms', gameId);
       await updateDoc(gameDocRef, {
-        players: arrayUnion({ email: randomBot.email}),
+        players: arrayUnion({ email: randomBot.email }),
       });
-      setPlayersData([...playersData, randomBot]); // Update local state with the new bot player
+      setPlayersData([...playersData, randomBot]);
     }
   };
-  
 
   return (
     <div className="WaitingRoom">
-      <FriendList /> {/* Include the FriendList component here */}
+      <FriendList />
       {kickedMessage && (
         <div className="KickedMessage">
           <p>{kickedMessage}</p>
@@ -182,7 +193,11 @@ const WaitingRoom = () => {
         <>
           <h1>Waiting Room</h1>
           {isEditing ? (
-            <EditRoomDetails gameId={gameId} gameData={gameData} onClose={handleEditToggle} />
+            <EditRoomDetails
+              gameId={gameId}
+              gameData={gameData}
+              onClose={handleEditToggle}
+            />
           ) : (
             <>
               <div className="GameDetails">
@@ -200,33 +215,54 @@ const WaitingRoom = () => {
                 <p>Players:</p>
                 {playersData.map((player, index) => (
                   <div key={index} className="PlayerCard">
-                    <img src={images[player.profilePic]} alt={player.name} className="PlayerPic" />
+                    <img
+                      src={images[player.profilePic]}
+                      alt={player.name}
+                      className="PlayerPic"
+                    />
                     <p>
-                    {player.email.startsWith('bot') ? player.name + ' (Bot)' : player.name}                    {player.email === gameData.host ? ' (Host)' : ''}
-</p>                    {gameData.host === userEmail && player.email !== gameData.host && (
-                      <button id="kickButton" onClick={() => handleRemovePlayer(player)}>Kick Player</button>
-                    )}
+                      {player.email.startsWith('bot')
+                        ? player.name + ' (Bot)'
+                        : player.name}
+                      {player.email === gameData.host ? ' (Host)' : ''}
+                    </p>
+                    {gameData.host === userEmail &&
+                      player.email !== gameData.host && (
+                        <button
+                          id="kickButton"
+                          onClick={() => handleRemovePlayer(player)}
+                        >
+                          Kick Player
+                        </button>
+                      )}
                   </div>
                 ))}
                 {gameData.host === userEmail && playersData.length < 4 && (
-  <button className="AddBotButton" onClick={handleAddBotPlayer}>
-    Add Bot Player
-  </button>
-)}
+                  <button
+                    className="AddBotButton"
+                    onClick={handleAddBotPlayer}
+                  >
+                    Add Bot Player
+                  </button>
+                )}
               </div>
               {gameData.players.length < gameData.maxPlayers ? (
                 <p>Waiting for more players to join...</p>
               ) : (
                 <p>Waiting for the host to start...</p>
-              )}              {gameData.host === userEmail && (
-                <button className="StartButton"
-                  onClick={handleStartGame} 
+              )}
+              {gameData.host === userEmail && (
+                <button
+                  className="StartButton"
+                  onClick={handleStartGame}
                   disabled={gameData.players.length < gameData.maxPlayers}
                 >
                   Start Game
                 </button>
               )}
-              <button className="LeaveButton" onClick={handleLeaveRoom}>Leave Room</button>
+              <button className="LeaveButton" onClick={handleLeaveRoom}>
+                Leave Room
+              </button>
             </>
           )}
         </>
