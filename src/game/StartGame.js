@@ -60,8 +60,8 @@ const StartGame = () => {
     return false;
   };
 
-  const checkStartHQ = () => {
-    let tileIndex = selectedTile;
+  const checkStartHQ = (tileToIndex) => {
+    let tileIndex = tileToIndex;
     const row = Math.floor(tileIndex / 12);
     const col = tileIndex % 12;
 
@@ -200,14 +200,17 @@ const StartGame = () => {
   };
 
   const getTop2PlayersWithMostStocks = (hqName) => {
-    const sortedPlayers = [...players].sort((a, b) => {
-      const aStocks =
-        a.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
-      const bStocks =
-        b.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
+    const filteredPlayers = players.filter((player) => {
+      const stocks = player.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
+      return stocks > 0; // Only include players with stocks > 0
+    });
+  
+    const sortedPlayers = filteredPlayers.sort((a, b) => {
+      const aStocks = a.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
+      const bStocks = b.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
       return bStocks - aStocks;
     });
-
+  
     return sortedPlayers.slice(0, 2);
   };
 
@@ -241,7 +244,7 @@ const StartGame = () => {
     const firstTwoHQS = mergingHQS.slice(0, 2);
 
     // Check tie
-    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length) {
+    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].email.startsWith("bot")) {
       // Store them and open modal
       setTieHQs(firstTwoHQS);
       setShowTieModal(true);
@@ -341,6 +344,11 @@ const StartGame = () => {
         ?.stocks || 0;
     console.log("Player:", player.name, "Stocks:", smallerStocks);
     if (smallerStocks === 0) {
+      goToNextMergePlayer();
+      return;
+    }
+
+    if (player.email.startsWith("bot")) {
       goToNextMergePlayer();
       return;
     }
@@ -880,11 +888,48 @@ const StartGame = () => {
     const neighborColors = checkNeighborColor(tileIndex);
 
     if (neighborColors.length === 0) {
-      console.log(newBoard[tileIndex].label + 'gray' + currPlayer.name);
+      console.log(newBoard[tileIndex].label + ' gray ' + currPlayer.name);
       newBoard[tileIndex] = {
         ...newBoard[tileIndex],
         color: "gray",
       };
+
+      if (checkStartHQ(tileIndex) && currPlayer.email.startsWith("bot")) {
+        const hqsWithNoTiles = HQS.filter((hq) => hq.tiles.length === 0);
+        console.log("hqsWithNoTiles", hqsWithNoTiles);
+        const randomHQIndex = Math.floor(Math.random() * hqsWithNoTiles.length);
+        const selectedHQ = hqsWithNoTiles[randomHQIndex];
+        console.log("Selected HQ:", selectedHQ.name);
+
+        connectedTiles.forEach((index) => {
+          newBoard[index] = {
+            ...newBoard[index],
+            color: selectedHQ.color,
+          };
+        });
+
+      setBoard(newBoard);
+
+      const newHQS = [...HQS];
+      const hqIndex = newHQS.findIndex((h) => h.name === selectedHQ.name);
+      newHQS[hqIndex].tiles = [
+        ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
+      ];
+      newHQS[hqIndex].price = updateHQPrice(
+        selectedHQ,
+        newHQS[hqIndex].tiles.length
+      );
+      newHQS[hqIndex].stocks -= 1;
+      const playerHqIndex = currPlayer.headquarters.findIndex(
+        (h) => h.name === selectedHQ.name
+      );
+
+      currPlayer.headquarters[playerHqIndex].stocks += 1;
+      updatedPlayers[currentPlayerIndex] = currPlayer;
+      setPlayers(updatedPlayers);
+      setHQS(newHQS);
+      }
+
     } else if (neighborColors.length === 1) {
       console.log(newBoard[tileIndex].label + ' colored ' + currPlayer.name);
       const hqColors = HQS.map((hq) => hq.color);
@@ -1481,7 +1526,7 @@ const StartGame = () => {
               </button>
             </>
           )}
-          {checkStartHQ() && (
+          {checkStartHQ(selectedTile) && (
             <>
               <button onClick={() => handleOptionClick("start hq")}>
                 Start HQ

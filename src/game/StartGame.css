@@ -428,6 +428,11 @@
   color: white !important;
 }
 
+.square[style*="darkblue"] {
+  background-color: #0d3c6c !important;
+  color: white !important;
+}
+
 .square[style*="orange"] {
   background-color: #e67e22 !important;
   color: white !important;

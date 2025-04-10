@@ -109,7 +109,7 @@ const FriendList = () => {
     });
   
     return () => unsubscribes.forEach((unsub) => unsub());
-  }, [user, friends]);
+  }, [user, friends, chatWith]);
   
   
 
