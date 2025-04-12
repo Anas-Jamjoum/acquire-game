@@ -244,7 +244,7 @@ const StartGame = () => {
     const firstTwoHQS = mergingHQS.slice(0, 2);
 
     // Check tie
-    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].email.startsWith("bot")) {
+    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].emol.startsWith("bot")) {
       // Store them and open modal
       setTieHQs(firstTwoHQS);
       setShowTieModal(true);
@@ -344,11 +344,6 @@ const StartGame = () => {
         ?.stocks || 0;
     console.log("Player:", player.name, "Stocks:", smallerStocks);
     if (smallerStocks === 0) {
-      goToNextMergePlayer();
-      return;
-    }
-
-    if (player.email.startsWith("bot")) {
       goToNextMergePlayer();
       return;
     }
@@ -471,6 +466,106 @@ const StartGame = () => {
         <button onClick={handleSwap}>Swap</button>
       </div>
     );
+  };
+
+  const mergeAIDecision = () => {
+    const player = players[currentPlayerIndex];
+    const smallerStocks =
+      player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
+  
+    console.log("Player:", player.name, "Stocks in smaller HQ:", smallerStocks);
+  
+    if (smallerStocks === 0) {
+      goToNextMergePlayer();
+      return;
+    }
+  
+    // Randomly decide between "sell" and "swap"
+    const decision = smallerStocks >= 2 ? (Math.random() < 0.5 ? "swap" : "sell") : "sell";
+  
+    if (decision === "swap") {
+      // Swap logic: 2 stocks from the smaller HQ for 1 stock in the bigger HQ
+      const swapCount = Math.floor(smallerStocks / 2); // Calculate how many swaps can be made
+      if (swapCount <= 0) {
+        return;
+      }
+  
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex] = {
+        ...player,
+        headquarters: player.headquarters.map((hq) => {
+          if (hq.name === currentSmallerHQ.name) {
+            return {
+              ...hq,
+              stocks: hq.stocks - swapCount * 2,
+            };
+          } else if (hq.name === bigHQ.name) {
+            return {
+              ...hq,
+              stocks: hq.stocks + swapCount,
+            };
+          }
+          return hq;
+        }),
+      };
+  
+      setPlayers(updatedPlayers);
+  
+      const newHQS = [...HQS];
+      const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
+      const bigIndex = newHQS.findIndex((hq) => hq.name === bigHQ.name);
+  
+      newHQS[smallIndex].stocks += swapCount * 2;
+      newHQS[bigIndex].stocks -= swapCount;
+  
+      setHQS(newHQS);
+  
+      console.log(
+        `${player.name} chose to swap ${swapCount * 2} stocks for ${swapCount} stocks in the bigger HQ.`
+      );
+    } else if (decision === "sell") {
+      // Sell logic: Sell stocks from the smaller HQ for money
+      const sellAmount = smallerStocks; // Sell all stocks in the smaller HQ
+      const totalMoney = sellAmount * currentSmallerHQ.price;
+  
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex] = {
+        ...player,
+        money: player.money + totalMoney,
+        headquarters: player.headquarters.map((hq) => {
+          if (hq.name === currentSmallerHQ.name) {
+            return {
+              ...hq,
+              stocks: hq.stocks - sellAmount,
+            };
+          }
+          return hq;
+        }),
+      };
+  
+      setPlayers(updatedPlayers);
+  
+      const newHQS = [...HQS];
+      const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
+      newHQS[smallIndex].stocks += sellAmount;
+  
+      setHQS(newHQS);
+  
+      console.log(
+        `${player.name} chose to sell ${sellAmount} stocks for $${totalMoney}.`
+      );
+    }
+  
+    const stillHasStocks =
+      players[currentPlayerIndex].headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
+  
+    if (stillHasStocks === 0) {
+      goToNextMergePlayer();
+    } else {
+      setSellSwapAmount(0);
+    }
+  
+    persistGameToFirestore(players, HQS);
   };
 
   const persistGameToFirestore = async (updatedPlayers, updatedHQS) => {
@@ -1660,7 +1755,17 @@ const StartGame = () => {
                 <div className="hq-modal">{renderMergeDecision()}</div>
               </div>
             );
-          } else {
+          } else if (currentMergePlayer.email.startsWith("bot")) {
+            return (
+              <div className="waiting-overlay">
+                <div className="waiting-message">
+                  {currentMergePlayer.name} is deciding...
+                  {mergeAIDecision()}
+                </div>
+              </div>
+            );
+          }
+          else {
             return (
               <div className="waiting-overlay">
                 <div className="waiting-message">
