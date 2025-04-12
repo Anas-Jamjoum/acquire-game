@@ -244,7 +244,7 @@ const StartGame = () => {
     const firstTwoHQS = mergingHQS.slice(0, 2);
 
     // Check tie
-    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].emol.startsWith("bot")) {
+    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].email.startsWith("bot")) {
       // Store them and open modal
       setTieHQs(firstTwoHQS);
       setShowTieModal(true);
@@ -1046,10 +1046,8 @@ const StartGame = () => {
         setHQS(newHQS);
       }
     } else if (neighborColors.length > 1) {
-      newBoard[tileIndex] = {
-        ...newBoard[tileIndex],
-        color: "gray",
-      };
+      // maybe thier is bug here
+      handleMerge(neighborColors, tileIndex);
     }
       if (turnCounter >= 1) {
         const newTiles = assignNewRandomTiles(1, newBoard);
