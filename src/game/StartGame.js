@@ -225,9 +225,13 @@ const StartGame = () => {
   const [mergeChoiceIndex, setMergeChoiceIndex] = useState(0);
 
   const [currentSmallerHQ, setCurrentSmallerHQ] = useState(null);
+  const [selectedTileToMerge, setSelectedTileToMerge] = useState(null);
 
-  const handleMerge = (neighborColors, selectedTile) => {
+
+  const handleMerge = (neighborColors, selectedTileToMerge) => {
+    setSelectedTileToMerge(selectedTileToMerge);
     const mergingHQS = HQS.filter((hq) => neighborColors.includes(hq.color));
+    console.log("Merging HQs:", mergingHQS);
     const hqsWithMoreThan10Tiles = mergingHQS.filter(
       (hq) => hq.tiles.length > 10
     );
@@ -237,7 +241,7 @@ const StartGame = () => {
       return false;
     }
 
-    console.log("Merge");
+    console.log("Merge " + board[selectedTileToMerge].label + " " + players[currentPlayerIndex].name);
     setIsMerging(true);
 
     mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
@@ -257,7 +261,7 @@ const StartGame = () => {
     return true;
   };
 
-  const doMergeLogic = async (smallerHQ, biggerHQ) => {
+  const doMergeLogic = (smallerHQ, biggerHQ) => {
     console.log("Smaller HQ:", smallerHQ);
     console.log("Bigger HQ:", biggerHQ);
 
@@ -307,7 +311,7 @@ const StartGame = () => {
     }
 
     if (owners.length === 0) {
-      endMergeProcess();
+      endMergeProcess(selectedTileToMerge);
       return;
     }
 
@@ -315,8 +319,9 @@ const StartGame = () => {
     setMergeChoiceIndex(0);
 
     setIsMerging(false);
+    console.log("Merge players order:", currentSmallerHQ);
 
-    await updateDoc(doc(db, "startedGames", gameId), {
+    updateDoc(doc(db, "startedGames", gameId), {
       mergeInProgress: true,
       mergePlayersOrder: owners,
       mergeChoiceIndex: 0,
@@ -614,14 +619,19 @@ const StartGame = () => {
       );
 
       console.log("Bigger:", biggerIndex, "Smaller:", smallerIndex);
+      console.log("Selected tile to merge:", selectedTileToMerge);
+      console.log("bigger tiles:", newHQS[biggerIndex].tiles);
+      console.log("smaller tiles:", newHQS[smallerIndex].tiles);
       if (biggerIndex !== -1 && smallerIndex !== -1) {
         newHQS[biggerIndex].tiles = [
           ...new Set([
             ...newHQS[biggerIndex].tiles,
             ...newHQS[smallerIndex].tiles,
-            ...getConnectedGrayTiles(board, selectedTile),
+            ...getConnectedGrayTiles(board, selectedTileToMerge),
+            selectedTileToMerge,
           ]),
         ];
+        console.log("New bigger tiles:", newHQS[biggerIndex].tiles);
 
         newHQS[biggerIndex].price = updateHQPrice(
           bigHQ,
@@ -634,7 +644,7 @@ const StartGame = () => {
       }
 
       if (smallerIndex !== -1 && biggerIndex !== -1) {
-        const biggerTileIndices = HQS[biggerIndex].tiles;
+        const biggerTileIndices = newHQS[biggerIndex].tiles;
         const biggerColor = newHQS[biggerIndex].color;
 
         biggerTileIndices.forEach((tileIndex) => {
@@ -655,6 +665,7 @@ const StartGame = () => {
 
     setMergeInProgress(false);
     setMergePlayersOrder([]);
+    setSelectedTileToMerge(null);
     persistPlayersToFirestore(newHQS, newBoard);
   };
 
@@ -903,7 +914,8 @@ const StartGame = () => {
           setMergePlayersOrder(data.mergePlayersOrder || []);
           setMergeChoiceIndex(data.mergeChoiceIndex || 0);
           const smallerHQ = HQS.find((h) => h.name === data.currentSmallerHQ);
-          setCurrentSmallerHQ(smallerHQ || null);
+          console.log("smallerHQ", smallerHQ);
+          setCurrentSmallerHQ(smallerHQ);
         }
       });
     };
