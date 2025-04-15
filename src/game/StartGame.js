@@ -90,33 +90,41 @@ const StartGame = () => {
   };
 
   const checkNeighborColor = (tileIndex) => {
-    const connectedTiles = getConnectedGrayTiles(board, tileIndex);
-    const row = Math.floor(tileIndex / 12);
-    const col = tileIndex % 12;
-
-    const directions = [
-      [-1, 0], 
-      [1, 0],
-      [0, -1],
-      [0, 1],
-    ];
-
-    const neighborColors = [];
-
-    for (const [dr, dc] of directions) {
-      const r = row + dr;
-      const c = col + dc;
-      if (r >= 0 && r < 9 && c >= 0 && c < 12) {
-        const neighborIndex = r * 12 + c;
-        const color = board[neighborIndex].color;
-        if (color !== "white" && color !== "gray") {
-          neighborColors.push(color);
+    const connectedTiles = getConnectedGrayTiles(board, tileIndex); // Get all connected tiles
+    const numRows = 9;
+    const numCols = 12;
+  
+    const neighborColors = new Set(); // Use a Set to store unique colors
+  
+    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
+    const rowColToIndex = (r, c) => r * numCols + c;
+  
+    // Loop through all connected tiles
+    connectedTiles.forEach((currentTileIndex) => {
+      const [row, col] = indexToRowCol(currentTileIndex);
+  
+      const directions = [
+        [row - 1, col], // Up
+        [row + 1, col], // Down
+        [row, col - 1], // Left
+        [row, col + 1], // Right
+      ];
+  
+      // Check neighbors of the current tile
+      directions.forEach(([r, c]) => {
+        if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
+          const neighborIndex = rowColToIndex(r, c);
+          const color = board[neighborIndex].color;
+  
+          // Add the color to the set if it's not "white" or "gray"
+          if (color !== "white" && color !== "gray") {
+            neighborColors.add(color);
+          }
         }
-      }
-    }
-
-    const uniqueColors = [...new Set(neighborColors)];
-    return uniqueColors;
+      });
+    });
+  
+    return Array.from(neighborColors); // Convert the Set to an Array
   };
 
   const updateHQPrice = (hq, tilesLength) => {
