@@ -271,6 +271,71 @@ const StartGame = () => {
     return true;
   };
 
+  const getBonus = (hqName) => {
+    const hqTiles = (HQS.find((hq) => hq.name === hqName)?.tiles || []).length;
+    if (hqName === "Sackson" || hqName === "Tower") {
+      if (hqTiles === 2) {
+        return [2000, 1500];
+      } else if (hqTiles === 3) {
+        return [3000, 2200];
+      } else if (hqTiles === 4) {
+        return [4000, 3000];
+      } else if (hqTiles === 5) {
+        return [5000, 3700];
+      } else if (hqTiles >= 6 && hqTiles <= 10) {
+        return [6000, 4200];
+      } else if (hqTiles >= 11 && hqTiles <= 20) {
+        return [7000, 5000];
+      } else if (hqTiles >= 21 && hqTiles <= 30) {
+        return [8000, 5700];
+      } else if (hqTiles >= 31 && hqTiles <= 40) {
+        return [9000, 6200];
+      } else {
+        return [10000, 7000];
+      }
+    } else if (hqName === "American" || hqName === "Festival" || hqName === "WorldWide") {
+      if (hqTiles === 2) {
+        return [3000, 2200];
+      } else if (hqTiles === 3) {
+        return [4000, 3000];
+      } else if (hqTiles === 4) {
+        return [5000, 3700];
+      } else if (hqTiles === 5) {
+        return [6000, 4200];
+      } else if (hqTiles >= 6 && hqTiles <= 10) {
+        return [7000, 5000];
+      } else if (hqTiles >= 11 && hqTiles <= 20) {
+        return [8000, 5700];
+      } else if (hqTiles >= 21 && hqTiles <= 30) {
+        return [9000, 6200];
+      } else if (hqTiles >= 31 && hqTiles <= 40) {
+        return [10000, 7000];
+      } else {
+        return [11000, 7700];
+      }
+    } else {
+      if (hqTiles === 2) {
+        return [4000, 3000];
+      } else if (hqTiles === 3) {
+        return [5000, 3700];
+      } else if (hqTiles === 4) {
+        return [6000, 4200];
+      } else if (hqTiles === 5) {
+        return [7000, 5000];
+      } else if (hqTiles >= 6 && hqTiles <= 10) {
+        return [8000, 5700];
+      } else if (hqTiles >= 11 && hqTiles <= 20) {
+        return [9000, 6200];
+      } else if (hqTiles >= 21 && hqTiles <= 30) {
+        return [10000, 7000];
+      } else if (hqTiles >= 31 && hqTiles <= 40) {
+        return [11000, 7700];
+      } else {
+        return [12000, 8200];
+      }
+    }
+  }
+
   const doMergeLogic = (smallerHQ, biggerHQ) => {
     console.log("Smaller HQ:", smallerHQ);
     console.log("Bigger HQ:", biggerHQ);
@@ -279,8 +344,11 @@ const StartGame = () => {
 
     // Stock bonus logic
     const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
-    const firstPlayerBonus = smallerHQ.price * 10;
-    const secondPlayerBonus = smallerHQ.price * 5;
+    const firstPlayerBonus = getBonus(smallerHQ.name)[0];
+    const secondPlayerBonus = getBonus(smallerHQ.name)[1];
+    console.log("Top 2 players:", top2Players);
+    console.log("Bonuses:", firstPlayerBonus, secondPlayerBonus);
+
 
     const updatedPlayers = [...players];
     if (top2Players[0]) {
@@ -939,7 +1007,7 @@ const StartGame = () => {
     };
   }, [gameId, userEmail]);
 
-  const checkForWinner = async (updatedPlayers, updatedHQS) => {
+  const checkForWinner = (updatedPlayers, updatedHQS, end) => {
     console.log("Checking for winner...");
 
     const unusedTiles = getAllUnusedTiles();
@@ -947,21 +1015,60 @@ const StartGame = () => {
 
     const allHqsOver10 = updatedHQS.every((hq) => hq.tiles.length > 10);
 
-    if (noTilesLeft || allHqsOver10) {
-      let richest = updatedPlayers[0];
-      for (let i = 1; i < updatedPlayers.length; i++) {
-        if (updatedPlayers[i].money > richest.money) {
-          richest = updatedPlayers[i];
-        }
-      }
 
-      const theWinner = richest.name;
+    if (noTilesLeft || allHqsOver10 || end) {
+      console.log("Game over! Calculating winner...");
+      HQS.forEach((hq) => {
+        const top2Players = getTop2PlayersWithMostStocks(hq.name);
+        const [firstPlayerBonus, secondPlayerBonus] = getBonus(hq.name);
+        if (top2Players[0]) {
+          const firstPlayerIndex = updatedPlayers.findIndex(
+            (p) => p.email === top2Players[0].email
+          );
+          if (firstPlayerIndex !== -1) {
+            updatedPlayers[firstPlayerIndex].money += firstPlayerBonus;
+          }
+        }
+        if (top2Players[1]) {
+          const secondPlayerIndex = updatedPlayers.findIndex(
+            (p) => p.email === top2Players[1].email
+          );
+          if (secondPlayerIndex !== -1) {
+            updatedPlayers[secondPlayerIndex].money += secondPlayerBonus;
+          }
+        }
+      });
+      console.log("Updated players with bonuses:", updatedPlayers);
+
+      updatedPlayers.forEach((player) => {
+        player.headquarters.forEach((hq) => {
+          const hqIndex = updatedHQS.findIndex((h) => h.name === hq.name);
+          if (hq.stocks > 0 && hqIndex !== -1) {
+            player.money += updatedHQS[hqIndex].price * hq.stocks;
+          }
+        });
+      });
+      console.log("Updated players with HQ stocks:", updatedPlayers);
+
+      setPlayers(updatedPlayers);
+
+      const richestPlayer = players.reduce((maxPlayer, currentPlayer) => {
+        return currentPlayer.money > maxPlayer.money ? currentPlayer : maxPlayer;
+      }, players[0]);
+
+      const theWinner = richestPlayer.name;
 
       setWinner(theWinner);
 
       try {
+        const gameDocRefPlayers = doc(db, "players", richestPlayer.email);
+        updateDoc(gameDocRefPlayers, {
+          level: richestPlayer.level + 1,
+        });
+        console.log("Updated player level in Firestore:", richestPlayer.email);
+
         const gameDocRef = doc(db, "startedGames", gameId);
-        await updateDoc(gameDocRef, {
+        updateDoc(gameDocRef, {
           winner: theWinner,
         });
       } catch (err) {
@@ -1110,7 +1217,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS);
+    checkForWinner(updatedPlayers, HQS, false);
   };
 
 
@@ -1238,24 +1345,7 @@ const StartGame = () => {
       setStartHQ(true);
       return;
     } else if (option === "end game") {
-      let richest = updatedPlayers[0];
-      for (let i = 1; i < updatedPlayers.length; i++) {
-        if (updatedPlayers[i].money > richest.money) {
-          richest = updatedPlayers[i];
-        }
-      }
-
-      const theWinner = richest.name;
-
-      setWinner(theWinner);
-      try {
-        const gameDocRef = doc(db, "startedGames", gameId);
-        await updateDoc(gameDocRef, {
-          winner: theWinner,
-        });
-      } catch (err) {
-        console.error("Error updating Firestore:", err);
-      }
+      checkForWinner(updatedPlayers, HQS, true);
       return;
     }
 
@@ -1304,7 +1394,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS);
+    checkForWinner(updatedPlayers, HQS, false);
   };
 
   function getConnectedGrayTiles(board, tileIndex) {
@@ -1588,6 +1678,7 @@ const StartGame = () => {
                   : player.name}
               </div>
               <div className="player-money">Money: ${player.money}</div>
+              <div className="player-level">Level: {player.level}</div>
 
               <div className="player-headquarters">
                 {player.headquarters?.map((hq, hqIndex) => {
