@@ -90,6 +90,7 @@ const StartGame = () => {
   };
 
   const checkNeighborColor = (tileIndex) => {
+    const connectedTiles = getConnectedGrayTiles(board, tileIndex);
     const row = Math.floor(tileIndex / 12);
     const col = tileIndex % 12;
 
@@ -230,6 +231,7 @@ const StartGame = () => {
 
   const handleMerge = (neighborColors, selectedTileToMerge) => {
     setSelectedTileToMerge(selectedTileToMerge);
+    if (selectedTileToMerge === null) return;
     const mergingHQS = HQS.filter((hq) => neighborColors.includes(hq.color));
     console.log("Merging HQs:", mergingHQS);
     const hqsWithMoreThan10Tiles = mergingHQS.filter(
@@ -311,7 +313,7 @@ const StartGame = () => {
     }
 
     if (owners.length === 0) {
-      endMergeProcess(selectedTileToMerge);
+      endMergeProcess();
       return;
     }
 
