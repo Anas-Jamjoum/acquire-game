@@ -93,29 +93,29 @@ const StartGame = () => {
     const connectedTiles = getConnectedGrayTiles(board, tileIndex); // Get all connected tiles
     const numRows = 9;
     const numCols = 12;
-  
+
     const neighborColors = new Set(); // Use a Set to store unique colors
-  
+
     const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
     const rowColToIndex = (r, c) => r * numCols + c;
-  
+
     // Loop through all connected tiles
     connectedTiles.forEach((currentTileIndex) => {
       const [row, col] = indexToRowCol(currentTileIndex);
-  
+
       const directions = [
         [row - 1, col], // Up
         [row + 1, col], // Down
         [row, col - 1], // Left
         [row, col + 1], // Right
       ];
-  
+
       // Check neighbors of the current tile
       directions.forEach(([r, c]) => {
         if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
           const neighborIndex = rowColToIndex(r, c);
           const color = board[neighborIndex].color;
-  
+
           // Add the color to the set if it's not "white" or "gray"
           if (color !== "white" && color !== "gray") {
             neighborColors.add(color);
@@ -123,7 +123,7 @@ const StartGame = () => {
         }
       });
     });
-  
+
     return Array.from(neighborColors); // Convert the Set to an Array
   };
 
@@ -213,13 +213,13 @@ const StartGame = () => {
       const stocks = player.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
       return stocks > 0; // Only include players with stocks > 0
     });
-  
+
     const sortedPlayers = filteredPlayers.sort((a, b) => {
       const aStocks = a.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
       const bStocks = b.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
       return bStocks - aStocks;
     });
-  
+
     return sortedPlayers.slice(0, 2);
   };
 
@@ -555,24 +555,24 @@ const StartGame = () => {
     const player = players[currentPlayerIndex];
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
-  
+
     console.log("Player:", player.name, "Stocks in smaller HQ:", smallerStocks);
-  
+
     if (smallerStocks === 0) {
       goToNextMergePlayer();
       return;
     }
-  
+
     // Randomly decide between "sell" and "swap"
     const decision = smallerStocks >= 2 ? (Math.random() < 0.5 ? "swap" : "sell") : "sell";
-  
+
     if (decision === "swap") {
       // Swap logic: 2 stocks from the smaller HQ for 1 stock in the bigger HQ
       const swapCount = Math.floor(smallerStocks / 2); // Calculate how many swaps can be made
       if (swapCount <= 0) {
         return;
       }
-  
+
       const updatedPlayers = [...players];
       updatedPlayers[currentPlayerIndex] = {
         ...player,
@@ -591,18 +591,18 @@ const StartGame = () => {
           return hq;
         }),
       };
-  
+
       setPlayers(updatedPlayers);
-  
+
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
       const bigIndex = newHQS.findIndex((hq) => hq.name === bigHQ.name);
-  
+
       newHQS[smallIndex].stocks += swapCount * 2;
       newHQS[bigIndex].stocks -= swapCount;
-  
+
       setHQS(newHQS);
-  
+
       console.log(
         `${player.name} chose to swap ${swapCount * 2} stocks for ${swapCount} stocks in the bigger HQ.`
       );
@@ -610,7 +610,7 @@ const StartGame = () => {
       // Sell logic: Sell stocks from the smaller HQ for money
       const sellAmount = smallerStocks; // Sell all stocks in the smaller HQ
       const totalMoney = sellAmount * currentSmallerHQ.price;
-  
+
       const updatedPlayers = [...players];
       updatedPlayers[currentPlayerIndex] = {
         ...player,
@@ -625,36 +625,36 @@ const StartGame = () => {
           return hq;
         }),
       };
-  
+
       setPlayers(updatedPlayers);
-  
+
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
       newHQS[smallIndex].stocks += sellAmount;
-  
+
       setHQS(newHQS);
-  
+
       console.log(
         `${player.name} chose to sell ${sellAmount} stocks for $${totalMoney}.`
       );
     }
-  
+
     const stillHasStocks =
       players[currentPlayerIndex].headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
-  
+
     if (stillHasStocks === 0) {
       goToNextMergePlayer();
     } else {
       setSellSwapAmount(0);
     }
-  
+
     persistGameToFirestore(players, HQS);
   };
 
-  const persistGameToFirestore = async (updatedPlayers, updatedHQS) => {
+  const persistGameToFirestore = (updatedPlayers, updatedHQS) => {
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         players: updatedPlayers,
         HQS: updatedHQS,
       });
@@ -663,7 +663,7 @@ const StartGame = () => {
     }
   };
 
-  const goToNextMergePlayer = async () => {
+  const goToNextMergePlayer = () => {
     const nextIndex = mergeChoiceIndex + 1;
     setMergeChoiceIndex(nextIndex);
 
@@ -676,7 +676,7 @@ const StartGame = () => {
         return;
       }
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         mergeChoiceIndex: nextIndex,
       });
     } catch (err) {
@@ -717,7 +717,7 @@ const StartGame = () => {
         );
 
         newHQS[smallerIndex].tiles = [];
-        newHQS[smallerIndex].price = 0; 
+        newHQS[smallerIndex].price = 0;
         newHQS[smallerIndex].stocks = 25;
       }
 
@@ -747,11 +747,11 @@ const StartGame = () => {
     persistPlayersToFirestore(newHQS, newBoard);
   };
 
-  const persistPlayersToFirestore = async (newHQS, newBoard) => {
+  const persistPlayersToFirestore = (newHQS, newBoard) => {
     console.log("Persisting players to Firestore:", players);
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         mergeInProgress: false,
         mergePlayersOrder: [],
         mergeChoiceIndex: mergeChoiceIndex + 1,
@@ -820,13 +820,13 @@ const StartGame = () => {
   const user = auth.currentUser;
   const userEmail = user?.email || "";
 
-  const initializeGame = async (roomData) => {
+  const initializeGame = (roomData) => {
     try {
       const playersFromRoom = roomData.players || [];
-      const fetchedPlayers = await Promise.all(
-        playersFromRoom.map(async (p) => {
+      const fetchedPlayers = Promise.all(
+        playersFromRoom.map((p) => {
           const playerDocRef = doc(db, "players", p.email);
-          const snap = await getDoc(playerDocRef);
+          const snap = getDoc(playerDocRef);
           if (snap.exists()) {
             return {
               ...snap.data(),
@@ -871,9 +871,9 @@ const StartGame = () => {
         mode: roomData.mode,
       };
 
-      await setDoc(doc(db, "startedGames", gameId), gameData);
+      setDoc(doc(db, "startedGames", gameId), gameData);
 
-      await updateDoc(doc(db, "rooms", gameId), {
+      updateDoc(doc(db, "rooms", gameId), {
         isStarted: true,
       });
     } catch (err) {
@@ -910,7 +910,7 @@ const StartGame = () => {
     }
 
     if (!timerRef.current) {
-      setTimeLeft(30); 
+      setTimeLeft(30);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -1052,9 +1052,9 @@ const StartGame = () => {
 
       setPlayers(updatedPlayers);
 
-      const richestPlayer = players.reduce((maxPlayer, currentPlayer) => {
-        return currentPlayer.money > maxPlayer.money ? currentPlayer : maxPlayer;
-      }, players[0]);
+      const richestPlayer = players.sort((a, b) => {
+        return b.money - a.money;
+      })[0];
 
       const theWinner = richestPlayer.name;
 
@@ -1132,26 +1132,26 @@ const StartGame = () => {
           };
         });
 
-      setBoard(newBoard);
+        setBoard(newBoard);
 
-      const newHQS = [...HQS];
-      const hqIndex = newHQS.findIndex((h) => h.name === selectedHQ.name);
-      newHQS[hqIndex].tiles = [
-        ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
-      ];
-      newHQS[hqIndex].price = updateHQPrice(
-        selectedHQ,
-        newHQS[hqIndex].tiles.length
-      );
-      newHQS[hqIndex].stocks -= 1;
-      const playerHqIndex = currPlayer.headquarters.findIndex(
-        (h) => h.name === selectedHQ.name
-      );
+        const newHQS = [...HQS];
+        const hqIndex = newHQS.findIndex((h) => h.name === selectedHQ.name);
+        newHQS[hqIndex].tiles = [
+          ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
+        ];
+        newHQS[hqIndex].price = updateHQPrice(
+          selectedHQ,
+          newHQS[hqIndex].tiles.length
+        );
+        newHQS[hqIndex].stocks -= 1;
+        const playerHqIndex = currPlayer.headquarters.findIndex(
+          (h) => h.name === selectedHQ.name
+        );
 
-      currPlayer.headquarters[playerHqIndex].stocks += 1;
-      updatedPlayers[currentPlayerIndex] = currPlayer;
-      setPlayers(updatedPlayers);
-      setHQS(newHQS);
+        currPlayer.headquarters[playerHqIndex].stocks += 1;
+        updatedPlayers[currentPlayerIndex] = currPlayer;
+        setPlayers(updatedPlayers);
+        setHQS(newHQS);
       }
 
     } else if (neighborColors.length === 1) {
@@ -1178,23 +1178,23 @@ const StartGame = () => {
       // maybe thier is bug here
       handleMerge(neighborColors, tileIndex);
     }
-      if (turnCounter >= 1) {
-        const newTiles = assignNewRandomTiles(1, newBoard);
-        updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
-      }
-  
-      let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-      const newTurnCounter =
-        nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
-  
-      if (newTurnCounter === 1) {
-        for (let i = 0; i < players.length; i++) {
-          if (updatedPlayers[i].tiles.length === 0) {
-            const newTiles = assignNewRandomTiles(6, newBoard);
-            updatedPlayers[i].tiles.push(...newTiles);
-          }
+    if (turnCounter >= 1) {
+      const newTiles = assignNewRandomTiles(1, newBoard);
+      updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
+    }
+
+    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    const newTurnCounter =
+      nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
+
+    if (newTurnCounter === 1) {
+      for (let i = 0; i < players.length; i++) {
+        if (updatedPlayers[i].tiles.length === 0) {
+          const newTiles = assignNewRandomTiles(6, newBoard);
+          updatedPlayers[i].tiles.push(...newTiles);
         }
       }
+    }
 
     setBoard(newBoard);
     setPlayers(updatedPlayers);
@@ -1282,7 +1282,7 @@ const StartGame = () => {
     return newTiles;
   };
 
-  const handleOptionClick = async (option) => {
+  const handleOptionClick = (option) => {
     if (selectedTile == null) return;
 
     const newBoard = [...board];
@@ -1384,7 +1384,7 @@ const StartGame = () => {
 
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         board: newBoard,
         players: updatedPlayers,
         currentPlayerIndex: nextPlayerIndex,
@@ -1432,7 +1432,7 @@ const StartGame = () => {
     return Array.from(visited);
   }
 
-  const handleHQSelection = async (hqName) => {
+  const handleHQSelection = (hqName) => {
     try {
       const chosenHQ = HQS.find((hq) => hq.name === hqName);
       if (!chosenHQ) {
@@ -1472,7 +1472,7 @@ const StartGame = () => {
       newPlayers[currentPlayerIndex] = currPlayer;
 
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         board: newBoard,
         HQS: newHQS,
         players: newPlayers,
@@ -1516,16 +1516,15 @@ const StartGame = () => {
     if (winner) {
       return `Winner: ${winner}`;
     }
-    return `Current player turn: ${
-      players[currentPlayerIndex]?.name || "Loading..."
-    } `;
+    return `Current player turn: ${players[currentPlayerIndex]?.name || "Loading..."
+      } `;
   };
 
   const handleReturnHome = () => {
     navigate("/menu");
   };
 
-  const handleBuyStock = async () => {
+  const handleBuyStock = () => {
     console.log("buy current player index", currentPlayerIndex);
     setBuyError("");
     if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) {
@@ -1567,7 +1566,7 @@ const StartGame = () => {
 
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         players: updatedPlayers,
         HQS: newHQS,
       });
@@ -1583,7 +1582,7 @@ const StartGame = () => {
     setStocksBoughtThisTurn(stocksBoughtThisTurn + buyAmount);
   };
 
-  const handleSellStock = async () => {
+  const handleSellStock = () => {
     setSellError("");
 
     if (!selectedHQToSell || sellAmount <= 0) {
@@ -1614,7 +1613,7 @@ const StartGame = () => {
 
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      await updateDoc(gameDocRef, {
+      updateDoc(gameDocRef, {
         players: updatedPlayers,
         HQS: newHQS,
       });
@@ -1654,12 +1653,36 @@ const StartGame = () => {
         </div>
 
         {winner && (
+
           <div className="winner-overlay">
             <div>
               <h1>Winner: {winner}</h1>
+
               <button onClick={handleReturnHome}>Return to Home</button>
             </div>
+            <div className="sorted-players">
+              <h3>Players</h3>
+              {players
+                .slice() // Create a shallow copy to avoid mutating the original array
+                .sort((a, b) => b.money - a.money) // Sort players by money in descending order
+                .map((player, index) => (
+                  <div key={index} className="playeraa">
+                    {player.profilePic && (
+                      <img
+                        src={images[player.profilePic]}
+                        alt={player.name}
+                        className="player-imageaa"
+                      />
+                    )}
+                    <div className="player-detailsaa">
+                      <div className="player-nameaa">{player.name}</div>
+                      <div className="player-moneyaa">Money: ${player.money}</div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
+
         )}
 
         <div className="players-info">
