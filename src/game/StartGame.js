@@ -79,7 +79,7 @@ const StartGame = () => {
         const neighborIndex = r * 12 + c;
         if (
           board[neighborIndex].color === "gray" &&
-          checkNeighborColor().length === 0 &&
+          checkNeighborColor(tileToIndex).length === 0 &&
           HQS.some((hq) => hq.tiles.length === 0)
         ) {
           return true;
