@@ -886,7 +886,8 @@ const StartGame = () => {
   useEffect(() => {
     if (
       players[currentPlayerIndex] &&
-      players[currentPlayerIndex].email.startsWith("bot")
+      players[currentPlayerIndex].email.startsWith("bot") &&
+      !mergeInProgress
     ) {
       console.log("Bot turn detected. Adding delay before making a move.");
 
@@ -1010,6 +1011,7 @@ const StartGame = () => {
 
   const checkForWinner = (updatedPlayers, updatedHQS, end) => {
     console.log("Checking for winner...");
+    console.log(updatedHQS);
 
     const unusedTiles = getAllUnusedTiles();
     const noTilesLeft = unusedTiles.length === 0;
@@ -1053,7 +1055,7 @@ const StartGame = () => {
 
       setPlayers(updatedPlayers);
 
-      const richestPlayer = players.sort((a, b) => {
+      const richestPlayer = updatedPlayers.sort((a, b) => {
         return b.money - a.money;
       })[0];
 
@@ -1070,6 +1072,7 @@ const StartGame = () => {
 
         const gameDocRef = doc(db, "startedGames", gameId);
         updateDoc(gameDocRef, {
+          players: updatedPlayers,
           winner: theWinner,
         });
       } catch (err) {
@@ -1329,7 +1332,7 @@ const StartGame = () => {
     } else if (neighborColors.length > 1) {
       console.log(neighborColors);
       let checkMerge = handleMerge(neighborColors, selectedTile);
-      alert("Handel merge");
+      // alert("Handel merge");
       if (checkMerge === true) {
         return;
       }
