@@ -820,13 +820,13 @@ const StartGame = () => {
   const user = auth.currentUser;
   const userEmail = user?.email || "";
 
-  const initializeGame = (roomData) => {
+  const initializeGame = async (roomData) => {
     try {
       const playersFromRoom = roomData.players || [];
-      const fetchedPlayers = Promise.all(
-        playersFromRoom.map((p) => {
+      const fetchedPlayers = await Promise.all(
+        playersFromRoom.map(async (p) => {
           const playerDocRef = doc(db, "players", p.email);
-          const snap = getDoc(playerDocRef);
+          const snap = await getDoc(playerDocRef); // Await the getDoc call
           if (snap.exists()) {
             return {
               ...snap.data(),
@@ -838,21 +838,21 @@ const StartGame = () => {
           return null;
         })
       );
-
+  
       const validPlayers = fetchedPlayers.filter(Boolean);
-
+  
       if (validPlayers.length < 2) {
         console.error("Not enough players to start the game");
         return;
       }
-
+  
       const shuffled = shufflePlayers(validPlayers);
       const newBoard = createInitialBoard();
-
+  
       assignInitialTiles(shuffled, newBoard);
-
+  
       const sortPlayers = sortPlayersbyTile(shuffled);
-
+  
       const gameData = {
         board: newBoard,
         currentPlayerIndex: 0,
@@ -870,10 +870,11 @@ const StartGame = () => {
         turnCounter: 0,
         mode: roomData.mode,
       };
-
-      setDoc(doc(db, "startedGames", gameId), gameData);
-
-      updateDoc(doc(db, "rooms", gameId), {
+  
+      await setDoc(doc(db, "startedGames", gameId), gameData);
+  
+      console.log("Game initialized successfully:", gameData);
+      await updateDoc(doc(db, "rooms", gameId), {
         isStarted: true,
       });
     } catch (err) {
@@ -1179,7 +1180,7 @@ const StartGame = () => {
       handleMerge(neighborColors, tileIndex);
     }
     if (turnCounter >= 1) {
-      const newTiles = assignNewRandomTiles(1, newBoard);
+      const newTiles = assignNewRandomTiles(1);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
 
@@ -1190,7 +1191,7 @@ const StartGame = () => {
     if (newTurnCounter === 1) {
       for (let i = 0; i < players.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
-          const newTiles = assignNewRandomTiles(6, newBoard);
+          const newTiles = assignNewRandomTiles(6);
           updatedPlayers[i].tiles.push(...newTiles);
         }
       }
@@ -1352,9 +1353,10 @@ const StartGame = () => {
     console.log("Option: 5", currentPlayerIndex);
     if (isMerging) return;
 
+    setBoard(newBoard);
 
     if (turnCounter >= 1) {
-      const newTiles = assignNewRandomTiles(1, newBoard);
+      const newTiles = assignNewRandomTiles(1);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
 
@@ -1365,7 +1367,7 @@ const StartGame = () => {
     if (newTurnCounter === 1) {
       for (let i = 0; i < players.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
-          const newTiles = assignNewRandomTiles(6, newBoard);
+          const newTiles = assignNewRandomTiles(6);
           updatedPlayers[i].tiles.push(...newTiles);
         }
       }
