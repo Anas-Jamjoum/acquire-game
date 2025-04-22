@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, auth } from '../../Firebase'; // Update the path to the correct location
-import { collection, doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
-import './JoinRoom.css'; // Import the CSS file for styling
-import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
+import { db, auth } from '../../Firebase';
+import { collection, doc, updateDoc, arrayUnion, onSnapshot, deleteDoc, getDocs } from 'firebase/firestore';
+import './JoinRoom.css';
+import FriendList from '../../friendsManagement/FriendList';
 
 
 const JoinRoom = () => {
@@ -14,7 +14,7 @@ const JoinRoom = () => {
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const roomsPerPage = 4; // Number of rooms to display per page
+  const roomsPerPage = 4;
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
 
@@ -30,7 +30,7 @@ const JoinRoom = () => {
       roomsList.sort((a, b) => a.gameName.localeCompare(b.gameName));
       setRooms(roomsList);
     });
-
+    removeFinishedRooms();
     return () => unsubscribe();
   }, []);
 
@@ -43,6 +43,8 @@ const JoinRoom = () => {
     }
   };
 
+  console.log('User email:', userEmail); // Log the user email
+  console.log('Rooms:', rooms); // Log the rooms data
   const joinRoom = async (room) => {
     const user = auth.currentUser;
     if (user) {
@@ -80,7 +82,9 @@ const JoinRoom = () => {
     setError('');
   };
 
-  const filteredRooms = rooms.filter(room =>
+  const filteredRooms = rooms
+  .filter((room) => room.status !== "finished")
+  .filter((room) =>
     room.gameName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -99,6 +103,35 @@ const JoinRoom = () => {
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const removeFinishedRooms = () => {
+    try {
+      const finishedRooms = rooms.filter((room) => room.status === 'finished');
+      console.log('Finished rooms:', finishedRooms)
+      if (finishedRooms.length === 0) {
+        return;
+      }
+  
+      for (const room of finishedRooms) {
+        const roomDocRef = doc(db, "rooms", room.id);
+        deleteDoc(roomDocRef);
+  
+        const startedGameDocRef = doc(db, "startedGames", room.id);
+        deleteDoc(startedGameDocRef);
+  
+      }
+  
+      const roomsCollection = collection(db, "rooms");
+      const snapshot = getDocs(roomsCollection);
+      const updatedRooms = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setRooms(updatedRooms);
+    } catch (error) {
+      console.error("Error removing finished rooms:", error);
     }
   };
 
