@@ -1013,7 +1013,7 @@ const StartGame = () => {
     console.log("Checking for winner...");
     console.log(updatedHQS);
 
-    const unusedTiles = getAllUnusedTiles();
+    const unusedTiles = getAllUnusedTiles(board, updatedPlayers);
     const noTilesLeft = unusedTiles.length === 0;
 
     const allHqsOver10 = updatedHQS.every((hq) => hq.tiles.length > 10);
@@ -1073,6 +1073,12 @@ const StartGame = () => {
         const gameDocRef = doc(db, "startedGames", gameId);
         updateDoc(gameDocRef, {
           players: updatedPlayers,
+          winner: theWinner,
+        });
+
+        const gameDocRefRoom = doc(db, "rooms", gameId);
+        updateDoc(gameDocRefRoom, {
+          status: "finished",
           winner: theWinner,
         });
       } catch (err) {
@@ -1182,10 +1188,13 @@ const StartGame = () => {
       // maybe thier is bug here
       handleMerge(neighborColors, tileIndex);
     }
+    setBoard(newBoard);
     if (turnCounter >= 1) {
-      const newTiles = assignNewRandomTiles(1);
+      const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
+    setPlayers(updatedPlayers);
+
 
     let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
     const newTurnCounter =
@@ -1194,7 +1203,7 @@ const StartGame = () => {
     if (newTurnCounter === 1) {
       for (let i = 0; i < players.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
-          const newTiles = assignNewRandomTiles(6);
+          const newTiles = assignNewRandomTiles(6, newBoard, updatedPlayers);
           updatedPlayers[i].tiles.push(...newTiles);
         }
       }
@@ -1245,19 +1254,19 @@ const StartGame = () => {
     setShowOptions(true);
   };
 
-  const getAllUnusedTiles = () => {
-    const playerTiles = new Set(players.flatMap((player) => player.tiles));
+  const getAllUnusedTiles = (currentBoard, currentPlayers) => {
+    const playerTiles = new Set(currentPlayers.flatMap((player) => player.tiles));
 
-    const unusedTiles = board.filter((tile) => {
-      const tileIndex = board.indexOf(tile);
+    const unusedTiles = currentBoard.filter((tile) => {
+      const tileIndex = currentBoard.indexOf(tile);
       return tile.color === "white" && !playerTiles.has(tileIndex);
     });
 
     return unusedTiles;
   };
 
-  const assignNewRandomTiles = (tilesToAssign) => {
-    const unusedTiles = getAllUnusedTiles();
+  const assignNewRandomTiles = (tilesToAssign, currentBoard, currentPlayers) => {
+    const unusedTiles = getAllUnusedTiles(currentBoard, currentPlayers);
 
     if (unusedTiles.length === 0) {
       console.log("No unused tiles available to assign.");
@@ -1359,9 +1368,10 @@ const StartGame = () => {
     setBoard(newBoard);
 
     if (turnCounter >= 1) {
-      const newTiles = assignNewRandomTiles(1);
+      const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
+    setPlayers(updatedPlayers);
 
     let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
     const newTurnCounter =
@@ -1370,7 +1380,7 @@ const StartGame = () => {
     if (newTurnCounter === 1) {
       for (let i = 0; i < players.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
-          const newTiles = assignNewRandomTiles(6);
+          const newTiles = assignNewRandomTiles(6, newBoard, updatedPlayers);
           updatedPlayers[i].tiles.push(...newTiles);
         }
       }
