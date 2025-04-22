@@ -29,8 +29,8 @@ const JoinRoom = () => {
       const roomsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       roomsList.sort((a, b) => a.gameName.localeCompare(b.gameName));
       setRooms(roomsList);
+      removeFinishedRooms();
     });
-    removeFinishedRooms();
     return () => unsubscribe();
   }, []);
 
@@ -43,8 +43,6 @@ const JoinRoom = () => {
     }
   };
 
-  console.log('User email:', userEmail); // Log the user email
-  console.log('Rooms:', rooms); // Log the rooms data
   const joinRoom = async (room) => {
     const user = auth.currentUser;
     if (user) {
