@@ -1190,14 +1190,32 @@ const StartGame = () => {
     }
     setBoard(newBoard);
 
-
     // buy or sell stocks for the bots
     const decision = Math.random();
     if (decision < 0.33) { 
-
+      const affordableHQS = HQS.filter(
+        (hq) =>
+          hq.stocks > 0 &&
+          hq.price > 0 &&
+          updatedPlayers[currentPlayerIndex].money >= hq.price 
+      );
+      if (affordableHQS.length > 0 && stocksBoughtThisTurn < 3) {
+        const randomHQ = affordableHQS[Math.floor(Math.random() * affordableHQS.length)];
+        const hqIndex = HQS.findIndex((hq) => hq.name === randomHQ.name);
+        const playerHQIndex = updatedPlayers[currentPlayerIndex].headquarters.findIndex((hq) => hq.name === randomHQ.name);
+        const maxStocksCanBuy = checkMaxStocksAi(randomHQ, updatedPlayers[currentPlayerIndex]);
+        const randomAmount = Math.floor(Math.random() * maxStocksCanBuy) + 1;
+        setStocksBoughtThisTurn(randomAmount);
+        const newHQS = [...HQS];
+        newHQS[hqIndex].stocks -= randomAmount;
+        updatedPlayers[currentPlayerIndex].headquarters[playerHQIndex].stocks += randomAmount;
+        updatedPlayers[currentPlayerIndex].money -= randomAmount * randomHQ.price;
+        setHQS(newHQS);
+        setPlayers(updatedPlayers);
+      }
     }
     else if (decision < 0.66) {
-      
+
     }
 
     if (turnCounter >= 1) {
@@ -1244,6 +1262,18 @@ const StartGame = () => {
     checkForWinner(updatedPlayers, HQS, false);
   };
 
+  const checkMaxStocksAi = (hq, player) => {
+    let maxStocks = 0;
+    if (!hq || !player) return 0;
+    if (hq.stocks <= 0) return 0;
+    if (player.money >= hq.price)
+      maxStocks++;
+    if (player.money >= hq.price * 2)
+      maxStocks++;
+    if (player.money >= hq.price * 3)
+      maxStocks++;
+    return maxStocks;
+  };
 
   const renderCountdown = () => {
     if (
