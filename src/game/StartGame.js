@@ -1189,6 +1189,17 @@ const StartGame = () => {
       handleMerge(neighborColors, tileIndex);
     }
     setBoard(newBoard);
+
+
+    // buy or sell stocks for the bots
+    const decision = Math.random();
+    if (decision < 0.33) { 
+
+    }
+    else if (decision < 0.66) {
+      
+    }
+
     if (turnCounter >= 1) {
       const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
