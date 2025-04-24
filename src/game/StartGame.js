@@ -1192,7 +1192,7 @@ const StartGame = () => {
 
     // buy or sell stocks for the bots
     const decision = Math.random();
-    if (decision < 0.33) { 
+    if (decision < 0.33 && currPlayer.email.startsWith("bot")) { 
       const affordableHQS = HQS.filter(
         (hq) =>
           hq.stocks > 0 &&
@@ -1214,7 +1214,7 @@ const StartGame = () => {
         setPlayers(updatedPlayers);
       }
     }
-    else if (decision < 0.66) {
+    else if (decision < 0.66 && currPlayer.email.startsWith("bot")) {
 
     }
 
