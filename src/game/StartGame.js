@@ -791,6 +791,8 @@ const StartGame = () => {
   const [players, setPlayers] = useState([]);
   const [winner, setWinner] = useState(null);
   const [turnCounter, setTurnCounter] = useState(0);
+  const [showAllPlayers, setShowAllPlayers] = useState(false); // State to toggle between all players and the current player
+
 
   const [showOptions, setShowOptions] = useState(false);
   const [selectedTile, setSelectedTile] = useState(null);
@@ -1711,6 +1713,10 @@ const StartGame = () => {
     setSellAmount(0);
   };
 
+  const toggleShowAllPlayers = () => {
+    setShowAllPlayers(!showAllPlayers); 
+  };
+
   return (
     <div className="game">
       <FriendList />
@@ -1767,49 +1773,90 @@ const StartGame = () => {
           </div>
 
         )}
+        <button onClick={toggleShowAllPlayers}>
+          {showAllPlayers ? "Show Only Me" : "Show All Players"}
+        </button>
+<div className="players-info">
 
-        <div className="players-info">
-          {players.map((player, index) => (
-            <div key={index} className="player">
-              {player.profilePic && (
-                <img
-                  src={images[player.profilePic]}
-                  alt={player.name}
-                  className="player-image"
-                />
-              )}
-              <div className="player-name">
-                {player.email.startsWith("bot")
-                  ? player.name + " (Bot)"
-                  : player.name}
-              </div>
-              <div className="player-money">Money: ${player.money}</div>
-              <div className="player-level">Level: {player.level}</div>
 
-              <div className="player-headquarters">
-                {player.headquarters?.map((hq, hqIndex) => {
-                  const hqColor =
-                    HQS.find((h) => h.name === hq.name)?.color || "black";
-                  return (
-                    <div key={hqIndex} className="hq-stock">
-                      <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
-                      {hq.stocks} stocks
-                    </div>
-                  );
-                })}
-              </div>
-
-              {player.email === userEmail && (
-                <div className="player-tiles">
-                  <h4>Your Tiles:</h4>
-                  {player.tiles?.map((tileIndex) =>
-                    renderTileButton(tileIndex)
-                  )}
+        {showAllPlayers
+          ? players.map((player, index) => (
+              <div key={index} className="player">
+                {player.profilePic && (
+                  <img
+                    src={images[player.profilePic]}
+                    alt={player.name}
+                    className="player-image"
+                  />
+                )}
+                <div className="player-name">
+                  {player.email.startsWith("bot")
+                    ? player.name + " (Bot)"
+                    : player.name}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+                <div className="player-money">Money: ${player.money}</div>
+                <div className="player-level">Level: {player.level}</div>
+
+                <div className="player-headquarters">
+                  {player.headquarters?.map((hq, hqIndex) => {
+                    const hqColor =
+                      HQS.find((h) => h.name === hq.name)?.color || "black";
+                    return (
+                      <div key={hqIndex} className="hq-stock">
+                        <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
+                        {hq.stocks} stocks
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {player.email === userEmail && (
+                  <div className="player-tiles">
+                    <h4>Your Tiles:</h4>
+                    {player.tiles?.map((tileIndex) =>
+                      renderTileButton(tileIndex)
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          : players
+              .filter((player) => player.email === userEmail)
+              .map((player, index) => (
+                <div key={index} className="player">
+                  {player.profilePic && (
+                    <img
+                      src={images[player.profilePic]}
+                      alt={player.name}
+                      className="player-image"
+                    />
+                  )}
+                  <div className="player-name">{player.name}</div>
+                  <div className="player-money">Money: ${player.money}</div>
+                  <div className="player-level">Level: {player.level}</div>
+
+                  <div className="player-headquarters">
+                    {player.headquarters?.map((hq, hqIndex) => {
+                      const hqColor =
+                        HQS.find((h) => h.name === hq.name)?.color || "black";
+                      return (
+                        <div key={hqIndex} className="hq-stock">
+                          <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
+                          {hq.stocks} stocks
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="player-tiles">
+                    <h4>Your Tiles:</h4>
+                    {player.tiles?.map((tileIndex) =>
+                      renderTileButton(tileIndex)
+                    )}
+                  </div>
+                </div>
+              ))}
+      </div>
 
         <div className="hqs-info">
           <h3>Headquarters Stocks</h3>
