@@ -1190,7 +1190,6 @@ const StartGame = () => {
     }
     setBoard(newBoard);
 
-    // buy or sell stocks for the bots
     const decision = Math.random();
     if (decision < 0.33 && currPlayer.email.startsWith("bot")) { 
       const affordableHQS = HQS.filter(
@@ -1214,8 +1213,36 @@ const StartGame = () => {
         setPlayers(updatedPlayers);
       }
     }
-    else if (decision < 0.66 && currPlayer.email.startsWith("bot")) {
 
+    else if (decision < 0.66 && currPlayer.email.startsWith("bot")) {
+    
+      const hqsWithStocks = currPlayer.headquarters.filter((hq) => hq.stocks > 0);
+    
+      if (hqsWithStocks.length > 0) {
+        const randomHQIndex = Math.floor(Math.random() * hqsWithStocks.length);
+        const hqToSell = hqsWithStocks[randomHQIndex];
+    
+        const randomAmountToSell = Math.floor(Math.random() * hqToSell.stocks) + 1;
+        
+        const hqIndex = HQS.findIndex((hq) => hq.name === hqToSell.name);
+        const newHQS = [...HQS];
+        newHQS[hqIndex].stocks += randomAmountToSell;
+    
+        updatedPlayers[currentPlayerIndex].headquarters = updatedPlayers[currentPlayerIndex].headquarters.map((hq) => {
+          if (hq.name === hqToSell.name) {
+            return {
+              ...hq,
+              stocks: hq.stocks - randomAmountToSell,
+            };
+          }
+          return hq;
+        });
+    
+        updatedPlayers[currentPlayerIndex].money += randomAmountToSell * newHQS[hqIndex].price;
+    
+        setHQS(newHQS);
+        setPlayers(updatedPlayers);
+      }
     }
 
     if (turnCounter >= 1) {
