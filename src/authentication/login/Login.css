@@ -1,81 +1,204 @@
 /* src/login/Login.css */
 .Login {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-image: url('LoginPage.jpg'); /* Update this path to your background image */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Changed from height to min-height */
+  width: 100vw; /* Ensure full viewport width */
+  margin: 0; /* Remove default margins */
+  padding: 0; /* Remove default padding */
+  background-image: url('LoginPage.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* Optional: keeps background fixed during scrolling */
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  position: fixed; /* Makes it stay fixed on the viewport */
+  top: 0;
+  left: 0;
+  overflow: auto; /* Allows scrolling if content exceeds viewport */
+}
+
+/* Add this to ensure your form stays centered even on small screens */
+@media (max-height: 600px) {
+  .Login {
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
+}
+
+/* Optional: Add this to make sure your background covers mobile browsers properly */
+@supports (-webkit-touch-callout: none) {
+  .Login {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Futuristic text glow effect */
+.Login h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.8);
+  letter-spacing: 2px;
+  position: relative;
+  
+}
+
+/* Add a subtle animation to the title */
+.Login h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 195, 255, 0.8), transparent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.Login form {
+  display: flex;
+  flex-direction: column;
+  width: 90%; /* Responsive width */
+  max-width: 400px; /* Maximum width for larger screens */
+  min-width: 280px; /* Minimum width for small devices */
+  padding: 25px;
+  margin: 20px 0;
+  border-radius: 10px;
+  background-color: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 195, 255, 0.2);
+  backdrop-filter: blur(5px);
+  box-sizing: border-box; /* Include padding in width calculations */
+  overflow: auto; /* Allows scrolling if content exceeds viewport */
+
+}
+
+.Login form div {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.Login label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #a5b4fc;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.Login input {
+  padding: 12px;
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  transition: all 0.3s;
+}
+
+.Login input:focus {
+  outline: none;
+  border-color: rgba(0, 195, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.3);
+}
+
+/* Futuristic button with gradient */
+.Login-button {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #00c3ff 0%, #0084ff 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 195, 255, 0.3);
+  margin-top: 10px;
+}
+
+.Login-button:hover {
+  background: linear-gradient(135deg, #0084ff 0%, #00c3ff 100%);
+  box-shadow: 0 6px 20px rgba(0, 195, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Error message styling */
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 10px 0;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+}
+
+/* Success message styling */
+.message {
+  color: #51cf66;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 10px 0;
+  text-shadow: 0 0 5px rgba(81, 207, 102, 0.5);
+}
+
+/* Futuristic "forget password" button */
+.forget-password-button {
+  margin-top: 15px;
+  padding: 8px;
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 6px;
+  background: transparent;
+  color: #a5b4fc;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+}
+
+.forget-password-button:hover {
+  background: rgba(0, 195, 255, 0.1);
+  border-color: rgba(0, 195, 255, 0.8);
+  color: #00c3ff;
+}
+
+/* Add some corporate/hotel elements */
+.Login::before {
+  content: 'ACQUIRE v1.0';
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: rgb(255, 255, 255);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  border-radius: 10px;
+  background-color: rgba(15, 23, 42, 0.85); /* Dark blue with transparency */
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 195, 255, 0.2);
+  backdrop-filter: blur(5px);}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .Login form {
+      width: 85%;
+      padding: 20px;
   }
   
   .Login h1 {
-    margin-bottom: 20px;
-    font-size: 2rem;
-    color: #413f3f; /* Change text color to be visible on the background */
+      font-size: 2rem;
   }
-  
-  .Login form {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .Login form div {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-  }
-  
-  .Login label {
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .Login input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-  
-  .Login-button {
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: #007bff;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  
-  .Login-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .Login p {
-    color: red;
-    font-size: 0.9rem;
-  }
-
-  .forget-password-button {
-    margin-top: 10px;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: #e70a0a5d;
-    color: #fff;
-    font-size: 0.8rem;
-    cursor: pointer;
-  }
-
-  .forget-password-button:hover {
-    background-color: #e70a0a;
-  }
+}

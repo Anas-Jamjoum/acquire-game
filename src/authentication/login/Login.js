@@ -1,4 +1,3 @@
-// src/login/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../Firebase';
@@ -20,14 +19,14 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log(userCredential.user.email);
 
-      // Check if the password is "No Password"
       if (password === 'No Password') {
         setError('Please change your password.');
       } else {
         if (user) {
           setMessage('Login successful!');
-          navigate('/menu'); // Redirect to Menu component
+          navigate('/menu'); 
         }
       }
     } catch (err) {
@@ -51,8 +50,9 @@ const Login = () => {
 
   return (
     <div className="Login">
-      <h1>Login</h1>
       <form onSubmit={handleLogin}>
+      <h1>Login</h1>
+
         <div>
           <label>Email:</label>
           <input
