@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Dashboard.css';
-import { db , auth} from '../../Firebase'; // Update the path to the correct location
+import { db , auth} from '../../Firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import images from './imageUtils'; // Import the images
+import images from './imageUtils';
 import ImageSelectionModal from './ImageSelectionModal';
-import FriendList from '../../friendsManagement/FriendList'; // Import the FriendList component
+import FriendList from '../../friendsManagement/FriendList';
+import { signOut } from 'firebase/auth';
 
 const Dashboard = () => {
     const [playerData, setPlayerData] = useState({ name: '', level: 0, profilePic: '' });
@@ -12,7 +13,7 @@ const Dashboard = () => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingPic, setIsEditingPic] = useState(false);
     const [newName, setNewName] = useState('');
-    const inputRef = useRef(null); // Move useRef inside the component
+    const inputRef = useRef(null);
 
     useEffect(() => {
       const fetchPlayerData = async () => {
@@ -69,6 +70,17 @@ const Dashboard = () => {
         }
       }
     };
+
+    const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        console.log('User logged out successfully');
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error logging out:', error);
+      }
+    };
+
     const profilePic = images[playerData.profilePic];
 
     return (
@@ -99,7 +111,10 @@ const Dashboard = () => {
           )}
         </div>
         </div>
+
         <p className="DashboardLevel">Level: {playerData.level}</p>
+        <button className="logout-button" onClick={handleLogout}>Log Out</button>
+
         <ImageSelectionModal
           isOpen={isEditingPic}
           onClose={() => setIsEditingPic(false)}
