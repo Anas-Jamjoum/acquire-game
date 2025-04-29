@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../Firebase';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'firebase/auth';
 import './Login.css';
 
 const Login = () => {
@@ -11,6 +11,27 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const lastLoginTime = user.metadata.lastSignInTime;
+        const lastLoginDate = new Date(lastLoginTime);
+        const currentTime = new Date();
+
+        const timeDifference = (currentTime - lastLoginDate) / 1000;
+        if (timeDifference > 30) {
+          console.log('Last login was more than 30 seconds ago. Logging out...');
+          signOut(auth).then(() => {
+            navigate('/'); 
+          });
+        } else {
+          navigate('/menu');
+        }
+      }
+    });
+    return () => unsubscribe(); 
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -19,15 +40,12 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log(userCredential.user.email);
 
       if (password === 'No Password') {
         setError('Please change your password.');
-      } else {
-        if (user) {
-          setMessage('Login successful!');
-          navigate('/menu'); 
-        }
+      } else if (user) {
+        setMessage('Login successful!');
+        navigate('/menu'); 
       }
     } catch (err) {
       setError('Invalid email or password');
@@ -50,9 +68,8 @@ const Login = () => {
 
   return (
     <div className="Login">
-      <form onSubmit={handleLogin}>
-      <h1>Login</h1>
-
+      <form onSubmit={handleLogin}>      
+        <h1>Login</h1>
         <div>
           <label>Email:</label>
           <input
@@ -75,7 +92,7 @@ const Login = () => {
         {message && <p className="message">{message}</p>}
         <button className="Login-button" type="submit">Login</button>
         <button className="forget-password-button" onClick={handleForgetPassword}>Forget Password</button>
-        </form>
+      </form>
     </div>
   );
 };
