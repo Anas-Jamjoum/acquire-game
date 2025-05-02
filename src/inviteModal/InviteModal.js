@@ -1,41 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './InviteModal.css';
 import { auth, db } from '../Firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 
 const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateEmail(inviteEmail)) {
-      try {
-        const password = generateTemporaryPassword();
-        await createUserWithEmailAndPassword(auth, inviteEmail, password);
-        alert('Invite sent successfully!');
-        await sendPasswordResetEmail(auth, inviteEmail);
-        const playerName = await generatePlayerName();
-        // Create a document in the 'players' collection with the email as the document ID
-        const playerDocRef = doc(db, 'players', inviteEmail);
-        await setDoc(playerDocRef, {
-          name: playerName,
-          level: 0,
-          profilePic: "pic1.png"
-        });
+    setError('');
 
-        onClose();
-      } catch (error) {
-        console.error('Error creating user: ', error);
-        alert('Error sending invite: ' + error.message);
+    if (!validateEmail(inviteEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      // Save the current user's credentials
+      const currentUser = auth.currentUser;
+      const currentEmail = currentUser?.email;
+      const currentPassword = prompt('Please enter your password to continue:'); // Prompt for the current user's password
+
+      const password = generateTemporaryPassword();
+      await createUserWithEmailAndPassword(auth, inviteEmail, password);
+      await sendPasswordResetEmail(auth, inviteEmail);
+
+      const playerName = generatePlayerName();
+      const playerDocRef = doc(db, 'players', inviteEmail);
+      await setDoc(playerDocRef, {
+        name: playerName,
+        level: 0,
+        profilePic: "pic1.png",
+        gamesPlayed: 0,
+        gamesWon: 0,
+        xp: 0,
+        nextLevelXp: 1000,
+        currentStreak: 0,
+      });
+
+      // Re-authenticate the original user
+      if (currentEmail && currentPassword) {
+        await signInWithEmailAndPassword(auth, currentEmail, currentPassword);
       }
-    } else {
-      alert('Please enter a valid email address.');
+
+      setIsSuccess(true);
+      setTimeout(() => {
+        setIsSuccess(false);
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error('Error creating user: ', error);
+      setError(error.message);
     }
   };
 
   const generatePlayerName = () => {
-    const randomNumber = Math.floor(Math.random() * 10000); // Generate a random number between 0 and 9999
+    const randomNumber = Math.floor(Math.random() * 10000);
     return `Player${randomNumber}`;
   };
 
@@ -45,28 +69,41 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   };
 
   const generateTemporaryPassword = () => {
-    // Generate a temporary password or use a predefined one
     return 'No Password';
   };
 
   return (
-    <div className="modalInvite">
-      <div className="modal-content">
-        <button className="close-button" onClick={onClose}>×</button>
-        <h2>Invite Someone</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Enter email address"
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            required
-          />
-          <div className="ButtonGroup1">
-            <button type="submit" className="SendInviteButton">Send Invite</button>
-            <button type="button" className="CancelButton" onClick={onClose}>Cancel</button>
+    <div className="InviteModal">
+      <div className="InviteModalContent">
+        <button className="CloseButton" onClick={onClose}>×</button>
+        
+        {isSuccess ? (
+          <div className="SuccessMessage">
+            <h2>Invite Sent Successfully!</h2>
+            <p>An invitation has been sent to {inviteEmail}</p>
           </div>
-        </form>
+        ) : (
+          <>
+            <h2>Invite Player</h2>
+            <form onSubmit={handleSubmit} className="InviteForm">
+              <div className="InputGroup">
+                <input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                  className="EmailInput"
+                />
+                {error && <p className="ErrorMessage">{error}</p>}
+              </div>
+              <div className="ButtonGroup">
+                <button type="submit" className="SendButton">Send Invite</button>
+                <button type="button" className="CancelButton" onClick={onClose}>Cancel</button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

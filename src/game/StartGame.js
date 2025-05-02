@@ -1065,10 +1065,40 @@ const StartGame = () => {
 
       setWinner(theWinner);
 
+      updatedPlayers.forEach((player) => {
+        if (!player.email.startsWith("bot")) {
+          // Increment gamesPlayed and XP
+          player.gamesPlayed = (player.gamesPlayed || 0) + 1;
+          player.xp = (player.xp || 0) + 100;
+      
+          // Check if the player levels up
+          if (player.xp >= player.nextLevelXp) {
+            player.level = (player.level || 1) + 1; // Increment level
+            player.xp -= player.nextLevelXp; // Carry over remaining XP
+            player.nextLevelXp = (player.nextLevelXp || 1000) + 100; // Increase nextLevelXp
+          }
+      
+          // Update the player's data in Firestore
+          try {
+            const playerDocRef = doc(db, "players", player.email);
+            updateDoc(playerDocRef, {
+              gamesPlayed: player.gamesPlayed,
+              xp: player.xp,
+              level: player.level,
+              nextLevelXp: player.nextLevelXp,
+            });
+            console.log(`Updated player ${player.name} in Firestore.`);
+          } catch (err) {
+            console.error(`Error updating player ${player.name}:`, err);
+          }
+        }
+      });
+
       try {
         const gameDocRefPlayers = doc(db, "players", richestPlayer.email);
         updateDoc(gameDocRefPlayers, {
-          level: richestPlayer.level + 1,
+          gamesWon: richestPlayer.gamesWon + 1,
+          currentStreak: richestPlayer.currentStreak + 1,
         });
         console.log("Updated player level in Firestore:", richestPlayer.email);
 
@@ -1288,7 +1318,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS, false);
+    // checkForWinner(updatedPlayers, HQS, false);
   };
 
   const checkMaxStocksAi = (hq, player) => {
@@ -1479,7 +1509,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS, false);
+    // checkForWinner(updatedPlayers, HQS, false);
   };
 
   function getConnectedGrayTiles(board, tileIndex) {

@@ -1,111 +1,181 @@
+/* HostGameModal.css - Compact Version */
 .HostGameModal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 4px solid #007bff; /* Add blue border at the bottom */
-
+  z-index: 9000;
+  backdrop-filter: blur(5px);
 }
 
 .HostGameModalContent {
-  background-color: #c8ecf0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  width: 300px;
-  max-width: 90%;
+  background-color: rgba(15, 23, 42, 0.95);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 85%;
+  max-width: 400px;
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3),
+              inset 0 0 8px rgba(255, 255, 255, 0.1);
   position: relative;
-  border: 4px solid #007bff; /* Add blue border at the bottom */
-
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  color: #fff;
 }
 
 .CloseButton {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
   border: none;
+  color: #ff6b6b;
   font-size: 1.5rem;
   cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.CloseButton:hover {
+  color: #ff4444;
+}
+
+.HostGameModalContent h1 {
+  text-align: center;
+  margin: 0.5rem 0 1rem;
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 195, 255, 0.8);
+  letter-spacing: 1px;
 }
 
 .CreateGameForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
 }
 
-.CreateGameForm label {
+label {
   display: flex;
   flex-direction: column;
-  font-size: 1rem;
-  margin-bottom: 10px;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #a5b4fc;
 }
 
-.CreateGameForm input,
-.CreateGameForm textarea,
-.CreateGameForm select {
-  background-color: #edf4fb;  
-  color: #000000;
-  padding: 5px;
-  border-color: #007bff;
-  border-radius: 5px;
-  font-size: 1rem;
-  text-align: center;
+input[type="text"],
+input[type="password"],
+textarea,
+
+select {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.8rem;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300c3ff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1rem;
+  padding-right: 2rem;
+}
+
+textarea {
+  min-height: 60px;
+  resize: vertical;
+  
+}
+
+select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300c3ff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.8rem;
+  padding-right: 1.8rem;
+}
+
+select option {
+  background-color: rgba(15, 23, 42, 0.95);
+  color: #fff;
+  padding: 0.5rem;
+}
+
+.ErrorMessage {
+  color: #ff6b6b;
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
 }
 
 .ButtonGroup {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
 }
 
+.CreateButton,
 .ButtonGroup button {
-  padding: 10px 20px;
-  border: none;
+  padding: 0.6rem 1rem;
   border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
-.ButtonGroup button:first-child {
-  background-color: #28a745;
-  color: white;
+.CreateButton {
+  background: linear-gradient(135deg, #00c3ff, #0084ff);
+  color: #fff;
+  border: none;
 }
 
-.ButtonGroup button:first-child:hover {
-  background-color: #218838;
-}
-
-.ButtonGroup button:last-child {
-  background-color: #dc3545;
-  color: white;
-}
-
-.ButtonGroup button:last-child:hover {
-  background-color: #c82333;
+.ButtonGroup button:not(.CreateButton) {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
 }
 
 .GameCreated {
   text-align: center;
+  padding: 0.5rem;
 }
 
 .GameCreated h2 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #51cf66;
 }
 
 .GameCreated p {
-  font-size: 1rem;
-  color: #666;
+  font-size: 0.85rem;
+  margin: 0.3rem 0;
 }
 
-.ErrorMessage {
-  color: red;
-  font-size: 0.9rem;
-  margin-top: 5px;
+@media (max-width: 480px) {
+  .HostGameModalContent {
+    padding: 1rem;
+    width: 90%;
+  }
+  
+  .ButtonGroup {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .ButtonGroup button {
+    width: 100%;
+    padding: 0.5rem;
+  }
 }

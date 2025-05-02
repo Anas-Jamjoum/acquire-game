@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../Firebase'; // Update the path to the correct location
-import './Update.css'; // Import the CSS file for styling
+import { db } from '../../Firebase'; 
+import './Update.css'; 
 
 const Update = () => {
   const [updates, setUpdates] = useState([]);
+  const [error, setError] = useState(''); 
 
   useEffect(() => {
     const fetchUpdates = async () => {
-      const updatesCollection = collection(db, 'updates');
-      const updatesSnapshot = await getDocs(updatesCollection);
-      const updatesList = updatesSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          ...data,
-          date: data.date.toDate() // Convert Firestore Timestamp to JavaScript Date
-        };
-      });
+      try {
+        const updatesCollection = collection(db, 'updates');
+        const updatesSnapshot = await getDocs(updatesCollection);
+        const updatesList = updatesSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            ...data,
+            date: data.date?.toDate ? data.date.toDate() : new Date(), 
+          };
+        });
 
-      // Sort updates by date, latest update first
-      updatesList.sort((a, b) => new Date(b.date) - new Date(a.date));
+        updatesList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      setUpdates(updatesList);
+        setUpdates(updatesList);
+      } catch (err) {
+        console.error('Error fetching updates:', err);
+        setError('Failed to fetch updates. Please try again later.');
+      }
     };
 
     fetchUpdates();
@@ -30,12 +35,16 @@ const Update = () => {
   return (
     <div className="Updates">
       <h1>Updates</h1>
+      {error && <p className="error">{error}</p>}
       {updates.length > 0 ? (
         updates.map((update, index) => (
-          <p key={index}>{update.text}</p>
+          <div key={index} className="UpdateItem">
+            <p className="UpdateText">{update.text}</p>
+            <p className="UpdateDate">{update.date.toLocaleDateString()}</p>
+          </div>
         ))
       ) : (
-        <p>No updates available.</p>
+        !error && <p>No updates available.</p>
       )}
     </div>
   );

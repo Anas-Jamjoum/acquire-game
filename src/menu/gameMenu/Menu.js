@@ -2,22 +2,32 @@ import React, { useState } from 'react';
 import './Menu.css';
 import InviteModal from '../../inviteModal/InviteModal';
 import Dashboard from '../dashboard/Dashboard';
-import Update from '../updates/Update'; // Import the Update component
-import HostGameModal from '../HostGameModal/HostGameModal'; // Import the HostGameModal component
-import JoinRoom from '../joinRoom/JoinRoom'; // Import the JoinRoom component
+import Update from '../updates/Update';
+import HostGameModal from '../HostGameModal/HostGameModal';
+import JoinRoom from '../joinRoom/JoinRoom';
+import FriendList from '../../friendsManagement/FriendList';
+
+let setActiveView;
+
+export const handleJoinRoom = () => {
+  if (setActiveView) {
+    setActiveView('join');
+  }
+};
 
 const Menu = () => {
+  const [activeView, setView] = useState('dashboard'); // 'dashboard', 'join', 'friends'
+  setActiveView = setView;
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isHostGameModalOpen, setHostGameModalOpen] = useState(false);
-  const [isJoinRoomOpen, setJoinRoomOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
 
   const handleHostGame = () => {
-    setHostGameModalOpen(!isHostGameModalOpen);
+    setHostGameModalOpen(true);
   };
 
   const handleInvite = () => {
-    setInviteModalOpen(!isInviteModalOpen);
+    setInviteModalOpen(true);
   };
 
   const handleInviteSubmit = () => {
@@ -26,51 +36,87 @@ const Menu = () => {
     setInviteEmail('');
   };
 
-  const handleCloseModal = () => {
-    setInviteModalOpen(false);
-    setInviteEmail('');
-  };
 
-  const handleCloseHostGameModal = () => {
-    setHostGameModalOpen(false);
-  };
-
-  const handleJoinRoom = () => {
-    setJoinRoomOpen(!isJoinRoomOpen);
-  };
 
   const handleGameRules = () => {
-    window.open('https://renegadegamestudios.com/content/File%20Storage%20for%20site/Rulebooks/Acquire/Acquire_RGS_Rulebook_WEB.pdf?srsltid=AfmBOoqi2ctbl6Htr6JlXmYOrty9IXFHV6jDY0RnQ-_k2gLCr8DhamBo', '_blank'); // Replace with the actual URL
+    window.open('https://renegadegamestudios.com/content/File%20Storage%20for%20site/Rulebooks/Acquire/Acquire_RGS_Rulebook_WEB.pdf', '_blank');
+  };
+
+  const handleViewDashboard = () => {
+    setActiveView('dashboard');
+  };
+
+  const handleViewFriends = () => {
+    setActiveView('friends');
   };
 
   return (
-    <div className="MenuContainer">
-      <div className="Menu">
-        <h1>Game Menu</h1>
-        <button onClick={handleHostGame}>Host Game</button>
-        <button onClick={handleJoinRoom}>Join Game</button>
-        <button onClick={handleInvite}>Invite</button>
-        <button onClick={handleGameRules}>Game Rules</button>
-      </div>
-      <div className="GameDescription">
-      {!isJoinRoomOpen && (
-        <div className="GameTitle">
-          <Dashboard />
+    <div className="menu-container">
+      <header className="menu-header">
+        <div className="game-logo">ACQUIRE</div>
+        <nav className="menu-nav">
+          <button 
+            className={`nav-btn ${activeView === 'dashboard' ? 'active' : ''}`}
+            onClick={handleViewDashboard}
+          >
+            DASHBOARD
+          </button>
+          <button 
+            className={`nav-btn ${activeView === 'join' ? 'active' : ''}`}
+            onClick={handleJoinRoom}
+          >
+            JOIN GAME
+          </button>
+          <button 
+            className={`nav-btn ${activeView === 'updates' ? 'active' : ''}`}
+            onClick={handleViewFriends}
+          >
+            UpdateS
+          </button>
+        </nav>
+      </header>
+
+      {/* Main content area */}
+      <main className="menu-main">
+        {/* Action buttons sidebar */}
+        {activeView === 'join' && (
+  <div className="action-sidebar">
+    <button className="action-btn host-btn" onClick={handleHostGame}>
+      HOST GAME
+    </button>
+    <button className="action-btn invite-btn" onClick={handleInvite}>
+      INVITE FRIEND
+    </button>
+    <button className="action-btn rules-btn" onClick={handleGameRules}>
+      GAME RULES
+    </button>
+  </div>
+)}
+
+        {/* Content view */}
+        <div className="content-view">
+          {activeView === 'dashboard' && <Dashboard />}
+          {activeView === 'join' && <JoinRoom />}
+          {activeView === 'updates' && <Update />}
         </div>
-      )}
-        {isJoinRoomOpen && <JoinRoom />}
-      </div>
-      <Update /> {/* Use the Update component */}
+      </main>
+
+      {/* Update notifications */}
+      
+
+      {/* Modals */}
       <InviteModal
         isOpen={isInviteModalOpen}
-        onClose={handleCloseModal}
+        onClose={() => setInviteModalOpen(false)}
         onSubmit={handleInviteSubmit}
         inviteEmail={inviteEmail}
         setInviteEmail={setInviteEmail}
       />
+      
+      <FriendList/>
       <HostGameModal
         isOpen={isHostGameModalOpen}
-        onClose={handleCloseHostGameModal}
+        onClose={() => setHostGameModalOpen(false)}
       />
     </div>
   );

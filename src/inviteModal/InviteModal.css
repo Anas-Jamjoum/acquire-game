@@ -1,77 +1,187 @@
-/* src/menu/InviteModal.css */
-.modalInvite {
+/* InviteModal.css */
+.InviteModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
-  margin-top: 15%;
-  margin-left: 35%;
-  min-width: 400px;
-  overflow: auto;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+}
+
+.InviteModalContent {
+  background-color: rgba(15, 23, 42, 0.95);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 85%;
+  max-width: 400px;
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3),
+              inset 0 0 8px rgba(255, 255, 255, 0.1);
+  position: relative;
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  color: #fff;
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.CloseButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.CloseButton:hover {
+  color: #ff4444;
+  transform: scale(1.1);
+}
+
+.InviteModalContent h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 195, 255, 0.8);
+  letter-spacing: 1px;
+}
+
+.InviteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.InputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.EmailInput {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.8rem;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  width: 100%;
+  transition: all 0.3s;
+}
+
+.EmailInput:focus {
+  outline: none;
+  border-color: rgba(0, 195, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.3);
+}
+
+.ErrorMessage {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+}
+
+.ButtonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.SendButton {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #000000, #8e44ad); /* Purple gradient */
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.SendButton:hover {
+  background: linear-gradient(135deg, #8e44ad, #9b59b6); /* Darker purple on hover */
+  box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+  transform: translateY(-2px);
+}
+
+.CancelButton {
+  padding: 0.8rem 1.5rem;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+
+.CancelButton:hover {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.8);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.SuccessMessage {
+  text-align: center;
+  padding: 1rem;
+}
+
+.SuccessMessage h2 {
+  color: #51cf66;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px rgba(81, 207, 102, 0.5);
+}
+
+.SuccessMessage p {
+  color: #a5b4fc;
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 480px) {
+  .InviteModalContent {
+    padding: 1rem;
+    width: 90%;
   }
   
-  .modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
+  .ButtonGroup {
+    flex-direction: column;
   }
   
-  .modal-content h2 {
-    margin-bottom: 20px;
+  .SendButton,
+  .CancelButton {
+    width: 100%;
+    padding: 0.7rem;
   }
-  
-  .modal-content label {
-    display: block;
-    margin-bottom: 10px;
-  }
-  
-  .modal-content input {
-    padding: 10px;
-    border-color: #007bff;
-    border-radius: 4px;
-    font-size: 1rem;
-    margin-bottom: 20px;
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 30px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  
-  .ButtonGroup1 {
-    position: center;
-  }
-  
-  .ButtonGroup1 button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 0 15px;
-  }
-  
-  .ButtonGroup1 button:first-child {
-    background-color: #28a745;
-    color: white;
-  }
-  
-  .ButtonGroup1 button:first-child:hover {
-    background-color: #218838;
-  }
-  
-  .ButtonGroup1 button:last-child {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  .ButtonGroup1 button:last-child:hover {
-    background-color: #c82333;
-  }
+}
