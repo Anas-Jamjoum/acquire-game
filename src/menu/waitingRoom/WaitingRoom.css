@@ -350,3 +350,47 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
+.PlayerCard {
+  position: relative; /* Needed for absolute positioning of tooltip */
+}
+
+.PlayerDetailsPopup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  background-color: var(--glass-bg);
+  border: 1px solid var(--dark-border);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 0 15px rgba(0, 195, 255, 0.3);
+  backdrop-filter: blur(5px);
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.PlayerCard:hover .PlayerDetailsPopup {
+  opacity: 1;
+  visibility: visible;
+}
+
+.PlayerDetailsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.PlayerDetailsContent p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.PlayerDetailsContent strong {
+  color: var(--primary);
+}

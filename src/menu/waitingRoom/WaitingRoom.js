@@ -214,29 +214,42 @@ const WaitingRoom = () => {
               <div className="PlayersList">
                 <p>Players:</p>
                 {playersData.map((player, index) => (
-                  <div key={index} className="PlayerCard">
-                    <img
-                      src={images[player.profilePic]}
-                      alt={player.name}
-                      className="PlayerPic"
-                    />
-                    <p>
-                      {player.email.startsWith('bot')
-                        ? player.name + ' (Bot)'
-                        : player.name}
-                      {player.email === gameData.host ? ' (Host)' : ''}
-                    </p>
-                    {gameData.host === userEmail &&
-                      player.email !== gameData.host && (
-                        <button
-                          id="kickButton"
-                          onClick={() => handleRemovePlayer(player)}
-                        >
-                          Kick Player
-                        </button>
-                      )}
-                  </div>
-                ))}
+  <div key={index} className="PlayerCard">
+    <img
+      src={images[player.profilePic]}
+      alt={player.name}
+      className="PlayerPic"
+    />
+    <p>
+      {player.email.startsWith('bot')
+        ? player.name + ' (Bot)'
+        : player.name}
+      {player.email === gameData.host ? ' (Host)' : ''}
+    </p>
+    
+    {/* Add this hover details popup */}
+    <div className="PlayerDetailsPopup">
+      <div className="PlayerDetailsContent">
+        <p><strong>Name:</strong> {player.name}</p>
+        <p><strong>Level:</strong> {player.level || 0}</p>
+        <p><strong>Win Rate:</strong> {player.gamesPlayed > 0
+                            ? parseInt((player.gamesWon / player.gamesPlayed) * 100, 10)
+                            : 0}% </p>
+        <p><strong>Current Streak:</strong> {player.currentStreak || 0}</p>
+      </div>
+    </div>
+
+    {gameData.host === userEmail &&
+      player.email !== gameData.host && (
+        <button
+          id="kickButton"
+          onClick={() => handleRemovePlayer(player)}
+        >
+          Kick Player
+        </button>
+      )}
+  </div>
+))}
                 {gameData.host === userEmail && playersData.length < 4 && (
                   <button
                     className="AddBotButton"
