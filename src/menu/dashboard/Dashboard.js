@@ -216,7 +216,7 @@ const Dashboard = () => {
                     <h3 className="section-title">QUICK ACTIONS</h3>
                     <div className="action-buttons">
                         <button className="action-btn new-game" onClick={() => setHostGameModalOpen(true)}>
-                            NEW GAME
+                            HOST A GAME
                         </button>
                         <button className="action-btn join-game" onClick={() => handleJoinRoom()}>
                             JOIN GAME
