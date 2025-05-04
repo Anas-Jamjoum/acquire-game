@@ -98,7 +98,7 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
                 {error && <p className="ErrorMessage">{error}</p>}
               </div>
               <div className="ButtonGroup">
-                <button type="submit" className="SendButton">Send Invite</button>
+                <button type="submit" className="CreateButton">Send Invite</button>
                 <button type="button" className="CancelButton" onClick={onClose}>Cancel</button>
               </div>
             </form>
