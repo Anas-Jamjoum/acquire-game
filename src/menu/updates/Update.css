@@ -1,9 +1,10 @@
+/* Main Container */
 .Updates {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  width: 100vw;
+  min-height: 90vh;
+  width: 90vw;
   padding: 20px;
   box-sizing: border-box;
   background-size: cover;
@@ -12,139 +13,250 @@
   background-attachment: fixed;
   font-family: 'Orbitron', 'Segoe UI', sans-serif;
   color: #fff;
-  overflow: auto;
   position: relative;
+  overflow-x: hidden;
 }
 
-.Updates::after {
+/* Dark blurred overlay */
+.Updates::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 10, 20, 0.85);
+  backdrop-filter: blur(12px) brightness(0.7);
   z-index: -1;
 }
 
+/* Content container */
+.update-container {
+  width: 90%;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 30px;
+  border-radius: 15px;
+  background: rgba(10, 18, 35, 0.7);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0, 120, 255, 0.2),
+              inset 0 0 12px rgba(0, 195, 255, 0.3);
+  border: 1px solid rgba(0, 195, 255, 0.15);
+}
+
+/* Header styling */
 .Updates h1 {
   text-align: center;
-  margin: 30px 0;
-  font-size: 2.5rem;
+  margin: 0 0 30px 0;
+  font-size: 2.8rem;
+  font-weight: 600;
   color: #fff;
-  text-shadow: 0 0 10px rgba(0, 195, 255, 0.8);
-  letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(0, 195, 255, 0.9);
+  letter-spacing: 3px;
   position: relative;
+  padding-bottom: 15px;
 }
 
 .Updates h1::after {
   content: '';
   position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 195, 255, 0.8), transparent);
-  animation: pulse 2s infinite;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 3px;
+  background: linear-gradient(90deg, 
+              transparent, 
+              rgba(0, 195, 255, 0.9), 
+              transparent);
+  animation: pulse 3s infinite ease-in-out;
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+  0%, 100% { opacity: 0.4; width: 50%; }
+  50% { opacity: 1; width: 60%; }
 }
 
+/* Update item container */
 .UpdateItem {
-  width: 90%;
-  max-width: 800px;
-  margin-bottom: 20px;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: rgba(15, 23, 42, 0.9); 
-  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
-              inset 0 0 10px rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 195, 255, 0.3);
-  backdrop-filter: blur(4px);
-  transition: transform 0.3s, box-shadow 0.3s;
+  width: 100%;
+  margin-bottom: 25px;
+  padding: 25px;
+  border-radius: 12px;
+  background: rgba(15, 25, 45, 0.8);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 20px rgba(0, 60, 120, 0.3),
+              inset 0 0 8px rgba(0, 195, 255, 0.2);
+  border: 1px solid rgba(0, 150, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
 }
 
 .UpdateItem:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 25px rgba(0, 195, 255, 0.5), 
-              inset 0 0 15px rgba(255, 255, 255, 0.2);
-  border-color: rgba(0, 195, 255, 0.6);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 150, 255, 0.4),
+              inset 0 0 12px rgba(0, 230, 255, 0.3);
+  border-color: rgba(0, 230, 255, 0.4);
+  background: rgba(20, 35, 60, 0.9);
+}
+
+/* Text container with 20 char limit */
+.UpdateText-container {
+  position: relative;
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .UpdateText {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 15px;
-  color: #e2e8f0;
-  text-shadow: 0 0 5px rgba(0, 195, 255, 0.3);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  color: #f0f4ff;
+  text-shadow: 0 0 5px rgba(0, 150, 255, 0.3);
+  transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  display: block;
+  width: 100%;
+  white-space: pre-wrap;
 }
 
-.UpdateDate {
+/* Collapsed state (3 lines max) */
+.UpdateText.collapsed {
+  max-height: 6.3em; /* 1.7 line-height * 3 lines */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  max-width: 100%; /* Override for line clamping */
+  white-space: normal;
+}
+
+/* Expanded state */
+.UpdateText.expanded {
+  max-height: 2000px;
+  white-space: pre-wrap;
+}
+
+/* Read More button */
+.read-more-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 150, 255, 0.2);
+  color: #8ab4f8;
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 4px;
   font-size: 0.8rem;
-  text-align: right;
-  color: #a5b4fc;
-  margin-top: 10px;
-  text-shadow: 0 0 5px rgba(0, 195, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
+.read-more-btn:hover {
+  background: rgba(0, 195, 255, 0.3);
+  color: #00c3ff;
+  border-color: rgba(0, 195, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.3);
+}
+
+.read-more-btn .icon {
+  margin-left: 6px;
+  transition: transform 0.3s;
+  font-size: 0.7rem;
+}
+
+.read-more-btn.expanded .icon {
+  transform: rotate(180deg);
+}
+
+/* Date styling */
+.UpdateDate {
+  font-size: 0.85rem;
+  text-align: right;
+  color: #8ab4f8;
+  margin-top: 15px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(0, 150, 255, 0.2);
+}
+
+/* Error message */
 .error {
   color: #ff6b6b;
-  font-size: 0.9rem;
+  font-size: 1rem;
   text-align: center;
-  margin: 10px 0;
-  text-shadow: 0 0 8px rgba(255, 107, 107, 0.7);
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background: rgba(255, 50, 50, 0.15);
+  backdrop-filter: blur(5px);
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+  box-shadow: inset 0 0 8px rgba(255, 0, 0, 0.3);
 }
 
-.Updates::before {
-  content: 'ACQUIRE v1.0';
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #a5b4fc;
+  font-size: 1.2rem;
+  text-shadow: 0 0 5px rgba(0, 150, 255, 0.3);
+}
+
+/* Version watermark */
+.version-watermark {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  color: rgb(255, 255, 255);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
   letter-spacing: 2px;
-  border-radius: 10px;
-  padding: 5px 10px;
-  background-color: rgba(15, 23, 42, 0.9); 
-  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
-              inset 0 0 10px rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 195, 255, 0.3);
-  backdrop-filter: blur(4px);
-  z-index: 1;
+  padding: 8px 15px;
+  border-radius: 20px;
+  background: rgba(10, 25, 50, 0.7);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 15px rgba(0, 150, 255, 0.3);
+  border: 1px solid rgba(0, 195, 255, 0.2);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
+  .update-container {
+    width: 95%;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+  }
+  
   .Updates h1 {
-    font-size: 2rem;
-    margin: 20px 0;
+    font-size: 2.2rem;
+    margin-bottom: 20px;
   }
   
   .UpdateItem {
-    width: 95%;
-    padding: 15px;
-    backdrop-filter: blur(3px);
+    padding: 20px;
   }
   
-  .Updates::after {
-    backdrop-filter: blur(6px);
+  .UpdateText {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
+  .Updates {
+    padding: 15px;
+  }
+  
   .Updates h1 {
     font-size: 1.8rem;
+    letter-spacing: 2px;
   }
   
-  .UpdateText {
-    font-size: 0.9rem;
-  }
+
   
-  .Updates::after {
-    backdrop-filter: blur(4px);
+  .version-watermark {
+    font-size: 0.7rem;
+    padding: 6px 12px;
   }
 }
