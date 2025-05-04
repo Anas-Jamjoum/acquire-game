@@ -47,7 +47,7 @@ const Update = () => {
   };
 
   const needsReadMore = (text) => {
-    return text.length > 60; // Approximately 3 lines of 20 chars
+    return text.length > 60;
   };
 
   return (
