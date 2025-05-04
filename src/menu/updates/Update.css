@@ -1,9 +1,150 @@
- .Updates h1 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+.Updates {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  box-sizing: border-box;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  color: #fff;
+  overflow: auto;
+  position: relative;
+}
+
+.Updates::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
+.Updates h1 {
+  text-align: center;
+  margin: 30px 0;
+  font-size: 2.5rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.8);
+  letter-spacing: 2px;
+  position: relative;
+}
+
+.Updates h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 195, 255, 0.8), transparent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.UpdateItem {
+  width: 90%;
+  max-width: 800px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgba(15, 23, 42, 0.9); 
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  backdrop-filter: blur(4px);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.UpdateItem:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 25px rgba(0, 195, 255, 0.5), 
+              inset 0 0 15px rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 195, 255, 0.6);
+}
+
+.UpdateText {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  color: #e2e8f0;
+  text-shadow: 0 0 5px rgba(0, 195, 255, 0.3);
+}
+
+.UpdateDate {
+  font-size: 0.8rem;
+  text-align: right;
+  color: #a5b4fc;
+  margin-top: 10px;
+  text-shadow: 0 0 5px rgba(0, 195, 255, 0.2);
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 10px 0;
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.7);
+}
+
+.Updates::before {
+  content: 'ACQUIRE v1.0';
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  color: rgb(255, 255, 255);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  border-radius: 10px;
+  padding: 5px 10px;
+  background-color: rgba(15, 23, 42, 0.9); 
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .Updates h1 {
+    font-size: 2rem;
+    margin: 20px 0;
   }
   
-  .Updates p {
-    font-size: 1rem;
-    color: #666;
+  .UpdateItem {
+    width: 95%;
+    padding: 15px;
+    backdrop-filter: blur(3px);
   }
+  
+  .Updates::after {
+    backdrop-filter: blur(6px);
+  }
+}
+
+@media (max-width: 480px) {
+  .Updates h1 {
+    font-size: 1.8rem;
+  }
+  
+  .UpdateText {
+    font-size: 0.9rem;
+  }
+  
+  .Updates::after {
+    backdrop-filter: blur(4px);
+  }
+}

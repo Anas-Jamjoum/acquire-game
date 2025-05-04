@@ -16,7 +16,7 @@ export const handleJoinRoom = () => {
 };
 
 const Menu = () => {
-  const [activeView, setView] = useState('dashboard'); // 'dashboard', 'join', 'friends'
+  const [activeView, setView] = useState('dashboard'); // 'dashboard', 'join', 'updates'
   setActiveView = setView;
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isHostGameModalOpen, setHostGameModalOpen] = useState(false);
@@ -46,8 +46,8 @@ const Menu = () => {
     setActiveView('dashboard');
   };
 
-  const handleViewFriends = () => {
-    setActiveView('friends');
+  const handleViewUpdates = () => {
+    setActiveView('updates');
   };
 
   return (
@@ -69,16 +69,14 @@ const Menu = () => {
           </button>
           <button 
             className={`nav-btn ${activeView === 'updates' ? 'active' : ''}`}
-            onClick={handleViewFriends}
+            onClick={handleViewUpdates}
           >
             UpdateS
           </button>
         </nav>
       </header>
 
-      {/* Main content area */}
       <main className="menu-main">
-        {/* Action buttons sidebar */}
         {activeView === 'join' && (
   <div className="action-sidebar">
     <button className="action-btn host-btn" onClick={handleHostGame}>
