@@ -1086,6 +1086,7 @@ const StartGame = () => {
               xp: player.xp,
               level: player.level,
               nextLevelXp: player.nextLevelXp,
+              currentStreak: 0,
             });
             console.log(`Updated player ${player.name} in Firestore.`);
           } catch (err) {
