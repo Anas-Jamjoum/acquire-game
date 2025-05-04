@@ -141,7 +141,7 @@ const EditRoomDetails = ({ isOpen, onClose, gameData, gameId }) => {
             />
           </label>
           <div className="ButtonGroup">
-            <button type="submit" className="SaveButton">Save</button>
+            <button type="submit" className="CreateButton">Save</button>
             <button type="button" onClick={onClose}>Cancel</button>
           </div>
         </form>

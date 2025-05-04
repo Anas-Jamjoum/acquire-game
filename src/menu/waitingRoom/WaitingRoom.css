@@ -4,26 +4,26 @@
   padding: 2rem;
   color: var(--text-light);
   font-family: 'Orbitron', 'Segoe UI', sans-serif;
-  min-height: 100vh; /* Ensure full viewport height */
-  width: 100vw; /* Ensure full viewport width */
-  box-sizing: border-box; /* Include padding in width/height */
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  min-height: 100vh;
+  width: 100vw; 
+  box-sizing: border-box;
+  overflow-x: hidden; 
   background: 
     linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 14, 29, 0.95) 100%),
     repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px),
     repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px);
-  background-attachment: fixed; /* Keep background fixed during scroll */
-  background-size: cover; /* Ensure background covers entire element */
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 /* Main content container with controlled overflow */
 .WaitingRoomContent {
   max-width: 1200px;
   margin: 0 auto;
-  height: calc(100vh - 4rem); /* Account for padding */
+  height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Enable vertical scrolling when needed */
+  overflow-y: auto; 
 }
 
 .WaitingRoom h1 {
@@ -289,17 +289,17 @@
   .WaitingRoom {
     padding: 1rem;
     height: 100vh;
-    overflow-y: auto; /* Enable scrolling for entire page on mobile */
+    overflow-y: auto; 
   }
 
   .WaitingRoomContent {
-    height: auto; /* Let content determine height on mobile */
-    min-height: calc(100vh - 2rem); /* Account for reduced padding */
-    overflow-y: visible; /* Disable nested scrolling on mobile */
+    height: auto; 
+    min-height: calc(100vh - 2rem); 
+    overflow-y: visible; 
   }
 
   .PlayersList {
-    max-height: none; /* Remove height restrictions on mobile */
+    max-height: none; 
     overflow-y: visible;
   }
   .GameDetailsRow {
