@@ -1,5 +1,3 @@
-/* JoinRoom.css */
-
 .JoinRoom {
   padding: 2rem;
   color: var(--text-light);
@@ -8,9 +6,7 @@
   margin: 0 auto;
   min-height: 100vh;
   background: 
-    /* Dark blue gradient background */
     linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 14, 29, 0.95) 100%),
-    /* Subtle grid pattern */
     repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px),
     repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px);
   background-attachment: fixed;
@@ -236,7 +232,6 @@
   text-shadow: 0 0 5px rgba(0, 195, 255, 0.2);
 }
 
-/* Password Modal */
 .PasswordModal {
   position: fixed;
   top: 0;
@@ -359,7 +354,6 @@
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
 
-/* Animations */
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -377,7 +371,6 @@
   100% { box-shadow: 0 0 5px rgba(0, 195, 255, 0.3); }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .RoomInfo {
     grid-template-columns: 2fr 1fr 1fr;

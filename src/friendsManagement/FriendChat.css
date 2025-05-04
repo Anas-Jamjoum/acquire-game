@@ -1,5 +1,3 @@
-/* FriendChat.css */
-
 .chat-container {
   position: fixed;
   bottom: 80px;
@@ -155,7 +153,6 @@
   box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4);
 }
 
-/* Scrollbar styling */
 .chat-body::-webkit-scrollbar {
   width: 6px;
 }
@@ -165,7 +162,6 @@
   border-radius: 3px;
 }
 
-/* Animations */
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -188,7 +184,6 @@
   }
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .chat-container {
     width: 90vw;

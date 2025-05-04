@@ -1,6 +1,4 @@
 /* ImageSelectionModal.css */
-
-/* Modal Overlay */
 .modal {
   position: fixed;
   top: 0;
@@ -16,7 +14,6 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Modal Content */
 .modal-content {
   background-color: var(--glass-bg);
   border: 1px solid var(--dark-border);
@@ -31,7 +28,6 @@
   animation: slideUp 0.3s ease-out;
 }
 
-/* Close Button */
 .close {
   position: absolute;
   top: 1rem;
@@ -48,7 +44,6 @@
   transform: scale(1.1);
 }
 
-/* Modal Title */
 .modal-content h2 {
   color: var(--primary);
   text-align: center;
@@ -58,7 +53,6 @@
   letter-spacing: 1px;
 }
 
-/* Image Grid Container - Fixed 4 columns */
 .ImageSelection {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -66,7 +60,6 @@
   justify-items: center;
 }
 
-/* Selectable Images */
 .SelectableImage {
   width: 100%;
   height: auto;
@@ -85,7 +78,6 @@
   box-shadow: 0 0 15px rgba(0, 195, 255, 0.5);
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -102,7 +94,6 @@
   }
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
   .modal-content {
     padding: 1.5rem;

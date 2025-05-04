@@ -1,5 +1,4 @@
 /* EditRoomDetails.css */
-
 .EditRoomDetailsModal {
   position: fixed;
   top: 0;
@@ -35,19 +34,17 @@
   right: 1.5rem;
   background: transparent;
   border: none;
-  color: var(--text-light); /* Changed from secondary to text-light */
   font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.2s;
-  z-index: 1001; /* Added to ensure it's above other elements */
+  z-index: 1001; 
 }
 
 .CloseButton:hover {
   transform: scale(1.1);
-  color: var(--primary); /* Changed hover color to primary */
+  color: var(--primary);
 }
 
-/* ... (keep all other existing styles) ... */
 
 .SaveButton {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));

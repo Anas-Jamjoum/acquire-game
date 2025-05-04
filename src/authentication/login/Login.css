@@ -44,7 +44,6 @@
   
 }
 
-
 .Login h1::after {
   content: '';
   position: absolute;
@@ -184,7 +183,6 @@
   border: 1px solid rgba(0, 195, 255, 0.2);
   backdrop-filter: blur(5px);}
 
-/* Responsive design */
 @media (max-width: 480px) {
   .Login form {
       width: 85%;
