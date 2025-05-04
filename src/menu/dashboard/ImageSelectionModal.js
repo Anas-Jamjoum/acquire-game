@@ -1,8 +1,8 @@
 import React from 'react';
 import './ImageSelectionModal.css';
-import images from './imageUtils'; // Import the images
+import images from './imageUtils'; 
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../Firebase'; // Update the path to the correct location
+import { db } from '../../Firebase'; 
 
 const ImageSelectionModal = ({ email,isOpen, onClose, onSelect}) => {
   if (!isOpen) return null;
