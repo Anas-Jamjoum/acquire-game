@@ -1,90 +1,345 @@
+/* WaitingRoom.css */
+
 .WaitingRoom {
+  padding: 2rem;
+  color: var(--text-light);
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  min-height: 100vh; /* Ensure full viewport height */
+  width: 100vw; /* Ensure full viewport width */
+  box-sizing: border-box; /* Include padding in width/height */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  background: 
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 14, 29, 0.95) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px);
+  background-attachment: fixed; /* Keep background fixed during scroll */
+  background-size: cover; /* Ensure background covers entire element */
+}
+
+/* Main content container with controlled overflow */
+.WaitingRoomContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: calc(100vh - 4rem); /* Account for padding */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px;
-  background-color: #f8f9fa;
-  min-height: 100vh;
+  overflow-y: auto; /* Enable vertical scrolling when needed */
 }
 
 .WaitingRoom h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #343a40;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  letter-spacing: 2px;
+  position: relative;
+}
+
+.WaitingRoom h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
 }
 
 .GameDetails {
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: 20px;
-  padding: 20px;
-  border: 1px solid #ced4da;
+  background-color: var(--glass-bg);
+  border: 1px solid var(--dark-border);
   border-radius: 10px;
-  background-color: #ffffff;
-  text-align: left;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 
+    0 0 15px rgba(0, 195, 255, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .GameDetailsRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
   align-items: center;
 }
 
 .GameDetailsRow p {
-  margin: 0;
-  font-size: 1.2rem;
-  color: #495057;
+  margin: 0.5rem 0;
+  color: var(--text-accent);
 }
 
 .GameDetailsRow button {
-  margin-left: auto;
-  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
   cursor: pointer;
-  background-color: #4caf50;
-  color: #ffffff;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
 }
 
 .GameDetailsRow button:hover {
-  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4);
 }
 
 .PlayersList {
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: 20px;
-  padding: 20px;
-  border: 1px solid #ced4da;
+  background-color: var(--glass-bg);
+  border: 1px solid var(--dark-border);
   border-radius: 10px;
-  background-color: #ffffff;
-  text-align: left;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 
+    0 0 15px rgba(0, 195, 255, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .PlayersList p {
-  margin: 10px 0;
-  font-size: 1.5rem;
-  color: #495057;
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px rgba(0, 195, 255, 0.3);
 }
 
 .PlayerCard {
   display: flex;
   align-items: center;
-  margin: 10px 0;
+  gap: 1rem;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+  background-color: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  border: 1px solid var(--dark-border);
+  transition: all 0.3s;
+}
+
+.PlayerCard:hover {
+  background-color: rgba(0, 195, 255, 0.1);
+  border-color: var(--primary);
 }
 
 .PlayerPic {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  margin-right: 10px;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.3);
 }
+
+#kickButton {
+  margin-left: auto;
+  background: rgba(255, 107, 107, 0.3);
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#kickButton:hover {
+  background: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.AddBotButton {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  margin-top: 1rem;
+}
+
+.AddBotButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+}
+
+.StartButton {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  margin: 1rem auto;
+  display: block;
+}
+
+.StartButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 195, 255, 0.5);
+}
+
+.StartButton:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.LeaveButton {
+  background: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  margin: 0 auto;
+  display: block;
+}
+
+.LeaveButton:hover {
+  background: rgba(255, 107, 107, 0.1);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.Popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.PopupContent {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--dark-border);
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 80%;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(0, 195, 255, 0.4);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.KickedMessage {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(220, 53, 69, 0.9);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 6px;
+  z-index: 1001;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+  animation: slideDown 0.5s ease-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+  .WaitingRoom {
+    padding: 1rem;
+    height: 100vh;
+    overflow-y: auto; /* Enable scrolling for entire page on mobile */
+  }
+
+  .WaitingRoomContent {
+    height: auto; /* Let content determine height on mobile */
+    min-height: calc(100vh - 2rem); /* Account for reduced padding */
+    overflow-y: visible; /* Disable nested scrolling on mobile */
+  }
+
+  .PlayersList {
+    max-height: none; /* Remove height restrictions on mobile */
+    overflow-y: visible;
+  }
+  .GameDetailsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .PlayerCard {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  #kickButton {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .WaitingRoom {
+    padding: 1rem;
+  }
+
+  .GameDetails,
+  .PlayersList {
+    padding: 1rem;
+  }
+
+  .StartButton,
+  .LeaveButton {
+    width: 100%;
+    padding: 0.8rem;
+  }
+
+  .PopupContent {
+    padding: 1.5rem;
+  }
+}
+
+
 
 button {
   padding: 10px 20px;
@@ -94,91 +349,4 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
-}
-
-.StartButton:disabled {
-  background-color: #6c757d;
-  color: #ffffff;
-  cursor: not-allowed;
-}
-
-.StartButton:not(:disabled) {
-  background-color: #007bff;
-  color: #ffffff;
-}
-
-.StartButton:not(:disabled):hover {
-  background-color: #0056b3;
-}
-
-.LeaveButton {
-  background-color: #dc3545;
-  color: #ffffff;
-}
-
-.LeaveButton:hover {
-  background-color: #c82333;
-}
-
-.Popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.PopupContent {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.KickedMessage {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #ffeb3b;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
-
-#kickButton {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#kickButton:hover {
-  background-color: #d32f2f;
-}
-
-
-/* Add bot button */
-.AddBotButton {
-  display: block;
-  margin: 10px auto;
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.AddBotButton:hover {
-  background-color: #218838;
 }
