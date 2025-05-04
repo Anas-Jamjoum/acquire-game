@@ -1,178 +1,436 @@
+/* JoinRoom.css */
+
 .JoinRoom {
-    padding: 20px;
-    margin-top: 0; /* Ensure it starts from the top */
-    min-height: 620px;
+  padding: 2rem;
+  color: var(--text-light);
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: 
+    /* Dark blue gradient background */
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 14, 29, 0.95) 100%),
+    /* Subtle grid pattern */
+    repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px);
+  background-attachment: fixed;
+}
+
+.JoinRoom h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  letter-spacing: 2px;
+  position: relative;
+}
+
+.JoinRoom h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  border-radius: 3px;
+}
+
+.SearchInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 2rem;
+  background-color: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--dark-border);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.SearchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(0, 195, 255, 0.3);
+}
+
+.RoomsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.RoomCard {
+  background-color: var(--glass-bg);
+  border-radius: 10px;
+  padding: 1.2rem;
+  border: 1px solid var(--dark-border);
+  box-shadow: 
+    0 0 15px rgba(0, 195, 255, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.RoomCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 195, 255, 0.1),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.RoomCard:hover::before {
+  left: 100%;
+}
+
+.RoomCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 5px 20px rgba(0, 195, 255, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 195, 255, 0.5);
+}
+
+.RoomCard.Header {
+  background-color: rgba(0, 195, 255, 0.1);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  color: var(--text-accent);
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+}
+
+.RoomInfo {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  width: 80%;
+}
+
+.RoomName {
+  font-weight: bold;
+  color: var(--primary);
+  text-shadow: 0 0 5px rgba(0, 195, 255, 0.3);
+}
+
+.TotalPlayers, .GameMode, .RoomPrivacy, .RoomStatus {
+  display: flex;
+  align-items: center;
+}
+
+.JoinRoomButton {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.JoinRoomButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  opacity: 0;
+  transition: 0.3s;
+  z-index: -1;
+}
+
+.JoinRoomButton:hover::before {
+  opacity: 1;
+}
+
+.JoinRoomButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 5px 15px rgba(0, 195, 255, 0.4),
+    0 0 10px rgba(0, 195, 255, 0.2);
+}
+
+.JoinRoomButton:disabled {
+  background: rgba(255, 107, 107, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.NoRoomsMessage {
+  text-align: center;
+  padding: 2rem;
+  background-color: var(--glass-bg);
+  border-radius: 10px;
+  border: 1px solid var(--dark-border);
+  color: var(--text-accent);
+  backdrop-filter: blur(5px);
+}
+
+.Pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.Pagination button {
+  background: var(--glass-bg);
+  color: var(--text-light);
+  border: 1px solid var(--dark-border);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  backdrop-filter: blur(5px);
+}
+
+.Pagination button:hover:not(:disabled) {
+  background: rgba(0, 195, 255, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.2);
+}
+
+.Pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.Pagination span {
+  color: var(--text-accent);
+  font-size: 0.9rem;
+  text-shadow: 0 0 5px rgba(0, 195, 255, 0.2);
+}
+
+/* Password Modal */
+.PasswordModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.PasswordModalContent {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--dark-border);
+  border-radius: 15px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 
+    0 0 30px rgba(0, 195, 255, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.PasswordModalContent h2 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  position: relative;
+}
+
+.PasswordModalContent h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+.PasswordModalContent input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--dark-border);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-family: 'Orbitron', sans-serif;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.PasswordModalContent input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(0, 195, 255, 0.3);
+}
+
+.PasswordModalContent button {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.PasswordModalContent button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: 0.3s;
+  z-index: -1;
+}
+
+.PasswordModalContent button:hover::before {
+  opacity: 1;
+}
+
+.PasswordModalContent button[type="submit"] {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+}
+
+.PasswordModalContent button[type="button"] {
+  background: transparent;
+  border: 1px solid var(--secondary);
+  color: var(--secondary);
+}
+
+.PasswordModalContent button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ErrorMessage {
+  color: var(--secondary);
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 5px rgba(0, 195, 255, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 195, 255, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(0, 195, 255, 0.3); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .RoomInfo {
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
   }
 
-  .SearchInput {
-    width: 97%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-  } 
-  
-  .RoomsList {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .RoomPrivacy, .RoomStatus {
+    grid-column: span 1;
   }
-  
-  .RoomCard {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    margin: auto;
-    background-color: #e0f7fa;
-    width: 90%;
-    gap: 15%;
-  }
-  
-  .RoomInfo {
-    display: flex;
-    justify-content: space-between;
-    gap: 5%;
-  }
-  
-  .RoomName {
-    font-size: 1.2rem;
-    font-weight: bold;
-    min-width: 40%;
-  }
-  
-  .RoomStatus {
-    font-size: 1rem;
-    color: #666;
-  }
-  
-  .RoomPrivacy {
-    font-size: 1rem;
-    color: #666;
+
+  .GameMode {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .JoinRoomButton {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    background-color: #28a745; /* Green color */
-    color: white;
-    width: 25%;
-    margin: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.7rem;
   }
-  
-  .JoinRoomButton:hover {
-    background-color: #218838; /* Darker green on hover */
+}
+
+@media (max-width: 480px) {
+  .JoinRoom {
+    padding: 1rem;
   }
 
-  .JoinRoomButton:disabled {
-    background-color: gray;
-    cursor: not-allowed;
+  .RoomCard {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
   }
 
-  .NoRoomsMessage {
-    padding: 20px;
-    text-align: center;
-    font-size: 1.5rem;
-    color: #000000;
-    background-color: #e0f7fabe;
-    border-radius: 5px;
-    
-  }
-  
-  .ErrorMessage {
-    color: red;
-    font-size: 0.9rem;
-  }
-  
-  .PasswordModal {
-    position: fixed;
-    top: 0;
-    left: 0;
+  .RoomInfo {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
   }
-  
-  .PasswordModalContent {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    width: 300px;
-    max-width: 90%;
-    text-align: center;
+
+  .RoomName {
+    grid-column: span 2;
   }
-  
-  .PasswordModalContent input {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .PasswordModalContent button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 5px;
-  }
-  
-  .PasswordModalContent button:nth-child(2) {
-    background-color: #4caf50;
-    color: white;
-  }
-  
-  .PasswordModalContent button:nth-child(2):hover {
-    background-color: #45a049;
-  }
-  
-  .PasswordModalContent button:nth-child(3) {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  .PasswordModalContent button:nth-child(3):hover {
-    background-color: #c82333;
+
+  .JoinRoomButton {
+    width: 100%;
   }
 
   .Pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
+    flex-direction: row;
+    gap: 0.5rem;
   }
   
-  .Pagination button {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin: 0 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+  .PasswordModalContent {
+    padding: 1.5rem;
   }
-  
-  .Pagination button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  
-  .Pagination button:not(:disabled):hover {
-    background-color: #45a049;
-  }
-  
-  .Pagination span {
-    font-size: 16px;
-    margin: 0 10px;
-  }
+}
