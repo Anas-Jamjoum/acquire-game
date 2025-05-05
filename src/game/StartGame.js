@@ -1785,8 +1785,8 @@ const StartGame = () => {
             <div className="sorted-players">
               <h3>Players</h3>
               {players
-                .slice() // Create a shallow copy to avoid mutating the original array
-                .sort((a, b) => b.money - a.money) // Sort players by money in descending order
+                .slice() 
+                .sort((a, b) => b.money - a.money) 
                 .map((player, index) => (
                   <div key={index} className="playeraa">
                     {player.profilePic && (
@@ -1813,8 +1813,8 @@ const StartGame = () => {
         {showAllPlayers ? (
 <div className="players-info-show-all">
   {players
-    .slice() // Create a shallow copy to avoid mutating the original array
-    .sort((a, b) => (a.email === userEmail ? -1 : b.email === userEmail ? 1 : 0)) // Sort to place the authenticated player first
+    .slice() 
+    .sort((a, b) => (a.email === userEmail ? -1 : b.email === userEmail ? 1 : 0)) 
     .map((player, index) => (
       <div key={index} className="player">
         {player.profilePic && (
@@ -1932,9 +1932,11 @@ const StartGame = () => {
               <button onClick={() => handleOptionClick("buy")}>
                 Buy Stock
               </button>
-              <button onClick={() => handleOptionClick("sell")}>
-                Sell Stock
-              </button>
+              {players[currentPlayerIndex]?.headquarters.some(hq => hq.stocks > 0) && (
+  <button onClick={() => handleOptionClick("sell")}>
+    Sell Stock
+  </button>
+)}
             </>
           )}
           {checkStartHQ(selectedTile) && (
@@ -2009,14 +2011,13 @@ const StartGame = () => {
             value={selectedHQToSell}
           >
             <option value="">Select HQ</option>
-            {HQS.map(
-              (hq, index) =>
-                hq.tiles.length > 0 && (
-                  <option key={index} value={hq.name}>
-                    {hq.name} - ${hq.price} per stock
-                  </option>
-                )
-            )}
+            {HQS.filter((hq) => 
+  players[currentPlayerIndex]?.headquarters.some(playerHQ => playerHQ.name === hq.name && playerHQ.stocks > 0)
+).map((hq, index) => (
+  <option key={index} value={hq.name}>
+    {hq.name} - ${hq.price} per stock
+  </option>
+))}
           </select>
           <input
             type="number"
