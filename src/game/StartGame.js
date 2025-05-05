@@ -22,7 +22,7 @@ const StartGame = () => {
       .fill()
       .map((_, index) => ({
         label: getLabel(Math.floor(index / 12), index % 12),
-        color: "white",
+        color: "black",
         used: false,
       }));
   };
@@ -117,7 +117,7 @@ const StartGame = () => {
           const color = board[neighborIndex].color;
 
           // Add the color to the set if it's not "white" or "gray"
-          if (color !== "white" && color !== "gray") {
+          if (color !== "black" && color !== "gray") {
             neighborColors.add(color);
           }
         }
@@ -889,7 +889,8 @@ const StartGame = () => {
     if (
       players[currentPlayerIndex] &&
       players[currentPlayerIndex].email.startsWith("bot") &&
-      !mergeInProgress
+      !mergeInProgress &&
+      winner === null
     ) {
       console.log("Bot turn detected. Adding delay before making a move.");
 
@@ -1319,7 +1320,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    // checkForWinner(updatedPlayers, HQS, false);
+    checkForWinner(updatedPlayers, HQS, false);
   };
 
   const checkMaxStocksAi = (hq, player) => {
@@ -1360,7 +1361,7 @@ const StartGame = () => {
 
     const unusedTiles = currentBoard.filter((tile) => {
       const tileIndex = currentBoard.indexOf(tile);
-      return tile.color === "white" && !playerTiles.has(tileIndex);
+      return tile.color === "black" && !playerTiles.has(tileIndex);
     });
 
     return unusedTiles;
@@ -1403,7 +1404,7 @@ const StartGame = () => {
 
     console.log("Option: 2", currentPlayerIndex);
 
-    if (newBoard[selectedTile].color === "white") {
+    if (newBoard[selectedTile].color === "black") {
       newBoard[selectedTile] = {
         ...newBoard[selectedTile],
         color: "gray",
@@ -1510,7 +1511,7 @@ const StartGame = () => {
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    // checkForWinner(updatedPlayers, HQS, false);
+    checkForWinner(updatedPlayers, HQS, false);
   };
 
   function getConnectedGrayTiles(board, tileIndex) {
@@ -1751,7 +1752,8 @@ const StartGame = () => {
   return (
     <div className="game">
       <FriendList />
-      <div className="turn-counter">Turn: {turnCounter}</div>
+      {winner === null && (<>
+        <div className="turn-counter">Turn: {turnCounter}</div>
       <div className="game-board">
         {Array(9)
           .fill()
@@ -1763,7 +1765,7 @@ const StartGame = () => {
             </div>
           ))}
       </div>
-
+      </>)}
       <div className="game-info">
         <div>
           {renderStatus()}{" "}
@@ -1807,97 +1809,116 @@ const StartGame = () => {
         <button onClick={toggleShowAllPlayers}>
           {showAllPlayers ? "Show Only Me" : "Show All Players"}
         </button>
-<div className="players-info">
-
-
-        {showAllPlayers
-          ? players.map((player, index) => (
-              <div key={index} className="player">
-                {player.profilePic && (
-                  <img
-                    src={images[player.profilePic]}
-                    alt={player.name}
-                    className="player-image"
-                  />
-                )}
-                <div className="player-name">
-                  {player.email.startsWith("bot")
-                    ? player.name + " (Bot)"
-                    : player.name}
-                </div>
-                <div className="player-money">Money: ${player.money}</div>
-                <div className="player-level">Level: {player.level}</div>
-
-                <div className="player-headquarters">
-                  {player.headquarters?.map((hq, hqIndex) => {
-                    const hqColor =
-                      HQS.find((h) => h.name === hq.name)?.color || "black";
-                    return (
-                      <div key={hqIndex} className="hq-stock">
-                        <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
-                        {hq.stocks} stocks
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {player.email === userEmail && (
-                  <div className="player-tiles">
-                    <h4>Your Tiles:</h4>
-                    {player.tiles?.map((tileIndex) =>
-                      renderTileButton(tileIndex)
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          : players
-              .filter((player) => player.email === userEmail)
-              .map((player, index) => (
-                <div key={index} className="player">
-                  {player.profilePic && (
-                    <img
-                      src={images[player.profilePic]}
-                      alt={player.name}
-                      className="player-image"
-                    />
-                  )}
-                  <div className="player-name">{player.name}</div>
-                  <div className="player-money">Money: ${player.money}</div>
-                  <div className="player-level">Level: {player.level}</div>
-
-                  <div className="player-headquarters">
-                    {player.headquarters?.map((hq, hqIndex) => {
-                      const hqColor =
-                        HQS.find((h) => h.name === hq.name)?.color || "black";
-                      return (
-                        <div key={hqIndex} className="hq-stock">
-                          <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
-                          {hq.stocks} stocks
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="player-tiles">
-                    <h4>Your Tiles:</h4>
-                    {player.tiles?.map((tileIndex) =>
-                      renderTileButton(tileIndex)
-                    )}
-                  </div>
-                </div>
-              ))}
-      </div>
-
-        <div className="hqs-info">
-          <h3>Headquarters Stocks</h3>
-          {HQS.map((hq, index) => (
-            <div key={index} className="hq-stock">
-              <span style={{ color: hq.color }}>■</span> {hq.name}:{hq.stocks}{" "}
-              stocks, ${hq.price} each, {hq.tiles.length} tiles
-            </div>
-          ))}
+      <div className="players-info">
+        {showAllPlayers ? (
+<div className="players-info-show-all">
+  {players
+    .slice() // Create a shallow copy to avoid mutating the original array
+    .sort((a, b) => (a.email === userEmail ? -1 : b.email === userEmail ? 1 : 0)) // Sort to place the authenticated player first
+    .map((player, index) => (
+      <div key={index} className="player">
+        {player.profilePic && (
+          <img
+            src={images[player.profilePic]}
+            alt={player.name}
+            className="player-image"
+          />
+        )}
+        <div className="player-name">
+          {player.email.startsWith("bot")
+            ? `${player.name} (Bot)`
+            : player.name}
         </div>
+        <div className="player-money">Money: ${player.money}</div>
+        <div className="player-level">Level: {player.level}</div>
+
+        <div className="player-headquarters">
+          {player.headquarters?.map((hq, hqIndex) => {
+            const hqColor =
+              HQS.find((h) => h.name === hq.name)?.color || "black";
+            return (
+              <div key={hqIndex} className="hq-stock">
+                <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
+                {hq.stocks} stocks
+              </div>
+            );
+          })}
+        </div>
+
+        {player.email === userEmail && (
+          <div className="player-tiles">
+            <h4>Your Tiles:</h4>
+            {player.tiles?.map((tileIndex) =>
+              renderTileButton(tileIndex)
+            )}
+          </div>
+        )}
+      </div>
+    ))}
+</div>
+        ) : (
+  <div className="players-info-show-only-me">
+      {players
+        .filter((player) => player.email === userEmail)
+        .map((player, index) => (
+          <div key={index} className="player">
+            {player.profilePic && (
+              <img
+                src={images[player.profilePic]}
+                alt={player.name}
+                className="player-image"
+              />
+            )}
+            <div className="player-name">{player.name}</div>
+            <div className="player-money">Money: ${player.money}</div>
+            <div className="player-level">Level: {player.level}</div>
+  
+            <div className="player-headquarters">
+              {player.headquarters?.map((hq, hqIndex) => {
+                const hqColor =
+                  HQS.find((h) => h.name === hq.name)?.color || "black";
+                return (
+                  <div key={hqIndex} className="hq-stock">
+                    <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
+                    {hq.stocks} stocks
+                  </div>
+                );
+              })}
+            </div>
+  
+            <div className="player-tiles">
+              <h4>Your Tiles:</h4>
+              {player.tiles?.map((tileIndex) =>
+                renderTileButton(tileIndex)
+              )}
+            </div>
+          </div>
+        ))}
+      <div className="hqs-info">
+        <h3>Headquarters Stocks</h3>
+        {HQS.map((hq, index) => (
+          <div key={index} className="hq-stock">
+            <span style={{ color: hq.color }}>■</span> {hq.name}:{hq.stocks}{" "}
+            stocks, ${hq.price} each, {hq.tiles.length} tiles
+          </div>
+        ))}
+      </div>
+  </div>
+)}
+{showAllPlayers && (
+  <div className="hqs-info">
+  <h3>Headquarters Stocks</h3>
+  {HQS.map((hq, index) => (
+    <div key={index} className="hq-stock">
+      <span style={{ color: hq.color }}>■</span> {hq.name}:{hq.stocks}{" "}
+      stocks, ${hq.price} each, {hq.tiles.length} tiles
+    </div>
+  ))}
+</div>
+)
+  }
+
+      </div>
 
         <button className="return-home-button" onClick={handleReturnHome}>
           Return to Menu
