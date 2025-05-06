@@ -531,7 +531,7 @@ const StartGame = () => {
     };
 
     return (
-      <div>
+      <div className="merge-decision-modal">
         <h3>
           {player.name}, you have {smallerStocks} stock(s) in{" "}
           {currentSmallerHQ.name}.
