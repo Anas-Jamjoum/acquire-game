@@ -379,7 +379,7 @@ button:hover {
 
 .hq-modal {
   position: fixed;
-  top: 30%; 
+  top: 35%; 
   left: 50%;
   max-height: 80vh;
   overflow-y: auto;

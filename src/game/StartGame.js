@@ -47,16 +47,11 @@ const StartGame = () => {
   };
 
   const checkCanEnd = () => {
-    console.log("Checking if the game can end...");
-
     const hqWithMoreThan40Tiles = HQS.some((hq) => hq.tiles.length > 40);
 
     if (hqWithMoreThan40Tiles) {
-      console.log("An HQ has more than 40 tiles. The game can end.");
       return true;
     }
-
-    console.log("No HQ has more than 40 tiles. The game cannot end.");
     return false;
   };
 
@@ -237,7 +232,84 @@ const StartGame = () => {
   const [selectedTileToMerge, setSelectedTileToMerge] = useState(null);
 
 
+  const doMergeLogic = (smallerHQ, biggerHQ) => {
+    console.log("Smaller HQ:", smallerHQ);
+    console.log("Bigger HQ:", biggerHQ);
+    console.log("selected tile to merge", selectedTileToMerge);
+
+    setBigHQ(biggerHQ);
+    setCurrentSmallerHQ(smallerHQ);
+
+
+    // Stock bonus logic
+    const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
+    const firstPlayerBonus = getBonus(smallerHQ.name)[0];
+    const secondPlayerBonus = getBonus(smallerHQ.name)[1];
+    console.log("Top 2 players:", top2Players);
+    console.log("Bonuses:", firstPlayerBonus, secondPlayerBonus);
+
+
+    const updatedPlayers = [...players];
+    if (top2Players[0]) {
+      const idx = updatedPlayers.findIndex(
+        (p) => p.email === top2Players[0].email
+      );
+      if (idx !== -1) updatedPlayers[idx].money += firstPlayerBonus;
+    }
+    if (top2Players[1]) {
+      const idx = updatedPlayers.findIndex(
+        (p) => p.email === top2Players[1].email
+      );
+      if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
+    }
+    setPlayers(updatedPlayers);
+
+    setMergeInProgress(true);
+
+    const smallerName = smallerHQ.name;
+
+    let owners = [];
+    for (let i = 0; i < updatedPlayers.length; i++) {
+      const stocksInSmaller =
+        updatedPlayers[i].headquarters.find((h) => h.name === smallerName)
+          ?.stocks || 0;
+      if (stocksInSmaller > 0) {
+        owners.push(i);
+      }
+    }
+
+    const startIndex = owners.indexOf(currentPlayerIndex);
+    if (startIndex > 0) {
+
+      const front = owners.splice(0, startIndex);
+      owners = [...owners, ...front];
+    }
+
+    if (owners.length === 0) {
+      console.log('finished owners');
+      console.log("Smaller HQ:", currentSmallerHQ);
+      console.log("Bigger HQ:", bigHQ);
+      endMergeProcess();
+      return;
+    }
+
+    setMergePlayersOrder(owners);
+    setMergeChoiceIndex(0);
+
+    setIsMerging(false);
+    console.log("Merge players order:", currentSmallerHQ);
+
+    updateDoc(doc(db, "startedGames", gameId), {
+      mergeInProgress: true,
+      mergePlayersOrder: owners,
+      mergeChoiceIndex: 0,
+      currentSmallerHQ: smallerHQ.name,
+      players: updatedPlayers,
+    });
+  };
+
   const handleMerge = (neighborColors, selectedTileToMerge) => {
+    console.log("Selected tile to merge:", board[selectedTileToMerge].label);
     setSelectedTileToMerge(selectedTileToMerge);
     if (selectedTileToMerge === null) return;
     const mergingHQS = HQS.filter((hq) => neighborColors.includes(hq.color));
@@ -257,16 +329,27 @@ const StartGame = () => {
     mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
     const firstTwoHQS = mergingHQS.slice(0, 2);
 
-    // Check tie
     if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].email.startsWith("bot")) {
-      // Store them and open modal
       setTieHQs(firstTwoHQS);
       setShowTieModal(true);
       return;
     }
 
-    // Not a tie, proceed directly
     let [smaller, bigger] = firstTwoHQS;
+  bigger.tiles = [...new Set([...bigger.tiles, selectedTileToMerge])];
+
+  const updatedBoard = [...board];
+  updatedBoard[selectedTileToMerge] = {
+    ...updatedBoard[selectedTileToMerge],
+    color: bigger.color,
+  };
+
+  const updatedHQS = HQS.map((hq) =>
+    hq.name === bigger.name ? bigger : hq
+  );
+
+  setBoard(updatedBoard);
+  setHQS(updatedHQS);
     doMergeLogic(smaller, bigger);
     return true;
   };
@@ -335,79 +418,7 @@ const StartGame = () => {
       }
     }
   }
-
-  const doMergeLogic = (smallerHQ, biggerHQ) => {
-    console.log("Smaller HQ:", smallerHQ);
-    console.log("Bigger HQ:", biggerHQ);
-
-    setBigHQ(biggerHQ);
-
-    // Stock bonus logic
-    const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
-    const firstPlayerBonus = getBonus(smallerHQ.name)[0];
-    const secondPlayerBonus = getBonus(smallerHQ.name)[1];
-    console.log("Top 2 players:", top2Players);
-    console.log("Bonuses:", firstPlayerBonus, secondPlayerBonus);
-
-
-    const updatedPlayers = [...players];
-    if (top2Players[0]) {
-      const idx = updatedPlayers.findIndex(
-        (p) => p.email === top2Players[0].email
-      );
-      if (idx !== -1) updatedPlayers[idx].money += firstPlayerBonus;
-    }
-    if (top2Players[1]) {
-      const idx = updatedPlayers.findIndex(
-        (p) => p.email === top2Players[1].email
-      );
-      if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
-    }
-    setPlayers(updatedPlayers);
-
-    setMergeInProgress(true);
-    setCurrentSmallerHQ(smallerHQ);
-
-
-    const smallerName = smallerHQ.name;
-
-    let owners = [];
-    for (let i = 0; i < updatedPlayers.length; i++) {
-      const stocksInSmaller =
-        updatedPlayers[i].headquarters.find((h) => h.name === smallerName)
-          ?.stocks || 0;
-      if (stocksInSmaller > 0) {
-        owners.push(i);
-      }
-    }
-
-    const startIndex = owners.indexOf(currentPlayerIndex);
-    if (startIndex > 0) {
-
-      const front = owners.splice(0, startIndex);
-      owners = [...owners, ...front];
-    }
-
-    if (owners.length === 0) {
-      endMergeProcess();
-      return;
-    }
-
-    setMergePlayersOrder(owners);
-    setMergeChoiceIndex(0);
-
-    setIsMerging(false);
-    console.log("Merge players order:", currentSmallerHQ);
-
-    updateDoc(doc(db, "startedGames", gameId), {
-      mergeInProgress: true,
-      mergePlayersOrder: owners,
-      mergeChoiceIndex: 0,
-      currentSmallerHQ: smallerHQ.name,
-      players: updatedPlayers,
-    });
-  };
-
+  
   const [sellSwapAmount, setSellSwapAmount] = useState(0);
 
   const renderMergeDecision = () => {
@@ -563,12 +574,10 @@ const StartGame = () => {
       return;
     }
 
-    // Randomly decide between "sell" and "swap"
     const decision = smallerStocks >= 2 ? (Math.random() < 0.5 ? "swap" : "sell") : "sell";
 
     if (decision === "swap") {
-      // Swap logic: 2 stocks from the smaller HQ for 1 stock in the bigger HQ
-      const swapCount = Math.floor(smallerStocks / 2); // Calculate how many swaps can be made
+      const swapCount = Math.floor(smallerStocks / 2); 
       if (swapCount <= 0) {
         return;
       }
@@ -688,6 +697,10 @@ const StartGame = () => {
     const newHQS = [...HQS];
     const newBoard = [...board];
 
+    console.log("Ending merge process");
+    console.log("Current smaller HQ:", currentSmallerHQ);
+    console.log("Big HQ:", bigHQ);
+
     console.log("Merging HQs:", currentSmallerHQ, bigHQ);
 
     if (bigHQ && currentSmallerHQ) {
@@ -700,7 +713,7 @@ const StartGame = () => {
       console.log("Selected tile to merge:", selectedTileToMerge);
       console.log("bigger tiles:", newHQS[biggerIndex].tiles);
       console.log("smaller tiles:", newHQS[smallerIndex].tiles);
-      if (biggerIndex !== -1 && smallerIndex !== -1) {
+      if (biggerIndex !== -1 && smallerIndex !== -1 && selectedTileToMerge !== null) {
         newHQS[biggerIndex].tiles = [
           ...new Set([
             ...newHQS[biggerIndex].tiles,
@@ -996,9 +1009,12 @@ const StartGame = () => {
           setMergeInProgress(data.mergeInProgress || false);
           setMergePlayersOrder(data.mergePlayersOrder || []);
           setMergeChoiceIndex(data.mergeChoiceIndex || 0);
-          const smallerHQ = HQS.find((h) => h.name === data.currentSmallerHQ);
-          console.log("smallerHQ", smallerHQ);
-          setCurrentSmallerHQ(smallerHQ);
+          if (data.currentSmallerHQ && HQS.length > 0) {
+            const smallerHQ = HQS.find((h) => h.name === data.currentSmallerHQ);
+            setCurrentSmallerHQ(smallerHQ || currentSmallerHQ);
+          } else {
+            console.error("currentSmallerHQ is undefined or HQS is empty");
+          }
         }
       });
     };
@@ -1397,12 +1413,11 @@ const StartGame = () => {
     return newTiles;
   };
 
-  const handleOptionClick = (option) => {
+  const handleOptionClick = async (option) => {
     if (selectedTile == null) return;
 
     const newBoard = [...board];
 
-    console.log("Option: 2", currentPlayerIndex);
 
     if (newBoard[selectedTile].color === "black") {
       newBoard[selectedTile] = {
@@ -1411,7 +1426,6 @@ const StartGame = () => {
         used: true,
       };
     }
-    console.log("Option: 3", currentPlayerIndex);
 
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
@@ -1441,6 +1455,7 @@ const StartGame = () => {
         setHQS(newHQS);
       }
     } else if (neighborColors.length > 1) {
+      setBoard(newBoard);
       console.log(neighborColors);
       let checkMerge = handleMerge(neighborColors, selectedTile);
       // alert("Handel merge");
@@ -1448,7 +1463,6 @@ const StartGame = () => {
         return;
       }
     }
-    console.log("Option: 4", currentPlayerIndex);
 
     if (option === "buy") {
       setShowBuyModal(true);
@@ -1464,10 +1478,7 @@ const StartGame = () => {
       return;
     }
 
-    console.log("Option: 5", currentPlayerIndex);
     if (isMerging) return;
-
-    setBoard(newBoard);
 
     if (turnCounter >= 1) {
       const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
@@ -1487,7 +1498,6 @@ const StartGame = () => {
         }
       }
     }
-    console.log("Option: 6", currentPlayerIndex);
 
     setBoard(newBoard);
     setPlayers(updatedPlayers);
@@ -1497,11 +1507,10 @@ const StartGame = () => {
     setSelectedTile(null);
     setStocksBoughtThisTurn(0);
 
-    console.log("Option: 7", currentPlayerIndex);
 
     try {
       const gameDocRef = doc(db, "startedGames", gameId);
-      updateDoc(gameDocRef, {
+      await updateFirestoreWithRetry(gameDocRef, {
         board: newBoard,
         players: updatedPlayers,
         currentPlayerIndex: nextPlayerIndex,
@@ -1512,6 +1521,24 @@ const StartGame = () => {
       console.error("Error updating Firestore:", err);
     }
     checkForWinner(updatedPlayers, HQS, false);
+  };
+
+  const updateFirestoreWithRetry = (docRef, data, maxRetries = 10) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        updateDoc(docRef, data);
+        console.log("Firestore update successful");
+        return; 
+      } catch (err) {
+        attempt++;
+        console.error(`Error updating Firestore (attempt ${attempt}):`, err);
+        if (attempt >= maxRetries) {
+          console.error("Max retries reached. Update failed.");
+          throw err; 
+        }
+      }
+    }
   };
 
   function getConnectedGrayTiles(board, tileIndex) {
@@ -1642,7 +1669,6 @@ const StartGame = () => {
   };
 
   const handleBuyStock = () => {
-    console.log("buy current player index", currentPlayerIndex);
     setBuyError("");
     if (!selectedHQToBuy || buyAmount <= 0 || buyAmount > 3) {
       setBuyError("Select an HQ and a valid amount (1–3)");
@@ -1663,10 +1689,6 @@ const StartGame = () => {
 
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
-
-    console.log("Current player Index:", currentPlayerIndex);
-    console.log("Current player:", currPlayer);
-    console.log("Current player money:", currPlayer.money);
 
     const totalCost = newHQS[hqIndex].price * buyAmount;
     if (currPlayer.money < totalCost) {
@@ -1713,9 +1735,6 @@ const StartGame = () => {
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
-    console.log("Current player Index:", currentPlayerIndex);
-    console.log("Current player:", currPlayer);
-    console.log("Current player money:", currPlayer.money);
     if (currPlayer.headquarters[hqIndex].stocks < sellAmount) {
       setSellError("You don’t have enough stocks to sell.");
       return;
@@ -1925,7 +1944,7 @@ const StartGame = () => {
         </button>
       </div>
 
-      {showOptions && (
+      {showOptions && !mergeInProgress && winner === null && (
         <div className="options">
           {HQS.some((hq) => hq.tiles.length > 0) && (
             <>
@@ -1977,19 +1996,19 @@ const StartGame = () => {
         <div className="buy-modal">
           <h3>Buy Stocks</h3>
           <select
-            onChange={(e) => setSelectedHQToBuy(e.target.value)}
-            value={selectedHQToBuy}
-          >
-            <option value="">Select HQ</option>
-            {HQS.map(
-              (hq, index) =>
-                hq.tiles.length > 0 && (
-                  <option key={index} value={hq.name}>
-                    {hq.name} - ${hq.price} per stock
-                  </option>
-                )
-            )}
-          </select>
+  onChange={(e) => setSelectedHQToBuy(e.target.value)}
+  value={selectedHQToBuy || ""}
+>
+  <option value="">Select HQ</option>
+  {HQS.map(
+    (hq, index) =>
+      hq.tiles.length > 0 && (
+        <option key={index} value={hq.name}>
+          {hq.name} - ${hq.price} per stock
+        </option>
+      )
+  )}
+</select>
           <input
             type="number"
             min="1"
@@ -2008,7 +2027,7 @@ const StartGame = () => {
           <h3>Sell Stocks</h3>
           <select
             onChange={(e) => setSelectedHQToSell(e.target.value)}
-            value={selectedHQToSell}
+            value={selectedHQToSell || ""}
           >
             <option value="">Select HQ</option>
             {HQS.filter((hq) => 
@@ -2069,7 +2088,7 @@ const StartGame = () => {
           if (currentMergePlayer.email === userEmail) {
             return (
               <div className="hq-modal-overlay">
-                <div className="hq-modal">{renderMergeDecision()}</div>
+                <div className="">{renderMergeDecision()}</div>
               </div>
             );
           } else if (currentMergePlayer.email.startsWith("bot")) {
