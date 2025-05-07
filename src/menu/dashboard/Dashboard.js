@@ -6,7 +6,7 @@ import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import images from './imageUtils';
 import ImageSelectionModal from './ImageSelectionModal';
-import HostGameModal from '../HostGameModal/HostGameModal'; // Import the HostGameModal component
+import HostGameModal from '../HostGameModal/HostGameModal';
 import { handleJoinRoom } from '../gameMenu/Menu';
 import InviteModal from '../../inviteModal/InviteModal';
 
@@ -233,7 +233,6 @@ const Dashboard = () => {
 
 
 
-            {/* Profile picture selection modal */}
             <ImageSelectionModal
                 isOpen={isEditingPic}
                 onClose={() => setIsEditingPic(false)}

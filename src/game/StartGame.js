@@ -262,6 +262,7 @@ const StartGame = () => {
       );
       if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
     }
+    mergeAIDecision();
     setPlayers(updatedPlayers);
     persistGameToFirestore(updatedPlayers, HQS);
 
@@ -421,6 +422,7 @@ const StartGame = () => {
   }
   
   const [sellSwapAmount, setSellSwapAmount] = useState(0);
+  const [mergeError, setMergeError] = useState("");
 
   const renderMergeDecision = () => {
     const order = mergePlayersOrder;
@@ -444,9 +446,17 @@ const StartGame = () => {
     }
 
     const handleSell = () => {
-      if (sellSwapAmount <= 0) return;
-      if (sellSwapAmount > smallerStocks) return;
-
+      if (sellSwapAmount <= 0) {
+        setMergeError("You must sell at least 1 stock.");
+        return;
+      }
+      if (sellSwapAmount > smallerStocks) {
+        setMergeError("You cannot sell more stocks than you own.");
+        return;
+      }
+  
+      setMergeError(""); 
+  
       const updatedPlayers = [...players];
       const newMoney = player.money + sellSwapAmount * currentSmallerHQ.price;
       updatedPlayers[playerIndex] = {
@@ -488,13 +498,23 @@ const StartGame = () => {
     };
 
     const handleSwap = () => {
-      if (sellSwapAmount <= 0) return;
-      if (sellSwapAmount > smallerStocks) return;
-
-
+      if (sellSwapAmount <= 0) {
+        setMergeError("You must swap at least 2 stocks.");
+        return;
+      }
+      if (sellSwapAmount > smallerStocks) {
+        setMergeError("You cannot swap more stocks than you own.");
+        return;
+      }
+  
       const swapCount = Math.floor(sellSwapAmount / 2);
-      if (swapCount <= 0) return;
-
+      if (swapCount <= 0) {
+        setMergeError("You must swap at least 2 stocks to proceed.");
+        return;
+      }
+  
+      setMergeError(""); 
+  
       const updatedPlayers = [...players];
       updatedPlayers[playerIndex] = {
         ...player,
@@ -556,7 +576,7 @@ const StartGame = () => {
           value={sellSwapAmount}
           onChange={(e) => setSellSwapAmount(parseInt(e.target.value, 10) || 0)}
         />
-
+        {mergeError && <div className="error-message">{mergeError}</div>} 
         <button onClick={handleSell}>Sell</button>
         <button onClick={handleSwap}>Swap</button>
       </div>
@@ -1461,7 +1481,7 @@ const StartGame = () => {
       let checkMerge = handleMerge(neighborColors, selectedTile);
       // alert("Handel merge");
       if (checkMerge === true) {
-        return;
+        // return;
       }
     }
 
