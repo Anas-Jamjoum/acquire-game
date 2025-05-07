@@ -233,9 +233,6 @@ const StartGame = () => {
 
 
   const doMergeLogic = (smallerHQ, biggerHQ) => {
-    console.log("Smaller HQ:", smallerHQ);
-    console.log("Bigger HQ:", biggerHQ);
-    console.log("selected tile to merge", selectedTileToMerge);
 
     setBigHQ(biggerHQ);
     setCurrentSmallerHQ(smallerHQ);
@@ -245,8 +242,6 @@ const StartGame = () => {
     const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
     const firstPlayerBonus = getBonus(smallerHQ.name)[0];
     const secondPlayerBonus = getBonus(smallerHQ.name)[1];
-    console.log("Top 2 players:", top2Players);
-    console.log("Bonuses:", firstPlayerBonus, secondPlayerBonus);
 
 
     const updatedPlayers = [...players];
@@ -287,9 +282,6 @@ const StartGame = () => {
     }
 
     if (owners.length === 0) {
-      console.log('finished owners');
-      console.log("Smaller HQ:", currentSmallerHQ);
-      console.log("Bigger HQ:", bigHQ);
       endMergeProcess();
       return;
     }
@@ -298,7 +290,6 @@ const StartGame = () => {
     setMergeChoiceIndex(0);
 
     setIsMerging(false);
-    console.log("Merge players order:", currentSmallerHQ);
 
     updateDoc(doc(db, "startedGames", gameId), {
       mergeInProgress: true,
@@ -310,21 +301,17 @@ const StartGame = () => {
   };
 
   const handleMerge = (neighborColors, selectedTileToMerge) => {
-    console.log("Selected tile to merge:", board[selectedTileToMerge].label);
     setSelectedTileToMerge(selectedTileToMerge);
     if (selectedTileToMerge === null) return;
     const mergingHQS = HQS.filter((hq) => neighborColors.includes(hq.color));
-    console.log("Merging HQs:", mergingHQS);
     const hqsWithMoreThan10Tiles = mergingHQS.filter(
       (hq) => hq.tiles.length > 10
     );
 
     if (hqsWithMoreThan10Tiles.length >= 2) {
-      console.log("No Merge");
       return false;
     }
 
-    console.log("Merge " + board[selectedTileToMerge].label + " " + players[currentPlayerIndex].name);
     setIsMerging(true);
 
     mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
@@ -427,7 +414,6 @@ const StartGame = () => {
     const order = mergePlayersOrder;
 
     if (mergeChoiceIndex >= order.length || order.length === 0) {
-      console.log("All players have made their choice 222");
       endMergeProcess();
       return null;
     }
@@ -438,7 +424,6 @@ const StartGame = () => {
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)
         ?.stocks || 0;
-    console.log("Player:", player.name, "Stocks:", smallerStocks);
     if (smallerStocks === 0) {
       goToNextMergePlayer();
       return;
@@ -587,8 +572,6 @@ const StartGame = () => {
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
 
-    console.log("Player:", player.name, "Stocks in smaller HQ:", smallerStocks);
-
     if (smallerStocks === 0) {
       goToNextMergePlayer();
       return;
@@ -632,9 +615,6 @@ const StartGame = () => {
 
       setHQS(newHQS);
 
-      console.log(
-        `${player.name} chose to swap ${swapCount * 2} stocks for ${swapCount} stocks in the bigger HQ.`
-      );
     } else if (decision === "sell") {
       // Sell logic: Sell stocks from the smaller HQ for money
       const sellAmount = smallerStocks; // Sell all stocks in the smaller HQ
