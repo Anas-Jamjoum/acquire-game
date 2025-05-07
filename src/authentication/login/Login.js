@@ -19,8 +19,8 @@ const Login = () => {
         const currentTime = new Date();
 
         const timeDifference = (currentTime - lastLoginDate) / 1000;
-        if (timeDifference > 30) {
-          console.log('Last login was more than 30 seconds ago. Logging out...');
+        if (timeDifference > 100) {
+          console.log('Last login was more than 100 seconds ago. Logging out...');
           signOut(auth).then(() => {
             navigate('/'); 
           });
