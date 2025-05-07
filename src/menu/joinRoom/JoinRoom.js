@@ -104,21 +104,26 @@ const JoinRoom = () => {
     }
   };
 
-  const removeFinishedRooms = () => {
+  const removeFinishedRooms = async() => {
     try {
+      const currentTime = Date.now();;
+      const cutoffTime = currentTime - 5 * 60 * 60 * 1000;
       const finishedRooms = rooms.filter((room) => room.status === 'finished');
-      console.log('Finished rooms:', finishedRooms)
-      if (finishedRooms.length === 0) {
+      const outdatedRooms = rooms.filter((room) => ((room.mode === 'online') && (room.createdAt < cutoffTime)));
+      const deleteAllRooms = [...finishedRooms, ...outdatedRooms];
+      
+      if (deleteAllRooms.length === 0) {
         return;
       }
   
-      for (const room of finishedRooms) {
+      for (let i = 0; i < deleteAllRooms.length; i++) {
+        const room = deleteAllRooms[i];
+      
         const roomDocRef = doc(db, "rooms", room.id);
-        deleteDoc(roomDocRef);
-  
+        await deleteDoc(roomDocRef);
+      
         const startedGameDocRef = doc(db, "startedGames", room.id);
-        deleteDoc(startedGameDocRef);
-  
+        await deleteDoc(startedGameDocRef);
       }
   
       const roomsCollection = collection(db, "rooms");
@@ -135,7 +140,7 @@ const JoinRoom = () => {
 
   return (
     <div className="JoinRoom">
-      <FriendList /> {/* Include the FriendList component here */}
+      <FriendList /> 
       <h1>Join a Room</h1>
       <input
         type="text"
