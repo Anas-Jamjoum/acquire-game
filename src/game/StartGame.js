@@ -263,6 +263,7 @@ const StartGame = () => {
       if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
     }
     setPlayers(updatedPlayers);
+    persistGameToFirestore(updatedPlayers, HQS);
 
     setMergeInProgress(true);
 
