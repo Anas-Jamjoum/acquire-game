@@ -262,7 +262,6 @@ const StartGame = () => {
       );
       if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
     }
-    mergeAIDecision();
     setPlayers(updatedPlayers);
     persistGameToFirestore(updatedPlayers, HQS);
 
@@ -1386,6 +1385,7 @@ const StartGame = () => {
 
 
   const handleTileClick = (tileIndex) => {
+    console.log("Tile clicked:", tileIndex);
     if (winner) return;
     if (players[currentPlayerIndex]?.email !== userEmail) return;
 
@@ -1654,16 +1654,68 @@ const StartGame = () => {
   };
 
   const renderSquare = (index) => {
+    const currentPlayerTiles = players[currentPlayerIndex]?.tiles || [];
+    const isCurrentPlayerTile = currentPlayerTiles.includes(index);
+    const isCurrentPlayer = players[currentPlayerIndex]?.email === userEmail;
+  
     return (
       <div
         key={index}
         className="square"
-        style={{ backgroundColor: board[index].color }}
+        style={{
+          backgroundColor: board[index].color,
+        }}
       >
-        {board[index].label}
+        {isCurrentPlayer && isCurrentPlayerTile ? (
+          <button
+            className="tile-button-board"
+            onClick={() => handleTileClick(index)}
+          >
+            {board[index].label}
+          </button>
+        ) : (
+          board[index].label
+        )}
       </div>
     );
   };
+
+  const [showPlayerInfo, setShowPlayerInfo] = useState(false);
+  const renderQuickInfo = () => {
+    return (
+<div className="player-info-container">
+  {showPlayerInfo && (
+    <div className="player-info-hover">
+      {players
+        .filter((player) => player.email === userEmail)
+        .map((player, index) => (
+          <div key={index} className="player-info-details">
+            <h3>Your Money </h3>
+            <p>Money: ${player.money}</p>
+            <h3>Your HQ Stocks:</h3>
+            {player.headquarters?.map((hq, hqIndex) => {
+            const hqColor =
+              HQS.find((h) => h.name === hq.name)?.color || "black";
+            return (
+              <div key={hqIndex} className="hq-stock">
+                <span style={{ color: hqColor }}>■</span> {hq.name}:{" "}
+                {hq.stocks} stocks
+              </div>
+            );
+          })}
+            <div className="player-tiles">
+            <h3>Your Tiles:</h3>
+            {player.tiles?.map((tileIndex) =>
+              renderTileButton(tileIndex)
+            )}
+          </div>
+                    </div>
+        ))}
+    </div>
+  )}
+</div>
+    );
+  }
 
   const renderTileButton = (tileIndex) => {
     return (
@@ -1676,6 +1728,25 @@ const StartGame = () => {
       </button>
     );
   };
+
+  const [showYourTurn, setShowYourTurn] = useState(false);
+
+  useEffect(() => {
+    if (players[currentPlayerIndex]?.email === userEmail) {
+      setShowYourTurn(true); 
+      const timeout = setTimeout(() => {
+        setShowYourTurn(false); 
+      }, 1500);
+  
+      return () => clearTimeout(timeout); 
+    }
+  }, [currentPlayerIndex, players, userEmail]);
+  
+  const renderNoteYourTurn = () => {
+    return showYourTurn ? <div className="your-turn">Your turn!</div> : null;
+  };
+
+  
 
   const renderStatus = () => {
     if (winner) {
@@ -1791,6 +1862,14 @@ const StartGame = () => {
 
   return (
     <div className="game">
+      {renderNoteYourTurn()}
+            <button
+        className="player-info-button"
+        onClick={() => setShowPlayerInfo(!showPlayerInfo)}
+      >
+        →
+      </button>
+      {showPlayerInfo && (renderQuickInfo())}
       <FriendList />
       {winner === null && (<>
         <div className="turn-counter">Turn: {turnCounter}</div>
@@ -1807,7 +1886,7 @@ const StartGame = () => {
       </div>
       </>)}
       <div className="game-info">
-        <div>
+        <div className="game-status">
           {renderStatus()}{" "}
           {
             renderCountdown()

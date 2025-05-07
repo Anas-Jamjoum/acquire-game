@@ -74,6 +74,28 @@
   z-index: 2;
 }
 
+.tile-button-board {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 150, 255, 0.2);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  font-weight: bold;
+  font-size: 1rem;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.tile-button-board:hover {
+  background: rgba(0, 195, 255, 0.3);
+  transform: translateY(-2px);
+}
+
 .turn-counter {
   position: fixed;
   top: 10px;
@@ -444,8 +466,11 @@ select, input {
     grid-template-columns: repeat(auto-fill, minmax(90%, 1fr));
   }
   .square {
-    min-height: 40px;
-    font-size: 0.9rem;
+    /* min-height: 40px; */
+    font-size: 0.7rem;
+  }
+  .tile-button-board {
+    font-size: 0.7rem;
   }
   
   .players-info {
@@ -473,8 +498,11 @@ select, input {
 @media (max-width: 480px) {
 
   .square {
-    min-height: 30px;
-    font-size: 0.8rem;
+    /* min-height: 30px; */
+    font-size: 0.7rem;
+  }
+  .tile-button-board {
+    font-size: 0.7rem;
   }
   
   .turn-counter {
@@ -531,4 +559,175 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Button styling */
+.player-info-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.player-info-button:hover {
+  background-color: #0056b3;
+}
+
+/* Hovering window styling */
+/* Quick Player Info Container */
+.player-info-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 50;
+}
+
+
+/* Toggle Button */
+.player-info-button {
+  position: fixed;
+  top: 3%;
+  left: 1%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c3ff 0%, #0084ff 100%);
+  color: white;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  transition: all 0.3s ease;
+  z-index: 51;
+}
+
+.player-info-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0, 195, 255, 0.8);
+}
+
+/* Info Panel */
+.player-info-hover {
+  margin-top: 0px;
+  position: fixed;
+  top: 5%;
+  left: 1%;
+  width: 200px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3);
+  backdrop-filter: blur(5px);
+  z-index: 50;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Info Content */
+.player-info-details {
+  color: #e2e8f0;
+}
+
+.player-info-details h3 {
+  color: #00c3ff;
+  margin: 10px 0 5px;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(0, 195, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+.player-info-details p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* HQ Stocks */
+.hq-stock {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.hq-stock span {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+/* Tiles Section */
+.player-tiles {
+  margin-top: 15px;
+}
+
+.player-tiles h3 {
+  color: #00c3ff;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.tile-button {
+  padding: 5px 10px;
+  margin: 3px;
+  background: rgba(0, 150, 255, 0.2);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tile-button:hover {
+  background: rgba(0, 195, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.your-turn {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  z-index: 1000;
+  animation: fadeInOut 1.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
 }
