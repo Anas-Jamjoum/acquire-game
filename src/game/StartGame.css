@@ -592,7 +592,7 @@ html, body {
 /* Toggle Button */
 .player-info-button {
   position: fixed;
-  top: 3%;
+  top: 7%;
   left: 1%;
   width: 40px;
   height: 40px;
@@ -620,9 +620,9 @@ html, body {
 .player-info-hover {
   margin-top: 0px;
   position: fixed;
-  top: 5%;
+  top: 9%;
   left: 1%;
-  width: 200px;
+  width: 250px;
   background: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(0, 195, 255, 0.3);
   border-radius: 10px;
@@ -631,6 +631,82 @@ html, body {
   backdrop-filter: blur(5px);
   z-index: 50;
   animation: fadeIn 0.3s ease-out;
+}
+
+.hq-info-button{
+  position: fixed;
+  top: 7%;
+  right: 2%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c3ff 0%, #0084ff 100%);
+  color: white;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
+  transition: all 0.3s ease;
+  z-index: 51;
+}
+
+.hq-info-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 50;
+}
+
+.hq-info-hover {
+  margin-top: 0px;
+  position: fixed;
+  top: 9%;
+  right: 2%;
+  width: 250px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 195, 255, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3);
+  backdrop-filter: blur(5px);
+  z-index: 50;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.hq-info-hover h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  color: #ffffff;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.hq-details {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+
+.hq-details span {
+  margin-right: 6px;
+  font-size: 1.2rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 @keyframes fadeIn {
@@ -644,6 +720,14 @@ html, body {
 }
 
 .player-info-details h3 {
+  color: #00c3ff;
+  margin: 10px 0 5px;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(0, 195, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+.hq-info-hover h3 {
   color: #00c3ff;
   margin: 10px 0 5px;
   font-size: 1rem;
@@ -703,7 +787,7 @@ html, body {
   top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, #00c3ff 0%, #0084ff 100%);
   color: white;
   padding: 20px 40px;
   border-radius: 10px;

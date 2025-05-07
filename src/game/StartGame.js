@@ -928,7 +928,7 @@ const StartGame = () => {
     }
 
     if (!timerRef.current) {
-      setTimeLeft(30);
+      setTimeLeft(180);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -1375,10 +1375,11 @@ const StartGame = () => {
 
   const getAllUnusedTiles = (currentBoard, currentPlayers) => {
     const playerTiles = new Set(currentPlayers.flatMap((player) => player.tiles));
+    console.log("Player tiles:", playerTiles);
 
     const unusedTiles = currentBoard.filter((tile) => {
       const tileIndex = currentBoard.indexOf(tile);
-      return tile.color === "black" && !playerTiles.has(tileIndex);
+      return ((tile.color === "black") && !playerTiles.has(tileIndex));
     });
 
     return unusedTiles;
@@ -1386,7 +1387,7 @@ const StartGame = () => {
 
   const assignNewRandomTiles = (tilesToAssign, currentBoard, currentPlayers) => {
     const unusedTiles = getAllUnusedTiles(currentBoard, currentPlayers);
-
+    console.log("Unused tiles:", unusedTiles);
     if (unusedTiles.length === 0) {
       console.log("No unused tiles available to assign.");
       return [];
@@ -1480,6 +1481,7 @@ const StartGame = () => {
     }
 
     if (isMerging) return;
+    setBoard(newBoard);
 
     if (turnCounter >= 1) {
       const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
@@ -1697,6 +1699,25 @@ const StartGame = () => {
     );
   }
 
+  const [showHQInfo, setShowHQInfo] = useState(false);
+  const renderHQInfo = () => {
+    return (
+      <div className="hq-info-container">
+      {showHQInfo && (
+        <div className="hq-info-hover">
+          <h3>Headquarters Information</h3>
+          {HQS.map((hq, index) => (
+          <div key={index} className="hq-stock">
+            <span style={{ color: hq.color }}>■</span> {hq.name}:{hq.stocks}{" "}
+            stocks, ${hq.price} each, {hq.tiles.length} tiles
+          </div>
+        ))}
+        </div>
+      )}
+      </div>
+    );
+  }
+
   const renderTileButton = (tileIndex) => {
     return (
       <button
@@ -1723,7 +1744,14 @@ const StartGame = () => {
   }, [currentPlayerIndex, players, userEmail]);
   
   const renderNoteYourTurn = () => {
-    return showYourTurn ? <div className="your-turn">Your turn!</div> : null;
+    if ((players[currentPlayerIndex]?.email === userEmail) && showYourTurn) {
+      return (
+        <div className="your-turn">
+          <h2>Your Turn!</h2>
+        </div>
+      );
+    }
+    return null;
   };
 
   
@@ -1842,14 +1870,26 @@ const StartGame = () => {
 
   return (
     <div className="game">
-      {renderNoteYourTurn()}
-            <button
-        className="player-info-button"
-        onClick={() => setShowPlayerInfo(!showPlayerInfo)}
-      >
-        →
-      </button>
-      {showPlayerInfo && (renderQuickInfo())}
+      {!winner && renderNoteYourTurn()}
+      {!winner && (
+        <>
+          <button
+            className="player-info-button"
+            onClick={() => setShowPlayerInfo(!showPlayerInfo)}
+          >
+            {showPlayerInfo ? "←" : "→"}
+          </button>
+          
+          <button
+            className="hq-info-button"
+            onClick={() => setShowHQInfo(!showHQInfo)}
+          >
+            {showHQInfo ? "→" : "←"}
+          </button>
+          {showHQInfo && renderHQInfo()}
+          {showPlayerInfo && renderQuickInfo()}
+        </>
+      )}
       <FriendList />
       {winner === null && (<>
         <div className="turn-counter">Turn: {turnCounter}</div>
