@@ -47,6 +47,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  cursor: pointer;
 }
 
 .menu-nav {
@@ -126,6 +127,10 @@
 
 .rules-btn {
   background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+}
+.ai-analysis-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
 }
 

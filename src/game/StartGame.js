@@ -490,25 +490,29 @@ const StartGame = () => {
         setMergeError("You cannot swap more stocks than you own.");
         return;
       }
-  
+    
       const swapCount = Math.floor(sellSwapAmount / 2);
       if (swapCount <= 0) {
         setMergeError("You must swap at least 2 stocks to proceed.");
         return;
       }
-  
-      setMergeError(""); 
-  
+    
+      setMergeError("");
+    
       const updatedPlayers = [...players];
       updatedPlayers[playerIndex] = {
         ...player,
         headquarters: player.headquarters.map((hq) => {
-          if (hq.name === currentSmallerHQ.name) {
+          if (!hq || !hq.name) {
+            console.error("Invalid HQ object:", hq);
+            return hq; // Skip invalid HQs
+          }
+          if (hq.name === currentSmallerHQ?.name) {
             return {
               ...hq,
               stocks: hq.stocks - swapCount * 2,
             };
-          } else if (hq.name === bigHQ.name) {
+          } else if (hq.name === bigHQ?.name) {
             return {
               ...hq,
               stocks: hq.stocks + swapCount,
@@ -517,32 +521,33 @@ const StartGame = () => {
           return hq;
         }),
       };
-
+    
       setPlayers(updatedPlayers);
-
+    
       const newHQS = [...HQS];
-      const smallIndex = newHQS.findIndex(
-        (hq) => hq.name === currentSmallerHQ.name
-      );
-      const bigIndex = newHQS.findIndex((hq) => hq.name === bigHQ.name);
-
-      newHQS[smallIndex].stocks += swapCount * 2;
-
-      newHQS[bigIndex].stocks -= swapCount;
-
+      const smallIndex = newHQS.findIndex((hq) => hq?.name === currentSmallerHQ?.name);
+      const bigIndex = newHQS.findIndex((hq) => hq?.name === bigHQ?.name);
+    
+      if (smallIndex !== -1) {
+        newHQS[smallIndex].stocks += swapCount * 2;
+      }
+      if (bigIndex !== -1) {
+        newHQS[bigIndex].stocks -= swapCount;
+      }
+    
       setHQS(newHQS);
-
+    
       const stillHasStocks =
         updatedPlayers[playerIndex].headquarters.find(
-          (h) => h.name === currentSmallerHQ.name
+          (h) => h?.name === currentSmallerHQ?.name
         )?.stocks || 0;
-
+    
       if (stillHasStocks === 0) {
         goToNextMergePlayer();
       } else {
         setSellSwapAmount(0);
       }
-
+    
       persistGameToFirestore(updatedPlayers, newHQS);
     };
 
@@ -1462,7 +1467,7 @@ const StartGame = () => {
       let checkMerge = handleMerge(neighborColors, selectedTile);
       // alert("Handel merge");
       if (checkMerge === true) {
-        // return;
+        return;
       }
     }
 
@@ -1741,7 +1746,7 @@ const StartGame = () => {
   
       return () => clearTimeout(timeout); 
     }
-  }, [currentPlayerIndex, players, userEmail]);
+  }, [currentPlayerIndex]);
   
   const renderNoteYourTurn = () => {
     if ((players[currentPlayerIndex]?.email === userEmail) && showYourTurn) {

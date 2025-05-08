@@ -62,7 +62,7 @@ const Menu = () => {
   return (
     <div className="menu-container">
       <header className="menu-header">
-        <div className="game-logo">ACQUIRE</div>
+        <div className="game-logo" onClick={() => handleViewDashboard()}>ACQUIRE</div>
         <nav className="menu-nav">
           <button 
             className={`nav-btn ${activeView === 'dashboard' ? 'active' : ''}`}
@@ -99,6 +99,9 @@ const Menu = () => {
     </button>
     <button className="action-btn invite-btn" onClick={handleInvite}>
       INVITE FRIEND
+    </button>
+    <button className="action-btn ai-analysis-btn" onClick={() => alert('AI Analysis feature coming soon!')}>
+      AI Analysis
     </button>
     <button className="action-btn rules-btn" onClick={handleGameRules}>
       GAME RULES
