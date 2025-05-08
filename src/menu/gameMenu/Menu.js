@@ -6,12 +6,20 @@ import Update from '../updates/Update';
 import HostGameModal from '../HostGameModal/HostGameModal';
 import JoinRoom from '../joinRoom/JoinRoom';
 import FriendList from '../../friendsManagement/FriendList';
+import LEADERBOARD from '../leaderboard/Leaderboard';
 
-let setActiveView;
+
+let setActiveView = null; // This will be set in the Menu component
 
 export const handleJoinRoom = () => {
   if (setActiveView) {
     setActiveView('join');
+  }
+};
+
+export const handleViewLeaderboard = () => {
+  if (setActiveView) {
+    setActiveView('leaderboard');
   }
 };
 
@@ -21,6 +29,7 @@ const Menu = () => {
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isHostGameModalOpen, setHostGameModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  
 
   const handleHostGame = () => {
     setHostGameModalOpen(true);
@@ -68,6 +77,12 @@ const Menu = () => {
             JOIN GAME
           </button>
           <button 
+            className={`nav-btn ${activeView === 'leaderboard' ? 'active' : ''}`}
+            onClick={handleViewLeaderboard}
+          >
+            LEADERBOARD
+          </button>
+          <button 
             className={`nav-btn ${activeView === 'updates' ? 'active' : ''}`}
             onClick={handleViewUpdates}
           >
@@ -96,13 +111,11 @@ const Menu = () => {
           {activeView === 'dashboard' && <Dashboard />}
           {activeView === 'join' && <JoinRoom />}
           {activeView === 'updates' && <Update />}
+          {activeView === 'leaderboard' && <LEADERBOARD />}
         </div>
       </main>
 
-      {/* Update notifications */}
       
-
-      {/* Modals */}
       <InviteModal
         isOpen={isInviteModalOpen}
         onClose={() => setInviteModalOpen(false)}

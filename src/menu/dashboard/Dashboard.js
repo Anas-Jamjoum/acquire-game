@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import images from './imageUtils';
 import ImageSelectionModal from './ImageSelectionModal';
 import HostGameModal from '../HostGameModal/HostGameModal';
-import { handleJoinRoom } from '../gameMenu/Menu';
+import { handleJoinRoom , handleViewLeaderboard } from '../gameMenu/Menu';
 import InviteModal from '../../inviteModal/InviteModal';
 
 
@@ -221,7 +221,7 @@ const Dashboard = () => {
                         <button className="action-btn join-game" onClick={() => handleJoinRoom()}>
                             JOIN GAME
                         </button>
-                        <button className="action-btn leaderboard">
+                        <button className="action-btn leaderboard" onClick={() => handleViewLeaderboard()}>
                             LEADERBOARD
                         </button>
                         <button className="action-btn friends" onClick={handleInvite}>

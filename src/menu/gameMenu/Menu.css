@@ -143,6 +143,7 @@
   }
   
   .menu-nav {
+    gap: 0rem;
     width: 100%;
     justify-content: center;
   }
