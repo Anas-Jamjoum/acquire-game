@@ -41,6 +41,15 @@ body {
   padding: 1rem;
 }
 
+.dashboard-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 3px;
+}
+
 .dashboard-header {
   display: flex;
   justify-content: space-between;

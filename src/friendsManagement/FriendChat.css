@@ -71,6 +71,9 @@
   border-radius: 12px;
   position: relative;
   animation: fadeIn 0.3s ease-out;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 30ch;
 }
 
 .from-me {

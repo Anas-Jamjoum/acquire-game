@@ -58,6 +58,14 @@
   backdrop-filter: blur(10px);
   animation: slideUp 0.3s ease-out;
 }
+.friend-panel ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.friend-panel ::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 3px;
+}
 
 .friend-panel-title {
   color: var(--primary);

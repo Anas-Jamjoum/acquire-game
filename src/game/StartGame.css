@@ -6,11 +6,12 @@
   color: #e2e8f0;
   font-family: 'Orbitron', 'Segoe UI', sans-serif;
   position: relative;
-  overflow-y: auto; 
+  overflow: auto; 
   overflow-x: hidden;
   padding: 10px;
   box-sizing: border-box;
 }
+
 
 .game::before {
   content: '';
@@ -560,6 +561,8 @@ html, body {
   padding: 0;
   box-sizing: border-box;
 }
+
+
 
 /* Button styling */
 .player-info-button {
