@@ -10,6 +10,9 @@
     repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px),
     repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 195, 255, 0.05) 20px);
   background-attachment: fixed;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 195, 255, 0.2);
+  border: 1px solid rgba(0, 195, 255, 0.3);
 }
 
 .JoinRoom h1 {
