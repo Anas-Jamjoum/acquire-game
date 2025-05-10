@@ -1089,18 +1089,18 @@ const StartGame = () => {
 
       updatedPlayers.forEach((player) => {
         if (!player.email.startsWith("bot")) {
-          // Increment gamesPlayed and XP
           player.gamesPlayed = (player.gamesPlayed || 0) + 1;
-          player.xp = (player.xp || 0) + 100;
+          const rankMultiplier = updatedPlayers.length - index;
+          const xpEarned = 100 * rankMultiplier;
+
+          player.xp = (player.xp || 0) + xpEarned;
       
-          // Check if the player levels up
           if (player.xp >= player.nextLevelXp) {
-            player.level = (player.level || 1) + 1; // Increment level
-            player.xp -= player.nextLevelXp; // Carry over remaining XP
-            player.nextLevelXp = (player.nextLevelXp || 1000) + 100; // Increase nextLevelXp
+            player.level = (player.level || 1) + 1;
+            player.xp -= player.nextLevelXp; 
+            player.nextLevelXp = (player.nextLevelXp || 1000) + 100;
           }
       
-          // Update the player's data in Firestore
           try {
             const playerDocRef = doc(db, "players", player.email);
             updateDoc(playerDocRef, {
