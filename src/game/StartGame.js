@@ -1087,7 +1087,8 @@ const StartGame = () => {
 
       setWinner(theWinner);
 
-      updatedPlayers.forEach((player) => {
+      updatedPlayers.sort((a, b) => b.money - a.money);
+      updatedPlayers.forEach((player, index) => {
         if (!player.email.startsWith("bot")) {
           player.gamesPlayed = (player.gamesPlayed || 0) + 1;
           const rankMultiplier = updatedPlayers.length - index;

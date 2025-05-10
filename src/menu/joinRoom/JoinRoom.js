@@ -104,39 +104,57 @@ const JoinRoom = () => {
     }
   };
 
-  const removeFinishedRooms = async() => {
-    try {
-      const currentTime = Date.now();;
-      const cutoffTime = currentTime - 5 * 60 * 60 * 1000;
-      const finishedRooms = rooms.filter((room) => room.status === 'finished');
-      const outdatedRooms = rooms.filter((room) => ((room.mode === 'online') && (room.createdAt < cutoffTime)));
-      const deleteAllRooms = [...finishedRooms, ...outdatedRooms];
-      
-      if (deleteAllRooms.length === 0) {
-        return;
-      }
-  
-      for (let i = 0; i < deleteAllRooms.length; i++) {
-        const room = deleteAllRooms[i];
-      
-        const roomDocRef = doc(db, "rooms", room.id);
-        await deleteDoc(roomDocRef);
-      
-        const startedGameDocRef = doc(db, "startedGames", room.id);
-        await deleteDoc(startedGameDocRef);
-      }
-  
-      const roomsCollection = collection(db, "rooms");
-      const snapshot = getDocs(roomsCollection);
-      const updatedRooms = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setRooms(updatedRooms);
-    } catch (error) {
-      console.error("Error removing finished rooms:", error);
+const removeFinishedRooms = async () => {
+  try {
+    const currentTime = Date.now();
+    const cutoffTime = currentTime - 5 * 60 * 60 * 1000; 
+
+    const finishedRooms = rooms.filter((room) => room.status === 'finished');
+
+  const outdatedRooms = rooms.filter((room) => {
+    if (room.mode === 'online' && room.createdAt) {
+      const createdAtTime = room.createdAt.toDate().getTime(); 
+      return createdAtTime < cutoffTime;
     }
-  };
+    return false;
+  });
+
+    const deleteAllRooms = [...finishedRooms, ...outdatedRooms];
+    console.log('Rooms to delete:', deleteAllRooms);
+
+    if (deleteAllRooms.length === 0) {
+      console.log('No rooms to delete.');
+      return;
+    }
+
+    for (let i = 0; i < deleteAllRooms.length; i++) {
+      const room = deleteAllRooms[i];
+
+      try {
+        const roomDocRef = doc(db, 'rooms', room.id);
+        await deleteDoc(roomDocRef);
+
+        const startedGameDocRef = doc(db, 'startedGames', room.id);
+        await deleteDoc(startedGameDocRef);
+
+        console.log(`Deleted room and started game for room ID: ${room.id}`);
+      } catch (error) {
+        console.error(`Error deleting room or started game for room ID: ${room.id}`, error);
+      }
+    }
+
+    const roomsCollection = collection(db, 'rooms');
+    const snapshot = await getDocs(roomsCollection); 
+    const updatedRooms = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setRooms(updatedRooms); 
+  } catch (error) {
+    console.error('Error removing finished rooms:', error);
+  }
+};
 
   return (
     <div className="JoinRoom">

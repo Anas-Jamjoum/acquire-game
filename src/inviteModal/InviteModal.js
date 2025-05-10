@@ -25,6 +25,10 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
       const currentEmail = currentUser?.email;
       const currentPassword = prompt('Please enter your password to continue:'); // Prompt for the current user's password
 
+      if (!currentEmail || !currentPassword) {
+        setError('You must be logged in to invite a player');
+        return;
+      }
       const password = generateTemporaryPassword();
       await createUserWithEmailAndPassword(auth, inviteEmail, password);
       await sendPasswordResetEmail(auth, inviteEmail);
