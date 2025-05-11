@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from '../../Firebase';
+import '../login/Login.css'; 
 
 const AuthContext = createContext();
 
@@ -16,8 +17,11 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-
+  if (loading) return (
+    <div className="loading">
+      <div className="loading-text">Loading...</div>
+    </div>
+  );
   return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
 };
 
