@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setMessage('');
+    setIsLoading(true);
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -50,19 +52,36 @@ const Login = () => {
     } catch (err) {
       setError('Invalid email or password');
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleForgetPassword = async () => {
     setError('');
     setMessage('');
-
+    setIsLoading(true);
+  
+    if (!email) {
+      setError('Please enter your email address.');
+      setIsLoading(false);
+      return;
+    }
+  
     try {
       await sendPasswordResetEmail(auth, email);
       setMessage('Password reset email sent! Please check your inbox.');
     } catch (err) {
-      setError('Error sending password reset email');
+      if (err.code === 'auth/user-not-found') {
+        setError('No account found with this email address.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address.');
+      } else {
+        setError('Error sending password reset email.');
+      }
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,6 +96,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
         <div>
@@ -86,12 +106,26 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
         {error && <p className="error">{error}</p>}
         {message && <p className="message">{message}</p>}
-        <button className="Login-button" type="submit">Login</button>
-        <button className="forget-password-button" onClick={handleForgetPassword}>Forget Password</button>
+        
+        {isLoading ? (
+          <div className="loading-spinner"></div>
+        ) : (
+          <>
+            <button className="Login-button" type="submit">Login</button>
+            <button 
+              className="forget-password-button" 
+              onClick={handleForgetPassword}
+              type="button"
+            >
+              Forget Password
+            </button>
+          </>
+        )}
       </form>
     </div>
   );
