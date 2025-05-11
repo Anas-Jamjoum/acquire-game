@@ -87,7 +87,7 @@ const Update = () => {
           !error && <p className="empty-state">No updates available.</p>
         )}
       </div>
-      <div className="version-watermark">ACQUIRE v1.2.1</div>
+      <div className="version-watermark">ACQUIRE v1.3.0</div>
     </div>
   );
 };
