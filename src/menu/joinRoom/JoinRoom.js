@@ -87,7 +87,7 @@ const JoinRoom = () => {
       removeFinishedRooms();
     });
     return () => unsubscribe();
-  }, [removeFinishedRooms]);
+  }, []);
 
   const handleJoinRoom = (room) => {
     if (room.isPrivate) {

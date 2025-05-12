@@ -332,7 +332,7 @@ const StartGame = () => {
       console.log("Tie detected between HQs");
       setTieHQs(firstTwoHQS);
       setShowTieModal(true);
-      return true;
+      return;
     }
 
     let [smaller, bigger] = firstTwoHQS;
@@ -570,7 +570,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     return (
       <div className="merge-decision-modal">
         <h3>
-          Merging HQs: {currentSmallerHQ.name} and {bigHQ.name}.
+          Merging HQs: {currentSmallerHQ.name} and {bigHQ?.name}.
           <br /> 
           {player.name}, you have {smallerStocks} stock(s) in{" "}
           {currentSmallerHQ.name}.
@@ -772,9 +772,9 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     setMergePlayersOrder([]);
     setSelectedTileToMerge(null);
     setCurrentSmallerHQ(null);
-    setBigHQ(null);
     setMergeChoiceIndex(0);
     setShowTieModal(false);
+    setBigHQ(null);
     setTieHQs(null);
     setIsMerging(false);
     setSellSwapAmount(0);
@@ -784,6 +784,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
   const persistPlayersToFirestore = (newHQS, newBoard) => {
     try {
+      console.log("Persisting players to Firestore");
       const gameDocRef = doc(db, "startedGames", gameId);
       updateDoc(gameDocRef, {
         mergeInProgress: false,
@@ -855,6 +856,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
   const user = auth.currentUser;
   const userEmail = user?.email || "";
+  const [gameHost, setGameHost] = useState(null);
 
   const initializeGame = async (roomData) => {
     try {
@@ -905,6 +907,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         })),
         turnCounter: 0,
         mode: roomData.mode,
+        host: userEmail,
       };
   
       await setDoc(doc(db, "startedGames", gameId), gameData);
@@ -924,7 +927,8 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       players[currentPlayerIndex] &&
       players[currentPlayerIndex].email.startsWith("bot") &&
       !mergeInProgress &&
-      winner === null
+      winner === null &&
+      userEmail === gameHost
     ) {
 
       const botMoveTimeout = setTimeout(() => {
@@ -947,7 +951,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       return;
     }
 
-    if (!timerRef.current && !mergeInProgress) {
+    if (!timerRef.current && !mergeInProgress && winner === null && userEmail === gameHost) {
       setTimeLeft(180);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
@@ -997,6 +1001,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         const roomData = roomSnap.data();
 
         if (roomData.host === userEmail) {
+          setGameHost(userEmail);
           console.log("You are the host. Initializing the game...");
           await initializeGame(roomData);
         } else {
@@ -1010,6 +1015,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
           setBoard(data.board || createInitialBoard());
           setPlayers(data.players || []);
           const newIndex = data.currentPlayerIndex || 0;
+          setGameHost(data.host || userEmail);
 
           if (newIndex !== currentPlayerIndex.current) {
             setTilesAssignedThisTurn(false);
