@@ -260,7 +260,7 @@ const WaitingRoom = () => {
                 )}
               </div>
               {gameData.players.length < gameData.maxPlayers ? (
-                <p>Waiting for more players to join...</p>
+                <p>Waiting for more players to join {gameData.players.length}/{gameData.maxPlayers}</p>
               ) : (
                 <p>Waiting for the host to start...</p>
               )}

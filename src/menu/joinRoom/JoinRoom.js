@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../../Firebase';
 import { collection, doc, updateDoc, arrayUnion, onSnapshot, deleteDoc, getDocs } from 'firebase/firestore';
@@ -18,6 +18,61 @@ const JoinRoom = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
 
+
+    const removeFinishedRooms = useCallback(async () => {
+  try {
+    const currentTime = Date.now();
+    const cutoffTime = currentTime - 5 * 60 * 60 * 1000; 
+
+    const finishedRooms = rooms.filter((room) => room.status === 'finished');
+
+    console.log('Rooms:', rooms);
+
+  const outdatedRooms = rooms.filter((room) => {
+    if (room.mode === 'online' && room.createdAt) {
+      const createdAtTime = room.createdAt.toDate().getTime(); 
+      return createdAtTime < cutoffTime;
+    }
+    return false;
+  });
+
+    const deleteAllRooms = [...finishedRooms, ...outdatedRooms];
+    console.log('Rooms to delete:', deleteAllRooms);
+
+    if (deleteAllRooms.length === 0) {
+      console.log('No rooms to delete.');
+      return;
+    }
+
+    for (let i = 0; i < deleteAllRooms.length; i++) {
+      const room = deleteAllRooms[i];
+
+      try {
+        const roomDocRef = doc(db, 'rooms', room.id);
+        await deleteDoc(roomDocRef);
+
+        const startedGameDocRef = doc(db, 'startedGames', room.id);
+        await deleteDoc(startedGameDocRef);
+
+        console.log(`Deleted room and started game for room ID: ${room.id}`);
+      } catch (error) {
+        console.error(`Error deleting room or started game for room ID: ${room.id}`, error);
+      }
+    }
+
+    const roomsCollection = collection(db, 'rooms');
+    const snapshot = await getDocs(roomsCollection); 
+    const updatedRooms = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setRooms(updatedRooms); 
+  } catch (error) {
+    console.error('Error removing finished rooms:', error);
+  }
+  }, [rooms]);
+  
   useEffect(() => {
     const user = auth.currentUser;
     if (user) {
@@ -32,7 +87,7 @@ const JoinRoom = () => {
       removeFinishedRooms();
     });
     return () => unsubscribe();
-  }, []);
+  }, [removeFinishedRooms]);
 
   const handleJoinRoom = (room) => {
     if (room.isPrivate) {
@@ -103,58 +158,6 @@ const JoinRoom = () => {
       setCurrentPage(currentPage - 1);
     }
   };
-
-const removeFinishedRooms = async () => {
-  try {
-    const currentTime = Date.now();
-    const cutoffTime = currentTime - 5 * 60 * 60 * 1000; 
-
-    const finishedRooms = rooms.filter((room) => room.status === 'finished');
-
-  const outdatedRooms = rooms.filter((room) => {
-    if (room.mode === 'online' && room.createdAt) {
-      const createdAtTime = room.createdAt.toDate().getTime(); 
-      return createdAtTime < cutoffTime;
-    }
-    return false;
-  });
-
-    const deleteAllRooms = [...finishedRooms, ...outdatedRooms];
-    console.log('Rooms to delete:', deleteAllRooms);
-
-    if (deleteAllRooms.length === 0) {
-      console.log('No rooms to delete.');
-      return;
-    }
-
-    for (let i = 0; i < deleteAllRooms.length; i++) {
-      const room = deleteAllRooms[i];
-
-      try {
-        const roomDocRef = doc(db, 'rooms', room.id);
-        await deleteDoc(roomDocRef);
-
-        const startedGameDocRef = doc(db, 'startedGames', room.id);
-        await deleteDoc(startedGameDocRef);
-
-        console.log(`Deleted room and started game for room ID: ${room.id}`);
-      } catch (error) {
-        console.error(`Error deleting room or started game for room ID: ${room.id}`, error);
-      }
-    }
-
-    const roomsCollection = collection(db, 'rooms');
-    const snapshot = await getDocs(roomsCollection); 
-    const updatedRooms = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    setRooms(updatedRooms); 
-  } catch (error) {
-    console.error('Error removing finished rooms:', error);
-  }
-};
 
   return (
     <div className="JoinRoom">
