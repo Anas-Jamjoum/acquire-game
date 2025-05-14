@@ -570,7 +570,8 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     return (
       <div className="merge-decision-modal">
         <h3>
-          Merging HQs: {currentSmallerHQ.name} and {bigHQ?.name}.
+          Merging HQ: {currentSmallerHQ.name}
+          {bigHQ && ` and ${bigHQ.name}`}
           <br /> 
           {player.name}, you have {smallerStocks} stock(s) in{" "}
           {currentSmallerHQ.name}.
@@ -2226,20 +2227,16 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             );
           } else if (currentMergePlayer.email.startsWith("bot")) {
             return (
-              <div className="waiting-overlay">
-                <div className="waiting-message">
-                  {/* Merging HQs: {currentSmallerHQ.name} and{bigHQ.name} */}
-                  <br />
-                  {currentMergePlayer.name} is deciding...
-                  {mergeAIDecision()}
-                </div>
-              </div>
+              <>{mergeAIDecision()}</>
             );
           }
           else {
             return (
               <div className="waiting-overlay">
                 <div className="waiting-message">
+                  Merging HQ: {currentSmallerHQ.name}
+                  {bigHQ && ` and ${bigHQ.name}`}
+                  <br />
                   Waiting for {currentMergePlayer.name} to decide...
                 </div>
               </div>
