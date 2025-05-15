@@ -5,50 +5,11 @@ import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import "./StartGame.css";
 import images from "../menu/dashboard/imageUtils";
 import FriendList from "../friendsManagement/FriendList";
+import { getLabel, createInitialBoard, sortPlayersbyTile, getAllUnusedTiles, assignNewRandomTiles, InitializePlayersFundsAndTiles } from "./HelperFunctions";
 
 const StartGame = () => {
-  const getLabel = (row, col) => {
-    const letters = "ABCDEFGHI";
-    return `${col + 1}${letters[row]}`;
-  };
-
-  const shufflePlayers = (players) => {
-    return [...players].sort(() => Math.random() - 0.5);
-  };
-
-
-  const createInitialBoard = () => {
-    return Array(108)
-      .fill()
-      .map((_, index) => ({
-        label: getLabel(Math.floor(index / 12), index % 12),
-        color: "black",
-        used: false,
-      }));
-  };
-
-
-  const assignInitialTiles = (players, boardToUpdate) => {
-    players.forEach((player, i) => {
-      player.money = 6000;
-      if (!player.tiles || player.tiles.length === 0) {
-        let tile;
-        do {
-          tile = Math.floor(Math.random() * 108);
-        } while (boardToUpdate[tile].used);
-        boardToUpdate[tile].used = true;
-        player.tiles = [tile];
-      }
-    });
-  };
-
-  const sortPlayersbyTile = (players) => {
-    return players.sort((a, b) => a.tiles[0] - b.tiles[0]);
-  };
-
   const checkCanEnd = () => {
     const hqWithMoreThan40Tiles = HQS.some((hq) => hq.tiles.length > 40);
-
     if (hqWithMoreThan40Tiles) {
       return true;
     }
@@ -206,7 +167,7 @@ const StartGame = () => {
   const getTop2PlayersWithMostStocks = (hqName) => {
     const filteredPlayers = players.filter((player) => {
       const stocks = player.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
-      return stocks > 0; // Only include players with stocks > 0
+      return stocks > 0;
     });
 
     const sortedPlayers = filteredPlayers.sort((a, b) => {
@@ -885,12 +846,13 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         return;
       }
   
-      const shuffled = shufflePlayers(validPlayers);
       const newBoard = createInitialBoard();
   
-      assignInitialTiles(shuffled, newBoard);
+      
+
+      const playersWithTiles = InitializePlayersFundsAndTiles(validPlayers, newBoard);
   
-      const sortPlayers = sortPlayersbyTile(shuffled);
+      const sortPlayers = sortPlayersbyTile(playersWithTiles);
   
       const gameData = {
         board: newBoard,
@@ -1386,43 +1348,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
     setSelectedTile(tileIndex);
     setShowOptions(true);
-  };
-
-  const getAllUnusedTiles = (currentBoard, currentPlayers) => {
-    const playerTiles = new Set(currentPlayers.flatMap((player) => player.tiles));
-
-    const unusedTiles = currentBoard.filter((tile) => {
-      const tileIndex = currentBoard.indexOf(tile);
-      return ((tile.color === "black") && !playerTiles.has(tileIndex));
-    });
-
-    return unusedTiles;
-  };
-
-  const assignNewRandomTiles = (tilesToAssign, currentBoard, currentPlayers) => {
-    const unusedTiles = getAllUnusedTiles(currentBoard, currentPlayers);
-    if (unusedTiles.length === 0) {
-      return [];
-    }
-
-    const newTiles = [];
-    for (let i = 0; i < tilesToAssign; i++) {
-      if (unusedTiles.length === 0) {
-        break;
-      }
-
-      const randomIndex = Math.floor(Math.random() * unusedTiles.length);
-      const selectedTile = unusedTiles[randomIndex];
-
-      selectedTile.used = true;
-
-      const tileIndex = board.indexOf(selectedTile);
-      newTiles.push(tileIndex);
-
-      unusedTiles.splice(randomIndex, 1);
-    }
-
-    return newTiles;
   };
 
   const handleOptionClick = async (option) => {
