@@ -60,3 +60,73 @@ export const InitializePlayersFundsAndTiles = (players, boardToUpdate) => {
     });
     return players;
 };
+
+export const checkNeighborColor = (tileIndex, board) => {
+    const connectedTiles = getConnectedGrayTiles(board, tileIndex);
+    const numRows = 9;
+    const numCols = 12;
+
+    const neighborColors = new Set();
+
+    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
+    const rowColToIndex = (r, c) => r * numCols + c;
+
+    connectedTiles.forEach((currentTileIndex) => {
+      const [row, col] = indexToRowCol(currentTileIndex);
+
+      const directions = [
+        [row - 1, col], 
+        [row + 1, col], 
+        [row, col - 1], 
+        [row, col + 1], 
+      ];
+
+      directions.forEach(([r, c]) => {
+        if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
+          const neighborIndex = rowColToIndex(r, c);
+          const color = board[neighborIndex].color;
+
+          if (color !== "black" && color !== "gray") {
+            neighborColors.add(color);
+          }
+        }
+      });
+    });
+
+    return Array.from(neighborColors);
+  };
+
+  export function getConnectedGrayTiles(board, tileIndex) {
+    const numRows = 9;
+    const numCols = 12;
+
+    const visited = new Set();
+    const queue = [tileIndex];
+
+    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
+    const rowColToIndex = (r, c) => r * numCols + c;
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+
+      const [row, col] = indexToRowCol(current);
+      const neighbors = [
+        [row - 1, col],
+        [row + 1, col],
+        [row, col - 1],
+        [row, col + 1],
+      ];
+
+      for (let [nr, nc] of neighbors) {
+        if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
+          const neighborIndex = rowColToIndex(nr, nc);
+          if (board[neighborIndex].color === "gray") {
+            queue.push(neighborIndex);
+          }
+        }
+      }
+    }
+    return Array.from(visited);
+  }

@@ -5,164 +5,12 @@ import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import "./StartGame.css";
 import images from "../menu/dashboard/imageUtils";
 import FriendList from "../friendsManagement/FriendList";
-import { getLabel, createInitialBoard, sortPlayersbyTile, getAllUnusedTiles, assignNewRandomTiles, InitializePlayersFundsAndTiles } from "./HelperFunctions";
+import { checkNeighborColor, createInitialBoard, sortPlayersbyTile, getAllUnusedTiles, assignNewRandomTiles, InitializePlayersFundsAndTiles, getConnectedGrayTiles } from "./HelperFunctions";
+import { checkCanEnd } from "./GameLogic";
+import { ManageHQS } from "./HQS";
 
 const StartGame = () => {
-  const checkCanEnd = () => {
-    const hqWithMoreThan40Tiles = HQS.some((hq) => hq.tiles.length > 40);
-    if (hqWithMoreThan40Tiles) {
-      return true;
-    }
-    return false;
-  };
-
-  const checkStartHQ = (tileToIndex) => {
-    let tileIndex = tileToIndex;
-    const row = Math.floor(tileIndex / 12);
-    const col = tileIndex % 12;
-
-    const directions = [
-      [-1, 0],
-      [1, 0],
-      [0, -1],
-      [0, 1],
-    ];
-
-    for (const [dr, dc] of directions) {
-      const r = row + dr;
-      const c = col + dc;
-      if (r >= 0 && r < 9 && c >= 0 && c < 12) {
-        const neighborIndex = r * 12 + c;
-        if (
-          board[neighborIndex].color === "gray" &&
-          checkNeighborColor(tileToIndex).length === 0 &&
-          HQS.some((hq) => hq.tiles.length === 0)
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  const checkNeighborColor = (tileIndex) => {
-    const connectedTiles = getConnectedGrayTiles(board, tileIndex); // Get all connected tiles
-    const numRows = 9;
-    const numCols = 12;
-
-    const neighborColors = new Set(); // Use a Set to store unique colors
-
-    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
-    const rowColToIndex = (r, c) => r * numCols + c;
-
-    // Loop through all connected tiles
-    connectedTiles.forEach((currentTileIndex) => {
-      const [row, col] = indexToRowCol(currentTileIndex);
-
-      const directions = [
-        [row - 1, col], // Up
-        [row + 1, col], // Down
-        [row, col - 1], // Left
-        [row, col + 1], // Right
-      ];
-
-      // Check neighbors of the current tile
-      directions.forEach(([r, c]) => {
-        if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
-          const neighborIndex = rowColToIndex(r, c);
-          const color = board[neighborIndex].color;
-
-          // Add the color to the set if it's not "white" or "gray"
-          if (color !== "black" && color !== "gray") {
-            neighborColors.add(color);
-          }
-        }
-      });
-    });
-
-    return Array.from(neighborColors); // Convert the Set to an Array
-  };
-
-  const updateHQPrice = (hq, tilesLength) => {
-    const newHQS = [...HQS];
-    const hqIndex = newHQS.findIndex((h) => h.name === hq.name);
-    if (hq.name === "Sackson" || hq.name === "Tower") {
-      if (tilesLength === 2) {
-        return (newHQS[hqIndex].price = 200);
-      } else if (tilesLength === 3) {
-        return (newHQS[hqIndex].price = 300);
-      } else if (tilesLength === 4) {
-        return (newHQS[hqIndex].price = 400);
-      } else if (tilesLength === 5) {
-        return (newHQS[hqIndex].price = 500);
-      } else if (tilesLength >= 6 && tilesLength <= 10) {
-        return (newHQS[hqIndex].price = 600);
-      } else if (tilesLength >= 11 && tilesLength <= 20) {
-        return (newHQS[hqIndex].price = 700);
-      } else if (tilesLength >= 21 && tilesLength <= 30) {
-        return (newHQS[hqIndex].price = 800);
-      } else if (tilesLength >= 31 && tilesLength <= 40) {
-        return (newHQS[hqIndex].price = 900);
-      } else if (tilesLength >= 41) {
-        return (newHQS[hqIndex].price = 1000);
-      }
-    } else if (
-      hq.name === "American" ||
-      hq.name === "Festival" ||
-      hq.name === "WorldWide"
-    ) {
-      if (tilesLength === 2) {
-        return (newHQS[hqIndex].price = 300);
-      } else if (tilesLength === 3) {
-        return (newHQS[hqIndex].price = 400);
-      } else if (tilesLength === 4) {
-        return (newHQS[hqIndex].price = 500);
-      } else if (tilesLength === 5) {
-        return (newHQS[hqIndex].price = 600);
-      } else if (tilesLength >= 6 && tilesLength <= 10) {
-        return (newHQS[hqIndex].price = 700);
-      } else if (tilesLength >= 11 && tilesLength <= 20) {
-        return (newHQS[hqIndex].price = 800);
-      } else if (tilesLength >= 21 && tilesLength <= 30) {
-        return (newHQS[hqIndex].price = 900);
-      } else if (tilesLength >= 31 && tilesLength <= 40) {
-        return (newHQS[hqIndex].price = 1000);
-      } else if (tilesLength >= 41) {
-        return (newHQS[hqIndex].price = 1100);
-      }
-    } else if (hq.name === "Continental" || hq.name === "Imperial") {
-      if (tilesLength === 2) {
-        return (newHQS[hqIndex].price = 400);
-      } else if (tilesLength === 3) {
-        return (newHQS[hqIndex].price = 500);
-      } else if (tilesLength === 4) {
-        return (newHQS[hqIndex].price = 600);
-      } else if (tilesLength === 5) {
-        return (newHQS[hqIndex].price = 700);
-      } else if (tilesLength >= 6 && tilesLength <= 10) {
-        return (newHQS[hqIndex].price = 800);
-      } else if (tilesLength >= 11 && tilesLength <= 20) {
-        return (newHQS[hqIndex].price = 900);
-      } else if (tilesLength >= 21 && tilesLength <= 30) {
-        return (newHQS[hqIndex].price = 1000);
-      } else if (tilesLength >= 31 && tilesLength <= 40) {
-        return (newHQS[hqIndex].price = 1100);
-      } else if (tilesLength >= 41) {
-        return (newHQS[hqIndex].price = 1200);
-      }
-    }
-    return 404;
-  };
-
-  const updateHQ = (hq, connectedTiles) => {
-    const newHQS = [...HQS];
-    const hqIndex = newHQS.findIndex((h) => h.name === hq.name);
-    newHQS[hqIndex].tiles = [
-      ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
-    ].filter(tile => tile !== null);
-    newHQS[hqIndex].price = updateHQPrice(hq, newHQS[hqIndex].tiles.length);
-    return newHQS;
-  };
+  const { HQS, checkStartHQ, updateHQ, getBonus } = ManageHQS();
 
   const getTop2PlayersWithMostStocks = (hqName) => {
     const filteredPlayers = players.filter((player) => {
@@ -319,71 +167,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     return true;
   };
 
-  const getBonus = (hqName) => {
-    const hqTiles = (HQS.find((hq) => hq.name === hqName)?.tiles || []).length;
-    if (hqName === "Sackson" || hqName === "Tower") {
-      if (hqTiles === 2) {
-        return [2000, 1500];
-      } else if (hqTiles === 3) {
-        return [3000, 2200];
-      } else if (hqTiles === 4) {
-        return [4000, 3000];
-      } else if (hqTiles === 5) {
-        return [5000, 3700];
-      } else if (hqTiles >= 6 && hqTiles <= 10) {
-        return [6000, 4200];
-      } else if (hqTiles >= 11 && hqTiles <= 20) {
-        return [7000, 5000];
-      } else if (hqTiles >= 21 && hqTiles <= 30) {
-        return [8000, 5700];
-      } else if (hqTiles >= 31 && hqTiles <= 40) {
-        return [9000, 6200];
-      } else {
-        return [10000, 7000];
-      }
-    } else if (hqName === "American" || hqName === "Festival" || hqName === "WorldWide") {
-      if (hqTiles === 2) {
-        return [3000, 2200];
-      } else if (hqTiles === 3) {
-        return [4000, 3000];
-      } else if (hqTiles === 4) {
-        return [5000, 3700];
-      } else if (hqTiles === 5) {
-        return [6000, 4200];
-      } else if (hqTiles >= 6 && hqTiles <= 10) {
-        return [7000, 5000];
-      } else if (hqTiles >= 11 && hqTiles <= 20) {
-        return [8000, 5700];
-      } else if (hqTiles >= 21 && hqTiles <= 30) {
-        return [9000, 6200];
-      } else if (hqTiles >= 31 && hqTiles <= 40) {
-        return [10000, 7000];
-      } else {
-        return [11000, 7700];
-      }
-    } else {
-      if (hqTiles === 2) {
-        return [4000, 3000];
-      } else if (hqTiles === 3) {
-        return [5000, 3700];
-      } else if (hqTiles === 4) {
-        return [6000, 4200];
-      } else if (hqTiles === 5) {
-        return [7000, 5000];
-      } else if (hqTiles >= 6 && hqTiles <= 10) {
-        return [8000, 5700];
-      } else if (hqTiles >= 11 && hqTiles <= 20) {
-        return [9000, 6200];
-      } else if (hqTiles >= 21 && hqTiles <= 30) {
-        return [10000, 7000];
-      } else if (hqTiles >= 31 && hqTiles <= 40) {
-        return [11000, 7700];
-      } else {
-        return [12000, 8200];
-      }
-    }
-  }
-  
   const [sellSwapAmount, setSellSwapAmount] = useState(0);
   const [mergeError, setMergeError] = useState("");
 
@@ -442,8 +225,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       );
       newHQS[smallHQIndex].stocks += sellSwapAmount;
 
-      setHQS(newHQS);
-
+      updateHQ(newHQS);
       const stillHasStocks =
         updatedPlayers[playerIndex].headquarters.find(
           (h) => h.name === currentSmallerHQ.name
@@ -511,8 +293,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       if (bigIndex !== -1) {
         newHQS[bigIndex].stocks -= swapCount;
       }
-    
-      setHQS(newHQS);
+    updateHQ(newHQS);
     
       const stillHasStocks =
         updatedPlayers[playerIndex].headquarters.find(
@@ -598,7 +379,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       newHQS[smallIndex].stocks += swapCount * 2;
       newHQS[bigIndex].stocks -= swapCount;
 
-      setHQS(newHQS);
+      updateHQ(newHQS);
 
     } else if (decision === "sell") {
       // Sell logic: Sell stocks from the smaller HQ for money
@@ -626,7 +407,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
       newHQS[smallIndex].stocks += sellAmount;
 
-      setHQS(newHQS);
+      updateHQ(newHQS);
     }
 
     const stillHasStocks =
@@ -703,15 +484,11 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             ...getConnectedGrayTiles(board, selectedTileToMerge),
           ]),
         ];
-
-        newHQS[biggerIndex].price = updateHQPrice(
-          biggerHQend,
-          newHQS[biggerIndex].tiles.length
-        );
-
+        
         newHQS[smallerIndex].tiles = [];
-        newHQS[smallerIndex].price = 0;
         newHQS[smallerIndex].stocks = 25;
+
+        updateHQ(newHQS);
       }
 
       if (smallerIndex !== -1 && biggerIndex !== -1) {
@@ -726,7 +503,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         });
       }
     }
-    setHQS(newHQS);
+    updateHQ(newHQS);
 
     setBoard(newBoard);
 
@@ -775,15 +552,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   };
 
   const [board, setBoard] = useState(createInitialBoard());
-  const [HQS, setHQS] = useState([
-    { name: "Sackson", stocks: 25, tiles: [], price: 0, color: "red" },
-    { name: "Tower", stocks: 25, tiles: [], price: 0, color: "yellow" },
-    { name: "American", stocks: 25, tiles: [], price: 0, color: "darkblue" },
-    { name: "Festival", stocks: 25, tiles: [], price: 0, color: "green" },
-    { name: "WorldWide", stocks: 25, tiles: [], price: 0, color: "purple" },
-    { name: "Continental", stocks: 25, tiles: [], price: 0, color: "blue" },
-    { name: "Imperial", stocks: 25, tiles: [], price: 0, color: "orange" },
-  ]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [players, setPlayers] = useState([]);
   const [winner, setWinner] = useState(null);
@@ -986,7 +754,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
           setCurrentPlayerIndex(newIndex);
           setWinner(data.winner || null);
-          setHQS(data.HQS || HQS);
+          updateHQ(data.HQS || HQS);
           setTurnCounter(data.turnCounter || 0);
 
           if (data.mode === "online") {
@@ -1151,7 +919,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     updatedPlayers[currentPlayerIndex] = currPlayer;
 
     const connectedTiles = [...getConnectedGrayTiles(newBoard, tileIndex), tileIndex];
-    const neighborColors = checkNeighborColor(tileIndex);
+    const neighborColors = checkNeighborColor(tileIndex, board);
 
     if (neighborColors.length === 0) {
       newBoard[tileIndex] = {
@@ -1159,7 +927,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         color: "gray",
       };
 
-      if (checkStartHQ(tileIndex) && currPlayer.email.startsWith("bot")) {
+      if (checkStartHQ(tileIndex, board) && currPlayer.email.startsWith("bot")) {
         const hqsWithNoTiles = HQS.filter((hq) => hq.tiles.length === 0);
         const randomHQIndex = Math.floor(Math.random() * hqsWithNoTiles.length);
         const selectedHQ = hqsWithNoTiles[randomHQIndex];
@@ -1178,10 +946,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         newHQS[hqIndex].tiles = [
           ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
         ];
-        newHQS[hqIndex].price = updateHQPrice(
-          selectedHQ,
-          newHQS[hqIndex].tiles.length
-        );
         newHQS[hqIndex].stocks -= 1;
         const playerHqIndex = currPlayer.headquarters.findIndex(
           (h) => h.name === selectedHQ.name
@@ -1190,7 +954,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         currPlayer.headquarters[playerHqIndex].stocks += 1;
         updatedPlayers[currentPlayerIndex] = currPlayer;
         setPlayers(updatedPlayers);
-        setHQS(newHQS);
+        updateHQ(newHQS);
       }
 
     } else if (neighborColors.length === 1) {
@@ -1204,11 +968,12 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             color: selectedColor,
           };
         });
-        const newHQS = updateHQ(
-          HQS.find((hq) => hq.color === selectedColor),
-          connectedTiles
-        );
-        setHQS(newHQS);
+        const newHQS = [...HQS];
+        const hqIndex = newHQS.findIndex((hq) => hq.color === selectedColor);
+        newHQS[hqIndex].tiles = [
+          ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
+        ];
+        updateHQ(newHQS);
       }
     } else if (neighborColors.length > 1) {
       newBoard[tileIndex] = {
@@ -1238,7 +1003,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         newHQS[hqIndex].stocks -= randomAmount;
         updatedPlayers[currentPlayerIndex].headquarters[playerHQIndex].stocks += randomAmount;
         updatedPlayers[currentPlayerIndex].money -= randomAmount * randomHQ.price;
-        setHQS(newHQS);
+        updateHQ(newHQS);
         setPlayers(updatedPlayers);
       }
     }
@@ -1269,7 +1034,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     
         updatedPlayers[currentPlayerIndex].money += randomAmountToSell * newHQS[hqIndex].price;
     
-        setHQS(newHQS);
+        updateHQ(newHQS);
         setPlayers(updatedPlayers);
       }
     }
@@ -1314,7 +1079,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS, false);
+    // checkForWinner(updatedPlayers, HQS, false);
   };
 
   const checkMaxStocksAi = (hq, player) => {
@@ -1365,7 +1130,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     const connectedTiles = getConnectedGrayTiles(board, selectedTile);
-    const neighborColors = checkNeighborColor(selectedTile);
+    const neighborColors = checkNeighborColor(selectedTile, board);
 
     if (neighborColors.length === 1) {
       const hqColors = HQS.map((hq) => hq.color);
@@ -1378,12 +1143,12 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             color: selectedColor,
           };
         });
-
-        const newHQS = updateHQ(
-          HQS.find((hq) => hq.color === selectedColor),
-          connectedTiles
-        );
-        setHQS(newHQS);
+        const newHQS = [...HQS];
+        const hqIndex = newHQS.findIndex((hq) => hq.color === selectedColor);
+        newHQS[hqIndex].tiles = [
+          ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
+        ];
+        updateHQ(newHQS);
       }
     } else if (neighborColors.length > 1) {
       setBoard(newBoard);
@@ -1480,41 +1245,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
   };
 
-  function getConnectedGrayTiles(board, tileIndex) {
-    const numRows = 9;
-    const numCols = 12;
-
-    const visited = new Set();
-    const queue = [tileIndex];
-
-    const indexToRowCol = (i) => [Math.floor(i / numCols), i % numCols];
-    const rowColToIndex = (r, c) => r * numCols + c;
-
-    while (queue.length > 0) {
-      const current = queue.shift();
-      if (visited.has(current)) continue;
-      visited.add(current);
-
-      const [row, col] = indexToRowCol(current);
-      const neighbors = [
-        [row - 1, col],
-        [row + 1, col],
-        [row, col - 1],
-        [row, col + 1],
-      ];
-
-      for (let [nr, nc] of neighbors) {
-        if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols) {
-          const neighborIndex = rowColToIndex(nr, nc);
-          if (board[neighborIndex].color === "gray") {
-            queue.push(neighborIndex);
-          }
-        }
-      }
-    }
-    return Array.from(visited);
-  }
-
   const handleHQSelection = (hqName) => {
     try {
       const chosenHQ = HQS.find((hq) => hq.name === hqName);
@@ -1538,10 +1268,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       newHQS[hqIndex].tiles = [
         ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
       ];
-      newHQS[hqIndex].price = updateHQPrice(
-        chosenHQ,
-        newHQS[hqIndex].tiles.length
-      );
       newHQS[hqIndex].stocks -= 1;
 
       const newPlayers = [...players];
@@ -1562,7 +1288,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       });
 
       setBoard(newBoard);
-      setHQS(newHQS);
+      updateHQ(newHQS);
       setPlayers(newPlayers);
 
       setStartHQ(false);
@@ -1750,7 +1476,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     setPlayers(updatedPlayers);
-    setHQS(newHQS);
+    updateHQ(newHQS);
     setShowBuyModal(false);
     setSelectedHQToBuy(null);
     setBuyAmount(0);
@@ -1794,7 +1520,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     setPlayers(updatedPlayers);
-    setHQS(newHQS);
+    updateHQ(newHQS);
     setShowSellModal(false);
     setSelectedHQToSell(null);
     setSellAmount(0);
@@ -2019,14 +1745,14 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 )}
             </>
           )}
-          {checkStartHQ(selectedTile) && (
+          {checkStartHQ(selectedTile, board) && (
             <>
               <button onClick={() => handleOptionClick("start hq")}>
                 Start HQ
               </button>
             </>
           )}
-          {checkCanEnd() && (
+          {checkCanEnd(selectedTile,HQS,board) && (
             <>
               <button onClick={() => handleOptionClick("end game")}>
                 End Game
