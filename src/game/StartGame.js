@@ -8,167 +8,22 @@ import FriendList from "../friendsManagement/FriendList";
 import { checkNeighborColor, createInitialBoard, sortPlayersbyTile, getAllUnusedTiles, assignNewRandomTiles, InitializePlayersFundsAndTiles, getConnectedGrayTiles } from "./HelperFunctions";
 import { checkCanEnd } from "./GameLogic";
 import { ManageHQS } from "./HQS";
+import { ManageMergeLogic } from "./MergeLogic";
+import { ManagePlayers } from "./PlayersInfo"
 
 const StartGame = () => {
+  const { getPlayers, updatePlayers } = ManagePlayers();
   const { HQS, checkStartHQ, updateHQ, getBonus } = ManageHQS();
-
-  const getTop2PlayersWithMostStocks = (hqName) => {
-    const filteredPlayers = players.filter((player) => {
-      const stocks = player.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
-      return stocks > 0;
-    });
-
-    const sortedPlayers = filteredPlayers.sort((a, b) => {
-      const aStocks = a.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
-      const bStocks = b.headquarters.find((hq) => hq.name === hqName)?.stocks || 0;
-      return bStocks - aStocks;
-    });
-
-    return sortedPlayers.slice(0, 2);
-  };
-
-  const [isMerging, setIsMerging] = useState(false);
-  const [bigHQ, setBigHQ] = useState(null);
-
-  const [tieHQs, setTieHQs] = useState(null);
-  const [showTieModal, setShowTieModal] = useState(false);
-
-  const [mergeInProgress, setMergeInProgress] = useState(false);
-  const [mergePlayersOrder, setMergePlayersOrder] = useState([]);
-  const [mergeChoiceIndex, setMergeChoiceIndex] = useState(0);
-
-  const [currentSmallerHQ, setCurrentSmallerHQ] = useState(null);
-  const [selectedTileToMerge, setSelectedTileToMerge] = useState(null);
-
-
-  const doMergeLogic = (smallerHQ, biggerHQ) => {
-
-    console.log("doMergeLogic called with:", smallerHQ, biggerHQ);
-    setBigHQ(biggerHQ);
-    setCurrentSmallerHQ(smallerHQ);
-    console.log("Current smaller HQ:", currentSmallerHQ);
-    console.log("Big HQ:", bigHQ);
-
-
-    // Stock bonus logic
-    const top2Players = getTop2PlayersWithMostStocks(smallerHQ.name);
-    const firstPlayerBonus = getBonus(smallerHQ.name)[0];
-    const secondPlayerBonus = getBonus(smallerHQ.name)[1];
-
-
-    const updatedPlayers = [...players];
-    if (top2Players[0]) {
-      const idx = updatedPlayers.findIndex(
-        (p) => p.email === top2Players[0].email
-      );
-      if (idx !== -1) updatedPlayers[idx].money += firstPlayerBonus;
-    }
-    if (top2Players[1]) {
-      const idx = updatedPlayers.findIndex(
-        (p) => p.email === top2Players[1].email
-      );
-      if (idx !== -1) updatedPlayers[idx].money += secondPlayerBonus;
-    }
-    setPlayers(updatedPlayers);
-    // persistGameToFirestore(updatedPlayers, HQS);
-
-    setMergeInProgress(true);
-
-    const smallerName = smallerHQ.name;
-
-    let owners = [];
-    for (let i = 0; i < updatedPlayers.length; i++) {
-      const stocksInSmaller =
-        updatedPlayers[i].headquarters.find((h) => h.name === smallerName)
-          ?.stocks || 0;
-      if (stocksInSmaller > 0) {
-        owners.push(i);
-      }
-    }
-
-    const startIndex = owners.indexOf(currentPlayerIndex);
-    if (startIndex > 0) {
-
-      const front = owners.splice(0, startIndex);
-      owners = [...owners, ...front];
-    }
-
-    if (owners.length === 0) {
-      console.log("dologic No players have stocks in the smaller HQ.");
-      endMergeProcess(smallerHQ, biggerHQ);
-      return;
-    }
-
-    setMergePlayersOrder(owners);
-    setMergeChoiceIndex(0);
-
-    setIsMerging(false);
-
-    console.log("Merge players order:up date data base");
-    updateDoc(doc(db, "startedGames", gameId), {
-      mergeInProgress: true,
-      mergePlayersOrder: owners,
-      mergeChoiceIndex: 0,
-      currentSmallerHQ: smallerHQ.name,
-      players: updatedPlayers,
-    });
-  };
-
-  const handleMerge = async (neighborColors, _selectedTileToMerge) => {
-    console.log("handleMerge called with:", neighborColors, board[_selectedTileToMerge].label);
-    const mergingHQS = HQS.filter((hq) => neighborColors.includes(hq.color));
-    const hqsWithMoreThan10Tiles = mergingHQS.filter(
-      (hq) => hq.tiles.length > 10
-    );
-
-    if (hqsWithMoreThan10Tiles.length >= 2) {
-      console.log("More than 2 HQs with more than 10 tiles");
-      return false;
-    }
-    
-    console.log("selected TILE TO MERGE BFORE SET",board[_selectedTileToMerge].label);
-    setSelectedTileToMerge(_selectedTileToMerge);
-
-    if (_selectedTileToMerge === null) {
-      console.log("No tile selected for merging");
-      return false;
-    }
-    setIsMerging(true);
-    mergingHQS.sort((a, b) => a.tiles.length - b.tiles.length);
-    const firstTwoHQS = mergingHQS.slice(0, 2);
-
-    if (firstTwoHQS[0].tiles.length === firstTwoHQS[1].tiles.length && !players[currentPlayerIndex].email.startsWith("bot")) {
-      console.log("Tie detected between HQs");
-      setTieHQs(firstTwoHQS);
-      setShowTieModal(true);
-      return;
-    }
-
-    let [smaller, bigger] = firstTwoHQS;
-  bigger.tiles = [...new Set([...bigger.tiles, _selectedTileToMerge])];
-
-  console.log("Selected tile to merge:", board[_selectedTileToMerge].label);
-console.log("Bigger HQ tiles before update:", bigger.tiles);
-console.log("Smaller HQ tiles before update:", smaller.tiles);
-
-// Get the labels of the tiles in the bigger and smaller HQs
-const biggerTileLabels = bigger.tiles.map((tileIndex) => board[tileIndex]?.label || "Unknown");
-const smallerTileLabels = smaller.tiles.map((tileIndex) => board[tileIndex]?.label || "Unknown");
-
-console.log("Bigger HQ tile labels:", biggerTileLabels);
-console.log("Smaller HQ tile labels:", smallerTileLabels);
-
-  const updatedBoard = [...board];
-  updatedBoard[selectedTileToMerge] = {
-    ...updatedBoard[_selectedTileToMerge],
-    color: bigger.color,
-  };
-    doMergeLogic(smaller, bigger);
-    return true;
-  };
-
-  const [sellSwapAmount, setSellSwapAmount] = useState(0);
-  const [mergeError, setMergeError] = useState("");
+  const { getTop2PlayersWithMostStocks, setIsMerging, 
+          isMerging, currentBigHQ, setCurrentBigHQ,
+          hqsWithEqualTileCount, setHqsWithEqualTileCount,
+          showTieModal, setShowTieModal,mergeInProgress,
+          setMergeInProgress,mergePlayersOrder , setMergePlayersOrder,
+          mergeChoiceIndex, setMergeChoiceIndex, currentSmallerHQ,
+          setCurrentSmallerHQ, selectedTileToMerge, setSelectedTileToMerge,
+          doMergeLogic, handleMerge, goToNextMergePlayer,
+          endMergeProcess, sellSwapAmount, setSellSwapAmount,
+          setMergeError, mergeError } = ManageMergeLogic();
 
   const renderMergeDecision = () => {
     const order = mergePlayersOrder;
@@ -179,7 +34,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     const playerIndex = order[mergeChoiceIndex];
-    const player = players[playerIndex];
+    const player = getPlayers[playerIndex];
 
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)
@@ -201,7 +56,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   
       setMergeError(""); 
   
-      const updatedPlayers = [...players];
+      const updatedPlayers = [...getPlayers];
       const newMoney = player.money + sellSwapAmount * currentSmallerHQ.price;
       updatedPlayers[playerIndex] = {
         ...player,
@@ -217,7 +72,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         }),
       };
 
-      setPlayers(updatedPlayers);
+      updatePlayers(updatedPlayers);
 
       const newHQS = [...HQS];
       const smallHQIndex = newHQS.findIndex(
@@ -258,7 +113,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     
       setMergeError("");
     
-      const updatedPlayers = [...players];
+      const updatedPlayers = [...getPlayers];
       updatedPlayers[playerIndex] = {
         ...player,
         headquarters: player.headquarters.map((hq) => {
@@ -271,7 +126,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
               ...hq,
               stocks: hq.stocks - swapCount * 2,
             };
-          } else if (hq.name === bigHQ?.name) {
+          } else if (hq.name === currentBigHQ?.name) {
             return {
               ...hq,
               stocks: hq.stocks + swapCount,
@@ -281,11 +136,11 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         }),
       };
     
-      setPlayers(updatedPlayers);
+      updatePlayers(updatedPlayers);
     
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex((hq) => hq?.name === currentSmallerHQ?.name);
-      const bigIndex = newHQS.findIndex((hq) => hq?.name === bigHQ?.name);
+      const bigIndex = newHQS.findIndex((hq) => hq?.name === currentBigHQ?.name);
     
       if (smallIndex !== -1) {
         newHQS[smallIndex].stocks += swapCount * 2;
@@ -313,7 +168,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       <div className="merge-decision-modal">
         <h3>
           Merging HQ: {currentSmallerHQ.name}
-          {bigHQ && ` and ${bigHQ.name}`}
+          {currentBigHQ && ` and ${currentBigHQ.name}`}
           <br /> 
           {player.name}, you have {smallerStocks} stock(s) in{" "}
           {currentSmallerHQ.name}.
@@ -334,7 +189,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   };
 
   const mergeAIDecision = () => {
-    const player = players[currentPlayerIndex];
+    const player = getPlayers[currentPlayerIndex];
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
 
@@ -351,7 +206,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         return;
       }
 
-      const updatedPlayers = [...players];
+      const updatedPlayers = [...getPlayers];
       updatedPlayers[currentPlayerIndex] = {
         ...player,
         headquarters: player.headquarters.map((hq) => {
@@ -360,7 +215,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
               ...hq,
               stocks: hq.stocks - swapCount * 2,
             };
-          } else if (hq.name === bigHQ.name) {
+          } else if (hq.name === currentBigHQ.name) {
             return {
               ...hq,
               stocks: hq.stocks + swapCount,
@@ -370,11 +225,11 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         }),
       };
 
-      setPlayers(updatedPlayers);
+      updatePlayers(updatedPlayers);
 
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
-      const bigIndex = newHQS.findIndex((hq) => hq.name === bigHQ.name);
+      const bigIndex = newHQS.findIndex((hq) => hq.name === currentBigHQ.name);
 
       newHQS[smallIndex].stocks += swapCount * 2;
       newHQS[bigIndex].stocks -= swapCount;
@@ -386,7 +241,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       const sellAmount = smallerStocks; // Sell all stocks in the smaller HQ
       const totalMoney = sellAmount * currentSmallerHQ.price;
 
-      const updatedPlayers = [...players];
+      const updatedPlayers = [...getPlayers];
       updatedPlayers[currentPlayerIndex] = {
         ...player,
         money: player.money + totalMoney,
@@ -401,7 +256,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         }),
       };
 
-      setPlayers(updatedPlayers);
+      updatePlayers(updatedPlayers);
 
       const newHQS = [...HQS];
       const smallIndex = newHQS.findIndex((hq) => hq.name === currentSmallerHQ.name);
@@ -411,7 +266,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     const stillHasStocks =
-      players[currentPlayerIndex].headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
+      getPlayers[currentPlayerIndex].headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
 
     if (stillHasStocks === 0) {
       goToNextMergePlayer();
@@ -419,7 +274,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       setSellSwapAmount(0);
     }
 
-    persistGameToFirestore(players, HQS);
+    persistGameToFirestore(getPlayers, HQS);
   };
 
   const persistGameToFirestore = (updatedPlayers, updatedHQS) => {
@@ -434,93 +289,6 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
   };
 
-  const goToNextMergePlayer = () => {
-    const nextIndex = mergeChoiceIndex + 1;
-    setMergeChoiceIndex(nextIndex);
-
-    try {
-      if (nextIndex >= mergePlayersOrder.length) {
-        console.log("All players have made their choice");
-        endMergeProcess();
-        return;
-      }
-      const gameDocRef = doc(db, "startedGames", gameId);
-      updateDoc(gameDocRef, {
-        mergeChoiceIndex: nextIndex,
-      });
-    } catch (err) {
-      console.error("Failed to update Firestore for next merge player:", err);
-    }
-  };
-
-  const endMergeProcess = (smallerHQ,biggerHQ,) => {
-    console.log("Ending merge process");
-    const newHQS = [...HQS];
-    const newBoard = [...board];
-
-    console.log("Big HQ:", bigHQ);
-    console.log("Current smaller HQ:", currentSmallerHQ);
-
-    console.log("Bigger HQ:", biggerHQ);
-    console.log("cCurrent smaller HQ:", smallerHQ);
-
-    if ((biggerHQ && smallerHQ) || (bigHQ && currentSmallerHQ)) {
-      const smallerHQend = smallerHQ || currentSmallerHQ;
-      const biggerHQend = biggerHQ || bigHQ;
-      console.log("Merging HQs:", smallerHQend, biggerHQend);
-      const biggerIndex = newHQS.findIndex((h) => h.name === biggerHQend.name);
-      const smallerIndex = newHQS.findIndex(
-        (h) => h.name === smallerHQend.name
-      );
-      console.log("Bigger HQ index:", biggerIndex);
-      console.log("Smaller HQ index:", smallerIndex);
-      console.log("Selected tile to merge:", selectedTileToMerge);
-      if (biggerIndex !== -1 && smallerIndex !== -1) {
-        console.log("Merging tiles");
-        newHQS[biggerIndex].tiles = [
-          ...new Set([
-            ...newHQS[biggerIndex].tiles,
-            ...newHQS[smallerIndex].tiles,
-            ...getConnectedGrayTiles(board, selectedTileToMerge),
-          ]),
-        ];
-        
-        newHQS[smallerIndex].tiles = [];
-        newHQS[smallerIndex].stocks = 25;
-
-        updateHQ(newHQS);
-      }
-
-      if (smallerIndex !== -1 && biggerIndex !== -1) {
-        const biggerTileIndices = newHQS[biggerIndex].tiles;
-        const biggerColor = newHQS[biggerIndex].color;
-
-        biggerTileIndices.forEach((tileIndex) => {
-          newBoard[tileIndex] = {
-            ...newBoard[tileIndex],
-            color: biggerColor,
-          };
-        });
-      }
-    }
-    updateHQ(newHQS);
-
-    setBoard(newBoard);
-
-    setMergeInProgress(false);
-    setMergePlayersOrder([]);
-    setSelectedTileToMerge(null);
-    setCurrentSmallerHQ(null);
-    setMergeChoiceIndex(0);
-    setShowTieModal(false);
-    setBigHQ(null);
-    setTieHQs(null);
-    setIsMerging(false);
-    setSellSwapAmount(0);
-    setMergeError("");
-    persistPlayersToFirestore(newHQS, newBoard);
-  };
-
   const persistPlayersToFirestore = (newHQS, newBoard) => {
     try {
       console.log("Persisting players to Firestore");
@@ -530,7 +298,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         mergePlayersOrder: [],
         mergeChoiceIndex: mergeChoiceIndex + 1,
         currentSmallerHQ: null,
-        players: players,
+        players: getPlayers,
         HQS: newHQS,
         board: newBoard,
       });
@@ -541,19 +309,18 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
   const handleBiggerHQSelection = (bigger, smaller) => {
     setShowTieModal(false);
-    setTieHQs(null);
-    doMergeLogic(smaller, bigger);
+    setHqsWithEqualTileCount(null);
+    doMergeLogic(smaller, bigger, getPlayers,currentPlayerIndex , board, HQS);
   };
 
   const handleTieModalCancel = () => {
     setShowTieModal(false);
-    setTieHQs(null);
+    setHqsWithEqualTileCount(null);
     setIsMerging(false);
   };
 
   const [board, setBoard] = useState(createInitialBoard());
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [players, setPlayers] = useState([]);
   const [winner, setWinner] = useState(null);
   const [turnCounter, setTurnCounter] = useState(0);
   const [showAllPlayers, setShowAllPlayers] = useState(false); // State to toggle between all players and the current player
@@ -655,8 +422,8 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
   useEffect(() => {
     if (
-      players[currentPlayerIndex] &&
-      players[currentPlayerIndex].email.startsWith("bot") &&
+      getPlayers[currentPlayerIndex] &&
+      getPlayers[currentPlayerIndex].email.startsWith("bot") &&
       !mergeInProgress &&
       winner === null &&
       userEmail === gameHost
@@ -671,7 +438,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
     if (
       !isOnlineMode ||
-      !players[currentPlayerIndex] ||
+      !getPlayers[currentPlayerIndex] ||
       winner ||
       mergeInProgress
     ) {
@@ -706,7 +473,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   }, [
     isOnlineMode,
     currentPlayerIndex,
-    players,
+    getPlayers,
     userEmail,
     winner,
     mergeInProgress,
@@ -744,7 +511,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         if (snapshot.exists()) {
           const data = snapshot.data();
           setBoard(data.board || createInitialBoard());
-          setPlayers(data.players || []);
+          updatePlayers(data.players || []);
           const newIndex = data.currentPlayerIndex || 0;
           setGameHost(data.host || userEmail);
 
@@ -795,7 +562,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
     if (noTilesLeft || allHqsOver10 || end) {
       HQS.forEach((hq) => {
-        const top2Players = getTop2PlayersWithMostStocks(hq.name);
+        const top2Players = getTop2PlayersWithMostStocks(getPlayers, hq.name);
         const [firstPlayerBonus, secondPlayerBonus] = getBonus(hq.name);
         if (top2Players[0]) {
           const firstPlayerIndex = updatedPlayers.findIndex(
@@ -824,7 +591,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         });
       });
 
-      setPlayers(updatedPlayers);
+      updatePlayers(updatedPlayers);
 
       const richestPlayer = updatedPlayers.sort((a, b) => {
         return b.money - a.money;
@@ -890,7 +657,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
 
   const handleRandomMove = () => {
-    const currPlayer = players[currentPlayerIndex];
+    const currPlayer = getPlayers[currentPlayerIndex];
     if (!currPlayer) return;
 
     if (currPlayer.tiles && currPlayer.tiles.length > 0) {
@@ -908,11 +675,11 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   };
 
   const handleOptionClickRandom = (option, tileIndex) => {
-    checkForWinner(players, HQS, false);
+    checkForWinner(getPlayers, HQS, false);
     if (tileIndex == null) return;
     const newBoard = [...board];
 
-    const updatedPlayers = [...players];
+    const updatedPlayers = [...getPlayers];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
     currPlayer.tiles = currPlayer.tiles.filter((t) => t !== tileIndex);
@@ -953,7 +720,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
         currPlayer.headquarters[playerHqIndex].stocks += 1;
         updatedPlayers[currentPlayerIndex] = currPlayer;
-        setPlayers(updatedPlayers);
+        updatePlayers(updatedPlayers);
         updateHQ(newHQS);
       }
 
@@ -980,7 +747,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         ...newBoard[tileIndex],
         color: "gray",
       };
-      handleMerge(neighborColors, tileIndex);
+      handleMerge(neighborColors, tileIndex, updatedPlayers, currentPlayerIndex, newBoard, HQS);
     }
     setBoard(newBoard);
 
@@ -1004,7 +771,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         updatedPlayers[currentPlayerIndex].headquarters[playerHQIndex].stocks += randomAmount;
         updatedPlayers[currentPlayerIndex].money -= randomAmount * randomHQ.price;
         updateHQ(newHQS);
-        setPlayers(updatedPlayers);
+        updatePlayers(updatedPlayers);
       }
     }
 
@@ -1035,7 +802,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         updatedPlayers[currentPlayerIndex].money += randomAmountToSell * newHQS[hqIndex].price;
     
         updateHQ(newHQS);
-        setPlayers(updatedPlayers);
+        updatePlayers(updatedPlayers);
       }
     }
 
@@ -1043,15 +810,15 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
 
 
-    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    let nextPlayerIndex = (currentPlayerIndex + 1) % getPlayers.length;
     const newTurnCounter =
       nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
 
     if (newTurnCounter === 1) {
-      for (let i = 0; i < players.length; i++) {
+      for (let i = 0; i < getPlayers.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
           const newTiles = assignNewRandomTiles(6, newBoard, updatedPlayers);
           updatedPlayers[i].tiles.push(...newTiles);
@@ -1060,7 +827,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     setBoard(newBoard);
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
     setCurrentPlayerIndex(nextPlayerIndex);
     setTurnCounter(newTurnCounter);
     setShowOptions(false);
@@ -1098,7 +865,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   const renderCountdown = () => {
     if (
       isOnlineMode &&
-      players[currentPlayerIndex]?.email === userEmail &&
+      getPlayers[currentPlayerIndex]?.email === userEmail &&
       timeLeft !== null
     ) {
       return <div className="countdown">Time left: {timeLeft}s</div>;
@@ -1109,7 +876,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
   const handleTileClick = (tileIndex) => {
     if (winner) return;
-    if (players[currentPlayerIndex]?.email !== userEmail) return;
+    if (getPlayers[currentPlayerIndex]?.email !== userEmail) return;
 
     setSelectedTile(tileIndex);
     setShowOptions(true);
@@ -1152,14 +919,14 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       }
     } else if (neighborColors.length > 1) {
       setBoard(newBoard);
-      let checkMerge = await handleMerge(neighborColors, selectedTile);
+      let checkMerge = await handleMerge(neighborColors, selectedTile, getPlayers, currentPlayerIndex, newBoard, HQS);
       // alert("Handel merge");
       console.log("checkMerge", checkMerge);
       if (checkMerge === true) {
         return;
       }
     }
-    const updatedPlayers = [...players];
+    const updatedPlayers = [...getPlayers];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
     currPlayer.tiles = currPlayer.tiles.filter((t) => t !== selectedTile);
@@ -1188,14 +955,14 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
       updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
     }
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
 
-    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    let nextPlayerIndex = (currentPlayerIndex + 1) % getPlayers.length;
     const newTurnCounter =
       nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
 
     if (newTurnCounter === 1) {
-      for (let i = 0; i < players.length; i++) {
+      for (let i = 0; i < getPlayers.length; i++) {
         if (updatedPlayers[i].tiles.length === 0) {
           const newTiles = assignNewRandomTiles(6, newBoard, updatedPlayers);
           updatedPlayers[i].tiles.push(...newTiles);
@@ -1204,7 +971,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     }
 
     setBoard(newBoard);
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
     setCurrentPlayerIndex(nextPlayerIndex);
     setTurnCounter(newTurnCounter);
     setShowOptions(false);
@@ -1270,7 +1037,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       ];
       newHQS[hqIndex].stocks -= 1;
 
-      const newPlayers = [...players];
+      const newPlayers = [...getPlayers];
       const currPlayer = { ...newPlayers[currentPlayerIndex] };
       const playerHqIndex = currPlayer.headquarters.findIndex(
         (h) => h.name === hqName
@@ -1289,7 +1056,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 
       setBoard(newBoard);
       updateHQ(newHQS);
-      setPlayers(newPlayers);
+      updatePlayers(newPlayers);
 
       setStartHQ(false);
     } catch (err) {
@@ -1298,9 +1065,9 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   };
 
   const renderSquare = (index) => {
-    const currentPlayerTiles = players[currentPlayerIndex]?.tiles || [];
+    const currentPlayerTiles = getPlayers[currentPlayerIndex]?.tiles || [];
     const isCurrentPlayerTile = currentPlayerTiles.includes(index);
-    const isCurrentPlayer = players[currentPlayerIndex]?.email === userEmail;
+    const isCurrentPlayer = getPlayers[currentPlayerIndex]?.email === userEmail;
   
     return (
       <div
@@ -1330,7 +1097,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 <div className="player-info-container">
   {showPlayerInfo && (
     <div className="player-info-hover">
-      {players
+      {getPlayers
         .filter((player) => player.email === userEmail)
         .map((player, index) => (
           <div key={index} className="player-info-details">
@@ -1395,7 +1162,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   const [showYourTurn, setShowYourTurn] = useState(false);
 
   useEffect(() => {
-    if (players[currentPlayerIndex]?.email === userEmail) {
+    if (getPlayers[currentPlayerIndex]?.email === userEmail) {
       setShowYourTurn(true); 
       const timeout = setTimeout(() => {
         setShowYourTurn(false); 
@@ -1406,7 +1173,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
   }, [currentPlayerIndex]);
   
   const renderNoteYourTurn = () => {
-    if ((players[currentPlayerIndex]?.email === userEmail) && showYourTurn) {
+    if ((getPlayers[currentPlayerIndex]?.email === userEmail) && showYourTurn) {
       return (
         <div className="your-turn">
           <h2>Your Turn!</h2>
@@ -1422,7 +1189,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     if (winner) {
       return `Winner: ${winner}`;
     }
-    return `Current player turn: ${players[currentPlayerIndex]?.name || "Loading..."
+    return `Current player turn: ${getPlayers[currentPlayerIndex]?.name || "Loading..."
       } `;
   };
 
@@ -1449,7 +1216,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       return;
     }
 
-    const updatedPlayers = [...players];
+    const updatedPlayers = [...getPlayers];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
     const totalCost = newHQS[hqIndex].price * buyAmount;
@@ -1475,7 +1242,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       console.error("Error updating Firestore:", err);
     }
 
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
     updateHQ(newHQS);
     setShowBuyModal(false);
     setSelectedHQToBuy(null);
@@ -1494,7 +1261,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
     const newHQS = [...HQS];
     const hqIndex = newHQS.findIndex((h) => h.name === selectedHQToSell);
 
-    const updatedPlayers = [...players];
+    const updatedPlayers = [...getPlayers];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
 
     if (currPlayer.headquarters[hqIndex].stocks < sellAmount) {
@@ -1519,7 +1286,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       console.error("Error updating Firestore:", err);
     }
 
-    setPlayers(updatedPlayers);
+    updatePlayers(updatedPlayers);
     updateHQ(newHQS);
     setShowSellModal(false);
     setSelectedHQToSell(null);
@@ -1585,7 +1352,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             </div>
             <div className="sorted-players">
               <h3>Players</h3>
-              {players
+              {getPlayers
                 .slice() 
                 .sort((a, b) => b.money - a.money) 
                 .map((player, index) => (
@@ -1613,7 +1380,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
       <div className="players-info">
         {showAllPlayers ? (
 <div className="players-info-show-all">
-  {winner === null && players
+  {winner === null && getPlayers
     .slice() 
     .sort((a, b) => (a.email === userEmail ? -1 : b.email === userEmail ? 1 : 0)) 
     .map((player, index) => (
@@ -1659,7 +1426,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
 </div>
         ) : (
   <div className="players-info-show-only-me">
-      {winner === null && players
+      {winner === null && getPlayers
         .filter((player) => player.email === userEmail)
         .map((player, index) => (
           <div key={index} className="player">
@@ -1738,7 +1505,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
               <button onClick={() => handleOptionClick("buy")}>
                 Buy Stock
               </button>
-              {players[currentPlayerIndex]?.headquarters.some(hq => hq.stocks > 0) && (
+              {getPlayers[currentPlayerIndex]?.headquarters.some(hq => hq.stocks > 0) && (
   <button onClick={() => handleOptionClick("sell")}>
     Sell Stock
   </button>
@@ -1818,7 +1585,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
           >
             <option value="">Select HQ</option>
             {HQS.filter((hq) => 
-  players[currentPlayerIndex]?.headquarters.some(playerHQ => playerHQ.name === hq.name && playerHQ.stocks > 0)
+  getPlayers[currentPlayerIndex]?.headquarters.some(playerHQ => playerHQ.name === hq.name && playerHQ.stocks > 0)
 ).map((hq, index) => (
   <option key={index} value={hq.name}>
     {hq.name} - ${hq.price} per stock
@@ -1838,7 +1605,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         </div>
       )}
 
-      {showTieModal && tieHQs && (
+      {showTieModal && hqsWithEqualTileCount && (
         <>
           <div className="hq-modal-overlay" onClick={handleTieModalCancel} />
 
@@ -1847,14 +1614,14 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
             <p>Which one should be considered the Bigger HQ?</p>
 
             <button
-              onClick={() => handleBiggerHQSelection(tieHQs[0], tieHQs[1])}
+              onClick={() => handleBiggerHQSelection(hqsWithEqualTileCount[0], hqsWithEqualTileCount[1])}
             >
-              {tieHQs[0].name}
+              {hqsWithEqualTileCount[0].name}
             </button>
             <button
-              onClick={() => handleBiggerHQSelection(tieHQs[1], tieHQs[0])}
+              onClick={() => handleBiggerHQSelection(hqsWithEqualTileCount[1], hqsWithEqualTileCount[0])}
             >
-              {tieHQs[1].name}
+              {hqsWithEqualTileCount[1].name}
             </button>
             <button onClick={handleTieModalCancel}>Cancel</button>
           </div>
@@ -1865,7 +1632,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
         currentSmallerHQ &&
         (() => {
           const currentMergePlayer =
-            players[mergePlayersOrder[mergeChoiceIndex]] || null;
+            getPlayers[mergePlayersOrder[mergeChoiceIndex]] || null;
           if (currentMergePlayer === null) {
             endMergeProcess();
             return null;
@@ -1886,7 +1653,7 @@ console.log("Smaller HQ tile labels:", smallerTileLabels);
               <div className="waiting-overlay">
                 <div className="waiting-message">
                   Merging HQ: {currentSmallerHQ.name}
-                  {bigHQ && ` and ${bigHQ.name}`}
+                  {currentBigHQ && ` and ${currentBigHQ.name}`}
                   <br />
                   Waiting for {currentMergePlayer.name} to decide...
                 </div>

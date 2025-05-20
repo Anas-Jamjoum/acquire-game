@@ -180,6 +180,7 @@ export const ManageHQS = () => {
     const newHQS = hqs.map((hq) => ({
       ...hq,
       price: updateHQPrice(hq, hq.tiles.length),
+      stocks: Math.max(0, Math.min(25, hq.stocks)),
     }));
     setHQS(newHQS);
   };

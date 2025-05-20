@@ -206,12 +206,18 @@ const JoinRoom = () => {
           ))
         )}
       </div>
-
-      <div className="Pagination">
-        <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={handleNextPage} disabled={currentPage >= totalPages}>Next</button>
-      </div>
+      
+      {totalPages > 0 && (
+        <div className="Pagination">
+          <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+            Previous
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button onClick={handleNextPage} disabled={currentPage >= totalPages}>
+            Next
+          </button>
+        </div>
+      )}
 
       {isPasswordModalOpen && (
         <div className="PasswordModal">
