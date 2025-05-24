@@ -100,7 +100,6 @@ export const ManageHQS = () => {
   };
 
     const getBonus = (hqName, HQS) => {
-      console.log("HQ Name:", hqName);
     const hqTiles = (HQS.find((hq) => hq.name === hqName)?.tiles || []).length;
     if (hqName === "Sackson" || hqName === "Tower") {
       if (hqTiles === 2) {
