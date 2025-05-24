@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../Firebase";
-import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import "./StartGame.css";
 import FriendList from "../friendsManagement/FriendList";
 import { checkNeighborColor, createInitialBoard, getAllUnusedTiles, assignNewRandomTiles, getConnectedGrayTiles } from "./HelperFunctions";
@@ -35,7 +35,6 @@ const StartGame = () => {
 
   //======merge logic======
   const [isMerging, setIsMerging] = useState(false);
-    const [bigHQ, setBigHQ] = useState(null);
   
     const [hqsWithEqualTileCount, setHqsWithEqualTileCount] = useState(null);
     const [showTieModal, setShowTieModal] = useState(false);
@@ -528,7 +527,6 @@ newHQS[bigIndex].tiles = [
     setMergePlayersOrder([]);
     setMergeChoiceIndex(0);
     setShowTieModal(false);
-    setBigHQ(null);
     setHqsWithEqualTileCount(null);
     setIsMerging(false);
     setSellSwapAmount(0);
