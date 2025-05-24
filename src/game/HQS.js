@@ -1,19 +1,7 @@
-import { useState } from "react";
 import { checkNeighborColor } from "./HelperFunctions";
 
 export const ManageHQS = () => {
-  const [HQS, setHQS] = useState([
-    { name: "Sackson", stocks: 25, tiles: [], price: 0, color: "red" },
-    { name: "Tower", stocks: 25, tiles: [], price: 0, color: "yellow" },
-    { name: "American", stocks: 25, tiles: [], price: 0, color: "darkblue" },
-    { name: "Festival", stocks: 25, tiles: [], price: 0, color: "green" },
-    { name: "WorldWide", stocks: 25, tiles: [], price: 0, color: "purple" },
-    { name: "Continental", stocks: 25, tiles: [], price: 0, color: "blue" },
-    { name: "Imperial", stocks: 25, tiles: [], price: 0, color: "orange" },
-  ]);
-
-  const checkStartHQ = (tileToIndex, board) => {
-    console.log(checkNeighborColor(tileToIndex, board));
+  const checkStartHQ = (tileToIndex, board, HQS) => {
     let tileIndex = tileToIndex;
     const row = Math.floor(tileIndex / 12);
     const col = tileIndex % 12;
@@ -111,7 +99,8 @@ export const ManageHQS = () => {
     return 0;
   };
 
-    const getBonus = (hqName) => {
+    const getBonus = (hqName, HQS) => {
+      console.log("HQ Name:", hqName);
     const hqTiles = (HQS.find((hq) => hq.name === hqName)?.tiles || []).length;
     if (hqName === "Sackson" || hqName === "Tower") {
       if (hqTiles === 2) {
@@ -182,11 +171,10 @@ export const ManageHQS = () => {
       price: updateHQPrice(hq, hq.tiles.length),
       stocks: Math.max(0, Math.min(25, hq.stocks)),
     }));
-    setHQS(newHQS);
+    return newHQS;
   };
 
   return {
-    HQS,
     checkStartHQ,
     updateHQ,
     getBonus
