@@ -749,7 +749,6 @@ newHQS[bigIndex].tiles = [
 
     const allHqsOver10 = updatedHQS.every((hq) => hq.tiles.length > 10);
 
-
     if (noTilesLeft || allHqsOver10 || end) {
       HQS.forEach((hq) => {
         const top2Players = getTop2PlayersWithMostStocks(players, hq.name);
@@ -818,6 +817,7 @@ newHQS[bigIndex].tiles = [
           } catch (err) {
             console.error(`Error updating player ${player.name}:`, err);
           }
+          
         }
       });
 
