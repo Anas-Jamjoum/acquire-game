@@ -792,7 +792,6 @@ newHQS[bigIndex].tiles = [
 
       updatedPlayers.sort((a, b) => b.money - a.money);
       updatedPlayers.forEach((player, index) => {
-        if (!player.email.startsWith("bot")) {
           player.gamesPlayed = (player.gamesPlayed || 0) + 1;
           const rankMultiplier = updatedPlayers.length - index;
           const xpEarned = 100 * rankMultiplier;
@@ -817,8 +816,6 @@ newHQS[bigIndex].tiles = [
           } catch (err) {
             console.error(`Error updating player ${player.name}:`, err);
           }
-          
-        }
       });
 
       try {
