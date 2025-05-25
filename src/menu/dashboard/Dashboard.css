@@ -174,12 +174,16 @@ body {
   gap: 1rem;
   cursor: pointer;
   margin-bottom: 1.5rem;
+  width: 1%;
 }
 
-.player-name {
-  font-size: 1.8rem;
-  margin: 0;
-  text-shadow: 0 0 5px rgba(0, 195, 255, 0.5);
+.player-name-dashboard {
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: linear-gradient(to bottom, var(--text-light), var(--text-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .edit-icon {

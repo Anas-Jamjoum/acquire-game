@@ -5,7 +5,7 @@ import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../Firebase";
 import { useParams, useNavigate } from "react-router-dom";
 
-export const ManageMergeLogic = () => {
+export const ManageMergeLogic = (players) => {
     const { getBonus, updateHQ } = ManageHQS();
 
     const { gameId } = useParams();

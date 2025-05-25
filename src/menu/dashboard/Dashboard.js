@@ -160,7 +160,7 @@ const Dashboard = () => {
                                 </div>
                             ) : (
                                 <div className="name-display" onClick={handleNameEdit}>
-                                    <h2 className="player-name">{playerData.name}</h2>
+                                    <h2 className="player-name-dashboard">{playerData.name}</h2>
                                     <span className="edit-icon">✏️</span>
                                 </div>
                             )}

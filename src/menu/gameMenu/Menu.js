@@ -7,9 +7,10 @@ import HostGameModal from '../HostGameModal/HostGameModal';
 import JoinRoom from '../joinRoom/JoinRoom';
 import FriendList from '../../friendsManagement/FriendList';
 import LEADERBOARD from '../leaderboard/Leaderboard';
+import AIAnalysis from '../AiAnalysis/AIAnalysis';
 
 
-let setActiveView = null; // This will be set in the Menu component
+let setActiveView = null;
 
 export const handleJoinRoom = () => {
   if (setActiveView) {
@@ -100,7 +101,7 @@ const Menu = () => {
     <button className="action-btn invite-btn" onClick={handleInvite}>
       INVITE FRIEND
     </button>
-    <button className="action-btn ai-analysis-btn" onClick={() => alert('AI Analysis feature coming soon!')}>
+    <button className="action-btn ai-analysis-btn" onClick={() => setActiveView('ai-Analysis')}>
       AI Analysis
     </button>
     <button className="action-btn rules-btn" onClick={handleGameRules}>
@@ -115,6 +116,7 @@ const Menu = () => {
           {activeView === 'join' && <JoinRoom />}
           {activeView === 'updates' && <Update />}
           {activeView === 'leaderboard' && <LEADERBOARD />}
+          {activeView === 'ai-Analysis' && <AIAnalysis />}
         </div>
       </main>
 
