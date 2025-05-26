@@ -4,8 +4,8 @@ import { db, auth } from "../Firebase";
 import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import "./StartGame.css";
 import FriendList from "../friendsManagement/FriendList";
-import { checkNeighborColor, createInitialBoard, getAllUnusedTiles, assignNewRandomTiles, getConnectedGrayTiles } from "./HelperFunctions";
-import { checkCanEnd } from "./GameLogic";
+import { checkNeighborColor, createInitialBoard, assignNewRandomTiles, getConnectedGrayTiles } from "./HelperFunctions";
+import { checkCanEnd, checkForWinner } from "./GameLogic";
 import { ManageHQS } from "./HQS";
 import { ManageMergeLogic } from "./MergeLogic";
 import SellModal from "./Models/SellModal";
@@ -742,107 +742,6 @@ newHQS[bigIndex].tiles = [
     };
   }, [gameId, userEmail]);
 
-  const checkForWinner = (updatedPlayers, updatedHQS, end) => {
-
-    const unusedTiles = getAllUnusedTiles(board, updatedPlayers);
-    const noTilesLeft = unusedTiles.length === 0;
-
-    const allHqsOver10 = updatedHQS.every((hq) => hq.tiles.length > 10);
-
-    if (noTilesLeft || allHqsOver10 || end) {
-      HQS.forEach((hq) => {
-        const top2Players = getTop2PlayersWithMostStocks(players, hq.name);
-        const [firstPlayerBonus, secondPlayerBonus] = getBonus(hq.name, HQS);
-        if (top2Players[0]) {
-          const firstPlayerIndex = updatedPlayers.findIndex(
-            (p) => p.email === top2Players[0].email
-          );
-          if (firstPlayerIndex !== -1) {
-            updatedPlayers[firstPlayerIndex].money += firstPlayerBonus;
-          }
-        }
-        if (top2Players[1]) {
-          const secondPlayerIndex = updatedPlayers.findIndex(
-            (p) => p.email === top2Players[1].email
-          );
-          if (secondPlayerIndex !== -1) {
-            updatedPlayers[secondPlayerIndex].money += secondPlayerBonus;
-          }
-        }
-      });
-
-      updatedPlayers.forEach((player) => {
-        player.headquarters.forEach((hq) => {
-          const hqIndex = updatedHQS.findIndex((h) => h.name === hq.name);
-          if (hq.stocks > 0 && hqIndex !== -1) {
-            player.money += updatedHQS[hqIndex].price * hq.stocks;
-          }
-        });
-      });
-
-      setPlayers(updatedPlayers);
-
-      const richestPlayer = updatedPlayers.sort((a, b) => {
-        return b.money - a.money;
-      })[0];
-
-      const theWinner = richestPlayer.name;
-
-      setWinner(theWinner);
-
-      updatedPlayers.sort((a, b) => b.money - a.money);
-      updatedPlayers.forEach((player, index) => {
-          player.gamesPlayed = (player.gamesPlayed || 0) + 1;
-          const rankMultiplier = updatedPlayers.length - index;
-          const xpEarned = 100 * rankMultiplier;
-
-          player.xp = (player.xp || 0) + xpEarned;
-      
-          if (player.xp >= player.nextLevelXp) {
-            player.level = (player.level || 1) + 1;
-            player.xp -= player.nextLevelXp; 
-            player.nextLevelXp = (player.nextLevelXp || 1000) + 100;
-          }
-      
-          try {
-            const playerDocRef = doc(db, "players", player.email);
-            updateDoc(playerDocRef, {
-              gamesPlayed: player.gamesPlayed,
-              xp: player.xp,
-              level: player.level,
-              nextLevelXp: player.nextLevelXp,
-              currentStreak: 0,
-            });
-          } catch (err) {
-            console.error(`Error updating player ${player.name}:`, err);
-          }
-      });
-
-      try {
-        const gameDocRefPlayers = doc(db, "players", richestPlayer.email);
-        updateDoc(gameDocRefPlayers, {
-          gamesWon: richestPlayer.gamesWon + 1,
-          currentStreak: richestPlayer.currentStreak + 1,
-        });
-
-        const gameDocRef = doc(db, "startedGames", gameId);
-        updateDoc(gameDocRef, {
-          players: updatedPlayers,
-          winner: theWinner,
-        });
-
-        const gameDocRefRoom = doc(db, "rooms", gameId);
-        updateDoc(gameDocRefRoom, {
-          status: "finished",
-          winner: theWinner,
-        });
-      } catch (err) {
-        console.error("Error updating winner in Firestore:", err);
-      }
-    }
-  };
-
-
   const handleRandomMove = () => {
     const currPlayer = players[currentPlayerIndex];
     if (!currPlayer) return;
@@ -863,7 +762,7 @@ newHQS[bigIndex].tiles = [
 
   const handleOptionClickRandom = (option, tileIndex) => {
     let checkMerge = false;
-    checkForWinner(players, HQS, false);
+    checkForWinner(players, HQS, board, false, gameId);
     if (tileIndex == null) return;
     const newBoard = [...board];
 
@@ -1133,7 +1032,7 @@ newHQS[bigIndex].tiles = [
       setStartHQ(true);
       return;
     } else if (option === "end game") {
-      checkForWinner(updatedPlayers, HQS, true);
+      checkForWinner(updatedPlayers, HQS ,board , true, gameId);
       return;
     }
 
@@ -1177,7 +1076,7 @@ newHQS[bigIndex].tiles = [
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS, false);
+    checkForWinner(updatedPlayers, HQS ,board ,false, gameId);
   };
 
   const updateFirestoreWithRetry = (docRef, data, maxRetries = 10) => {

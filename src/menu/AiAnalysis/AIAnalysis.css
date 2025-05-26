@@ -35,13 +35,15 @@
 .ai-high-performer {
   background: linear-gradient(135deg, #f39c12, #e67e22);
   color: white;
+  border-radius: 15px;
+  padding: 0.1rem 0.2rem;
 }
 
 .ai-standard {
   background: linear-gradient(135deg, #00c3ff, #0084ff);
   color: white;
   border-radius: 15px;
-    padding: 0.1rem 0.2rem;
+  padding: 0.1rem 0.2rem;
 }
 
 .ai-loading-container,
