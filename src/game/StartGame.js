@@ -352,6 +352,8 @@ newHQS[bigIndex].tiles = [
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
 
+    console.log("AI decision for merging:", player.name, "with stocks:", smallerStocks);
+
     if (smallerStocks === 0) {
       goToNextMergePlayer();
       return;
@@ -486,6 +488,27 @@ newHQS[bigIndex].tiles = [
 
       const smallerHQend = smallerHQ || currentSmallerHQ;
       const biggerHQend = biggerHQ || currentBigHQ;
+
+    const smallHQIndex = newHQS.findIndex((hq) => hq.name === (smallerHQend.name || smallerHQend));
+    if (smallHQIndex !== -1) {
+      const sellPrice = newHQS[smallHQIndex].price;
+      const updatedPlayers = [...players];
+      updatedPlayers.forEach((player, idx) => {
+        const playerHQIndex = player.headquarters.findIndex((hq) => hq.name === (smallerHQend.name || smallerHQend));
+        if (playerHQIndex !== -1 && player.headquarters[playerHQIndex].stocks > 0) {
+          console.log(`Selling stocks for player ${player.name}`);
+          const stocksToSell = player.headquarters[playerHQIndex].stocks;
+          // Add money for sold stocks
+          updatedPlayers[idx].money += stocksToSell * sellPrice;
+          // Add stocks back to HQ
+          newHQS[smallHQIndex].stocks += stocksToSell;
+          // Remove stocks from player
+          updatedPlayers[idx].headquarters[playerHQIndex].stocks = 0;
+        }
+      });
+      setPlayers(updatedPlayers);
+    }
+
       console.log("Merging HQs:", smallerHQend, biggerHQend);
       const biggerIndex = newHQS.findIndex((h) => h.name === biggerHQend.name);
       const smallerIndex = newHQS.findIndex(
@@ -877,6 +900,7 @@ newHQS[bigIndex].tiles = [
     setShowOptions(false);
     setStocksBoughtThisTurn(0);
 
+    checkForWinner(updatedPlayers, HQS ,board ,false, gameId);
 
     try {
       if (!checkMerge) {
@@ -892,7 +916,6 @@ newHQS[bigIndex].tiles = [
     } catch (err) {
       console.error("Error updating Firestore:", err);
     }
-    checkForWinner(updatedPlayers, HQS ,board ,false, gameId);
   };
 
   const updateFirestoreWithRetry = (docRef, data, maxRetries = 10) => {

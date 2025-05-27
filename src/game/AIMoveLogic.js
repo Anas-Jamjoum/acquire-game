@@ -1,4 +1,5 @@
 import { checkNeighborColor, assignNewRandomTiles, getConnectedGrayTiles } from "./HelperFunctions";
+import { checkCanEnd, checkForWinner } from "./GameLogic";
 
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -58,13 +59,11 @@ export class AIMoveLogic {
     if (!currPlayer) return;
 
     if (currPlayer.tiles && currPlayer.tiles.length > 0) {
-      const randomTileIndex = Math.floor(
-        Math.random() * currPlayer.tiles.length
-      );
-      const tileToPlace = currPlayer.tiles[randomTileIndex];
+    const bestTile = this.runMCTSForTilePlacement(30); // 30 simulations per tile
+
 
       setTimeout(() => {
-        this.handleOptionClickRandom("finish turn", tileToPlace);
+        this.handleOptionClickRandom("finish turn", bestTile);
       }, 0);
     } else {
       this.handleOptionClickRandom("finish turn");
@@ -123,8 +122,8 @@ export class AIMoveLogic {
     }
 
     const decision = Math.random();
-    console.log("Decision value:", decision);
-    if (decision < 0.15 && currPlayer.email.startsWith("bot")) { 
+    if (decision < 0.50 && currPlayer.email.startsWith("bot")) { 
+        console.log("AI Bot is making a decision to buy stock");
         this.aiBotBuyStock(updatedPlayers, currPlayer);
     } else if (decision < 0.66 && currPlayer.email.startsWith("bot")) {
         this.aiBotSellStock(updatedPlayers, currPlayer);
@@ -154,6 +153,10 @@ export class AIMoveLogic {
     this.setTurnCounter(newTurnCounter);
     this.setShowOptions(false);
     this.setStocksBoughtThisTurn(0);
+
+    if (checkCanEnd(tileIndex,this.HQS,newBoard)) {
+        checkForWinner(updatedPlayers, this.HQS ,newBoard ,true, this.gameId);
+    }
 
     try {
       if (!checkMerge) {
@@ -270,4 +273,54 @@ aiBotSellStock = (updatedPlayers, currPlayer) => {
     this.setPlayers(updatedPlayers);
   }
 };
+
+runMCTSForTilePlacement = (simulations = 30) => {
+  const currPlayer = this.players[this.currentPlayerIndex];
+  if (!currPlayer || !currPlayer.tiles || currPlayer.tiles.length === 0) return null;
+
+  let bestTile = null;
+  let bestScore = -Infinity;
+
+  for (const tile of currPlayer.tiles) {
+    let totalScore = 0;
+
+    for (let i = 0; i < simulations; i++) {
+      // Deep copy game state
+      const simPlayers = JSON.parse(JSON.stringify(this.players));
+      const simHQS = JSON.parse(JSON.stringify(this.HQS));
+      const simBoard = JSON.parse(JSON.stringify(this.board));
+
+      // Simulate placing the tile
+      this.simulateTilePlacement(simPlayers, simHQS, simBoard, tile);
+
+      // Simulate random playout to end of game
+      const score = this.simulateRandomPlayout(simPlayers, simHQS, simBoard);
+
+      totalScore += score;
+    }
+
+    const avgScore = totalScore / simulations;
+    if (avgScore > bestScore) {
+      bestScore = avgScore;
+      bestTile = tile;
+    }
+  }
+
+  return bestTile;
+};
+
+simulateTilePlacement = (simPlayers, simHQS, simBoard, tile) => {
+  // Example: just mark the tile as gray and remove from hand
+  simBoard[tile].color = "gray";
+  simPlayers[this.currentPlayerIndex].tiles = simPlayers[this.currentPlayerIndex].tiles.filter(t => t !== tile);
+  // You can add more logic here (merges, HQ starts, etc.)
+};
+
+simulateRandomPlayout = (simPlayers, simHQS, simBoard) => {
+  // Play random moves for all players until game ends
+  // For simplicity, just return the current player's money
+  // You can expand this to simulate full random games
+  return simPlayers[this.currentPlayerIndex].money;
+};
+
 }
