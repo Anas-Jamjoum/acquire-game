@@ -14,6 +14,7 @@ import StartHQModal from "./Models/StartHQModal";
 import PlayersInfoPanel from "./PlayersInfoPanel";
 import { InitializeGame } from "./InitializeGame";
 import WinnerOverlay from "./WinnerOverlay";
+import { AIMoveLogic } from "./AIMoveLogic";
 
 
 const StartGame = () => {
@@ -604,6 +605,27 @@ newHQS[bigIndex].tiles = [
   const userEmail = user?.email || "";
   const [gameHost, setGameHost] = useState(null);
 
+  const aiMoveLogic = new AIMoveLogic({
+  players,
+  setPlayers,
+  HQS,
+  setHQS,
+  board,
+  setBoard,
+  updateHQ,
+  checkStartHQ,
+  handleMerge,
+  gameId,
+  db,
+  stocksBoughtThisTurn,
+  setStocksBoughtThisTurn,
+  turnCounter,
+  setCurrentPlayerIndex,
+  setTurnCounter,
+  setShowOptions,
+  currentPlayerIndex,
+});
+
   useEffect(() => {
     if (
       players[currentPlayerIndex] &&
@@ -614,7 +636,7 @@ newHQS[bigIndex].tiles = [
     ) {
 
       const botMoveTimeout = setTimeout(() => {
-        handleRandomMove();
+        aiMoveLogic.handleRandomMove();
       }, 2000);
 
       return () => clearTimeout(botMoveTimeout);
@@ -640,7 +662,7 @@ newHQS[bigIndex].tiles = [
           if (prev <= 1) {
             clearInterval(timerRef.current);
             timerRef.current = null;
-            handleRandomMove();
+            aiMoveLogic.handleRandomMove();
             return 0;
           }
           return prev - 1;
@@ -742,213 +764,7 @@ newHQS[bigIndex].tiles = [
     };
   }, [gameId, userEmail]);
 
-  const handleRandomMove = () => {
-    const currPlayer = players[currentPlayerIndex];
-    if (!currPlayer) return;
-
-    if (currPlayer.tiles && currPlayer.tiles.length > 0) {
-      const randomTileIndex = Math.floor(
-        Math.random() * currPlayer.tiles.length
-      );
-      const tileToPlace = currPlayer.tiles[randomTileIndex];
-
-      setTimeout(() => {
-        handleOptionClickRandom("finish turn", tileToPlace);
-      }, 0);
-    } else {
-      handleOptionClickRandom("finish turn");
-    }
-  };
-
-  const handleOptionClickRandom = (option, tileIndex) => {
-    let checkMerge = false;
-    checkForWinner(players, HQS, board, false, gameId);
-    if (tileIndex == null) return;
-    const newBoard = [...board];
-
-    const updatedPlayers = [...players];
-    const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
-
-    currPlayer.tiles = currPlayer.tiles.filter((t) => t !== tileIndex);
-    updatedPlayers[currentPlayerIndex] = currPlayer;
-
-    const connectedTiles = [...getConnectedGrayTiles(newBoard, tileIndex), tileIndex];
-    const neighborColors = checkNeighborColor(tileIndex, board);
-
-    if (neighborColors.length === 0) {
-      newBoard[tileIndex] = {
-        ...newBoard[tileIndex],
-        color: "gray",
-      };
-
-      if (checkStartHQ(tileIndex, board, HQS) && currPlayer.email.startsWith("bot")) {
-        const hqsWithNoTiles = HQS.filter((hq) => hq.tiles.length === 0);
-        const randomHQIndex = Math.floor(Math.random() * hqsWithNoTiles.length);
-        const selectedHQ = hqsWithNoTiles[randomHQIndex];
-
-        connectedTiles.forEach((index) => {
-          newBoard[index] = {
-            ...newBoard[index],
-            color: selectedHQ.color,
-          };
-        });
-
-        setBoard(newBoard);
-
-        const newHQS = [...HQS];
-        const hqIndex = newHQS.findIndex((h) => h.name === selectedHQ.name);
-        newHQS[hqIndex].tiles = [
-          ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
-        ];
-        newHQS[hqIndex].stocks -= 1;
-        const playerHqIndex = currPlayer.headquarters.findIndex(
-          (h) => h.name === selectedHQ.name
-        );
-
-        currPlayer.headquarters[playerHqIndex].stocks += 1;
-        updatedPlayers[currentPlayerIndex] = currPlayer;
-        setPlayers(updatedPlayers);
-        setHQS(updateHQ(newHQS));
-      }
-
-    } else if (neighborColors.length === 1) {
-      const hqColors = HQS.map((hq) => hq.color);
-      const selectedColor =
-        hqColors.find((color) => neighborColors.includes(color)) || "gray";
-      if (selectedColor !== "gray") {
-        connectedTiles.forEach((index) => {
-          newBoard[index] = {
-            ...newBoard[index],
-            color: selectedColor,
-          };
-        });
-        const newHQS = [...HQS];
-        const hqIndex = newHQS.findIndex((hq) => hq.color === selectedColor);
-        newHQS[hqIndex].tiles = [
-          ...new Set([...newHQS[hqIndex].tiles, ...connectedTiles]),
-        ];
-        setHQS(updateHQ(newHQS));
-      }
-    } else if (neighborColors.length > 1) {
-      newBoard[tileIndex] = {
-        ...newBoard[tileIndex],
-        color: "gray",
-      };
-      console.log("getPlayers", players);
-      setBoard(newBoard);
-      checkMerge = handleMerge(neighborColors, tileIndex);
-    }
-
-    const decision = Math.random();
-    if (decision < 0.33 && currPlayer.email.startsWith("bot")) { 
-      const affordableHQS = HQS.filter(
-        (hq) =>
-          hq.stocks > 0 &&
-          hq.price > 0 &&
-          updatedPlayers[currentPlayerIndex].money >= hq.price 
-      );
-      if (affordableHQS.length > 0 && stocksBoughtThisTurn < 3) {
-        const randomHQ = affordableHQS[Math.floor(Math.random() * affordableHQS.length)];
-        const hqIndex = HQS.findIndex((hq) => hq.name === randomHQ.name);
-        const playerHQIndex = updatedPlayers[currentPlayerIndex].headquarters.findIndex((hq) => hq.name === randomHQ.name);
-        const maxStocksCanBuy = checkMaxStocksAi(randomHQ, updatedPlayers[currentPlayerIndex]);
-        const randomAmount = Math.floor(Math.random() * maxStocksCanBuy) + 1;
-        setStocksBoughtThisTurn(randomAmount);
-        const newHQS = [...HQS];
-        newHQS[hqIndex].stocks -= randomAmount;
-        updatedPlayers[currentPlayerIndex].headquarters[playerHQIndex].stocks += randomAmount;
-        updatedPlayers[currentPlayerIndex].money -= randomAmount * randomHQ.price;
-        setHQS(updateHQ(newHQS));
-        setPlayers(updatedPlayers);
-      }
-    }
-
-    else if (decision < 0.66 && currPlayer.email.startsWith("bot")) {
-    
-      const hqsWithStocks = currPlayer.headquarters.filter((hq) => hq.stocks > 0);
-    
-      if (hqsWithStocks.length > 0) {
-        const randomHQIndex = Math.floor(Math.random() * hqsWithStocks.length);
-        const hqToSell = hqsWithStocks[randomHQIndex];
-    
-        const randomAmountToSell = Math.floor(Math.random() * hqToSell.stocks) + 1;
-        
-        const hqIndex = HQS.findIndex((hq) => hq.name === hqToSell.name);
-        const newHQS = [...HQS];
-        newHQS[hqIndex].stocks += randomAmountToSell;
-    
-        updatedPlayers[currentPlayerIndex].headquarters = updatedPlayers[currentPlayerIndex].headquarters.map((hq) => {
-          if (hq.name === hqToSell.name) {
-            return {
-              ...hq,
-              stocks: hq.stocks - randomAmountToSell,
-            };
-          }
-          return hq;
-        });
-    
-        updatedPlayers[currentPlayerIndex].money += randomAmountToSell * newHQS[hqIndex].price;
-    
-        setHQS(updateHQ(newHQS));
-        setPlayers(updatedPlayers);
-      }
-    }
-
-    if (turnCounter >= 1) {
-      const newTiles = assignNewRandomTiles(1, newBoard, updatedPlayers);
-      updatedPlayers[currentPlayerIndex].tiles.push(...newTiles);
-    }
-    setPlayers(updatedPlayers);
-
-
-    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    const newTurnCounter =
-      nextPlayerIndex === 0 ? turnCounter + 1 : turnCounter;
-
-    if (newTurnCounter === 1) {
-      for (let i = 0; i < players.length; i++) {
-        if (updatedPlayers[i].tiles.length === 0) {
-          const newTiles = assignNewRandomTiles(6, newBoard, updatedPlayers);
-          updatedPlayers[i].tiles.push(...newTiles);
-        }
-      }
-    }
-
-    setPlayers(updatedPlayers);
-    setCurrentPlayerIndex(nextPlayerIndex);
-    setTurnCounter(newTurnCounter);
-    setShowOptions(false);
-    setStocksBoughtThisTurn(0);
-
-    try {
-      if (!checkMerge) {
-              const gameDocRef = doc(db, "startedGames", gameId);
-      updateDoc(gameDocRef, {
-        board: newBoard,
-        players: updatedPlayers,
-        currentPlayerIndex: nextPlayerIndex,
-        turnCounter: newTurnCounter,
-        HQS: HQS,
-      });
-      }
-    } catch (err) {
-      console.error("Error updating Firestore:", err);
-    }
-    // checkForWinner(updatedPlayers, HQS, false);
-  };
-
-  const checkMaxStocksAi = (hq, player) => {
-    let maxStocks = 0;
-    if (!hq || !player) return 0;
-    if (hq.stocks <= 0) return 0;
-    if (player.money >= hq.price)
-      maxStocks++;
-    if (player.money >= hq.price * 2)
-      maxStocks++;
-    if (player.money >= hq.price * 3)
-      maxStocks++;
-    return maxStocks;
-  };
+  
 
   const renderCountdown = () => {
     if (
@@ -1273,8 +1089,7 @@ newHQS[bigIndex].tiles = [
     if (winner) {
       return `Winner: ${winner}`;
     }
-    return `Current player turn: ${players[currentPlayerIndex]?.name || "Loading..."
-      } `;
+    return `Current player turn: ${players[currentPlayerIndex]?.name || "Loading..."} `;
   };
 
   const handleReturnHome = () => {
