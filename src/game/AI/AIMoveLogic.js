@@ -78,7 +78,7 @@ export class AIMoveLogic {
     return myTiles - oppTiles * 0.5;
   }
 
-  handleOptionClickRandom = (tileIndex) => {
+  handleOptionClickRandom = (option ,tileIndex) => {
     let checkMerge = false;
     const newBoard = [...this.board];
     const players = [...this.players];
