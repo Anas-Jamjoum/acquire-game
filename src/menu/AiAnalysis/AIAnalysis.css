@@ -20,6 +20,21 @@
   margin-top: 1rem;
 }
 
+.dashboard-header-AI {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  margin-top: 9rem;
+  background-color: var(--dark-bg);
+  border-radius: 10px;
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+}
+
 .ai-performance-tag {
   position: absolute;
   top: 1rem;
@@ -103,11 +118,12 @@
   margin-bottom: 0.5rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 168px) {
   .ai-bots-grid {
     grid-template-columns: 1fr;
   }
 }
+
 
 .ai-overview-chart {
   background-color: var(--glass-bg);

@@ -125,9 +125,7 @@ const Dashboard = () => {
     return (
         <div className="dashboard-container">
             {/* Header with game logo and sign out */}
-            <header className="dashboard-header">
-                <div className="game-logo">ACQUIRE</div>
-            </header>
+
 
             {/* Main player profile section */}
             <main className="dashboard-main">

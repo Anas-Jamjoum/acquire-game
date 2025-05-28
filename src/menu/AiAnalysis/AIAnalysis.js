@@ -198,7 +198,7 @@ const AIAnalysis = () => {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
+      <header className="dashboard-header-AI">
         <div className="game-logo">AI ANALYSIS</div>
       </header>
 

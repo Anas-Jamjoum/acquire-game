@@ -191,8 +191,6 @@
   .chat-container {
     width: 90vw;
     max-width: 350px;
-    left: 50%;
-    transform: translateX(-50%);
     bottom: 90px;
     max-height: 50vh;
   }

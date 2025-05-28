@@ -14,7 +14,7 @@ import StartHQModal from "./Models/StartHQModal";
 import PlayersInfoPanel from "./PlayersInfoPanel";
 import { InitializeGame } from "./InitializeGame";
 import WinnerOverlay from "./WinnerOverlay";
-import { AIMoveLogic } from "./AIMoveLogic";
+import { AIMoveLogic } from "./AI/AIMoveLogic";
 
 
 const StartGame = () => {
