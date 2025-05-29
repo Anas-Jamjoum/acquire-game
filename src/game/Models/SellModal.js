@@ -13,6 +13,23 @@ const SellModal = ({
   setShowSellModal
 }) => (
   <div className="sell-modal">
+            <button
+      className="close-modal-btn"
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        fontSize: "1.2em",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        color: "red",
+      }}
+      onClick={() => setShowSellModal(false)}
+      aria-label="Close"
+    >
+      ×
+    </button>
     <h3>Sell Stocks</h3>
     <select
       onChange={(e) => setSelectedHQToSell(e.target.value)}

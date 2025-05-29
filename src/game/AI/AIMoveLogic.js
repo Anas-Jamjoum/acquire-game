@@ -175,7 +175,8 @@ export class AIMoveLogic {
   }
 
   aiBotBuyStock(players, curr) {
-    const can = this.HQS.filter(h=>h.stocks>0&&curr.money>=h.price);
+    const can = this.HQS.filter(h=>h.stocks>0&&curr.money>=h.price&&h.tiles.length>0);
+    console.log("AI can buy stocks:", can);
     if (can.length && this.stocksBoughtThisTurn<3) {
       const h = can[Math.floor(Math.random()*can.length)];
       const idxH = this.HQS.findIndex(x=>x.name===h.name);

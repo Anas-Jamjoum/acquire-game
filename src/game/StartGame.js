@@ -182,6 +182,7 @@ newHQS[bigIndex].tiles = [
   const [mergeError, setMergeError] = useState("");
 
   const renderMergeDecision = () => {
+    
     const order = mergePlayersOrder;
 
     if (mergeChoiceIndex >= order.length || order.length === 0) {
@@ -347,7 +348,8 @@ newHQS[bigIndex].tiles = [
     );
   };
 
-  const mergeAIDecision = () => {
+const mergeAIDecision = () => {
+  setTimeout(() => {
     const player = players[currentPlayerIndex];
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
@@ -436,7 +438,8 @@ newHQS[bigIndex].tiles = [
     }
 
     persistGameToFirestore(players, HQS);
-  };
+  }, 3500); // 2 second delay
+};
 
   const persistGameToFirestore = (updatedPlayers, updatedHQS) => {
     try {
@@ -1288,44 +1291,63 @@ newHQS[bigIndex].tiles = [
         </button>
       </div>
 
-      {showOptions && !mergeInProgress && winner === null && !startHQ && !showBuyModal && !showSellModal && !showTieModal && (
-        <div className="options">
-<h3>
-  Current Selected Tile:{" "}
-  {selectedTile !== null && selectedTile !== undefined
-    ? board[selectedTile].label || "Unknown"
-    : "No tile selected"}
-</h3>          {HQS.some((hq) => hq.tiles.length > 0) && (
-            <>
-              <button onClick={() => handleOptionClick("buy")}>
-                Buy Stock
-              </button>
-              {players[currentPlayerIndex]?.headquarters.some(hq => hq.stocks > 0) && (
-  <button onClick={() => handleOptionClick("sell")}>
-    Sell Stock
-  </button>
-)}
-            </>
-          )}
-          {checkStartHQ(selectedTile, board, HQS) && (
-            <>
-              <button onClick={() => handleOptionClick("start hq")}>
-                Start HQ
-              </button>
-            </>
-          )}
-          {checkCanEnd(selectedTile,HQS,board) && (
-            <>
-              <button onClick={() => handleOptionClick("end game")}>
-                End Game
-              </button>
-            </>
-          )}
-          <button onClick={() => handleOptionClick("finish turn")}>
-            Finish Turn
+     {showOptions && !mergeInProgress && winner === null && !startHQ && !showBuyModal && !showSellModal && !showTieModal && (
+  <div className="options">
+    {/* X button to close the modal */}
+    <button
+      className="close-modal-btn"
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        fontSize: "1.2em",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        color: "red",
+      }}
+      onClick={() => setShowOptions(false)}
+      aria-label="Close"
+    >
+      ×
+    </button>
+    <h3>
+      Current Selected Tile:{" "}
+      {selectedTile !== null && selectedTile !== undefined
+        ? board[selectedTile].label || "Unknown"
+        : "No tile selected"}
+    </h3>
+    {HQS.some((hq) => hq.tiles.length > 0) && (
+      <>
+        <button onClick={() => handleOptionClick("buy")}>
+          Buy Stock
+        </button>
+        {players[currentPlayerIndex]?.headquarters.some(hq => hq.stocks > 0) && (
+          <button onClick={() => handleOptionClick("sell")}>
+            Sell Stock
           </button>
-        </div>
-      )}
+        )}
+      </>
+    )}
+    {checkStartHQ(selectedTile, board, HQS) && (
+      <>
+        <button onClick={() => handleOptionClick("start hq")}>
+          Start HQ
+        </button>
+      </>
+    )}
+    {checkCanEnd(selectedTile, HQS, board) && (
+      <>
+        <button onClick={() => handleOptionClick("end game")}>
+          End Game
+        </button>
+      </>
+    )}
+    <button onClick={() => handleOptionClick("finish turn")}>
+      Finish Turn
+    </button>
+  </div>
+)}
 {startHQ && (
   <StartHQModal
     HQS={HQS}
@@ -1402,7 +1424,16 @@ newHQS[bigIndex].tiles = [
             );
           } else if (currentMergePlayer.email.startsWith("bot")) {
             return (
-              <>{mergeAIDecision()}</>
+                  <div className="waiting-overlay">
+                <div className="waiting-message">
+                  Merging HQ: {currentSmallerHQ.name}
+                  {currentBigHQ && ` and ${currentBigHQ.name}`}
+                  <br />
+                  <br />
+                  Waiting for {currentMergePlayer.name} to decide...
+                </div>
+                  <>{mergeAIDecision()}</>
+              </div>
             );
           }
           else {
