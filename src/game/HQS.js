@@ -169,6 +169,7 @@ export const ManageHQS = () => {
       ...hq,
       price: updateHQPrice(hq, hq.tiles.length),
       stocks: Math.max(0, Math.min(25, hq.stocks)),
+      tiles: [...new Set(hq.tiles)],
     }));
     return newHQS;
   };
