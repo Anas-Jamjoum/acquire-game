@@ -24,7 +24,7 @@ const StartHQModal = ({ HQS, handleHQSelection, setStartHQ }) => (
       (hq, index) =>
         hq.tiles.length === 0 && (
           <button key={index} onClick={() => handleHQSelection(hq.name)}>
-            {hq.name}
+            <span style={{ color: hq.color }}>■</span> {hq.name}
           </button>
         )
     )}

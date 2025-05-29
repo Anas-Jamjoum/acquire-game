@@ -28,7 +28,22 @@ const BuyModal = ({
     >
       ×
     </button>
-    <h3>Buy Stocks</h3>
+    <h3>
+  Buy Stocks :{" "}
+  {selectedHQToBuy && (
+    <>
+      <span
+        style={{
+          color: HQS.find(hq => hq.name === selectedHQToBuy)?.color || "black",
+          fontWeight: "bold"
+        }}
+      >
+        ■
+      </span>{" "}
+      {selectedHQToBuy}
+    </>
+  )}
+</h3> 
     <select
       onChange={(e) => setSelectedHQToBuy(e.target.value)}
       value={selectedHQToBuy || ""}

@@ -329,8 +329,13 @@ newHQS[bigIndex].tiles = [
     return (
       <div className="merge-decision-modal">
         <h3>
-          Merging HQ: {currentSmallerHQ.name}
-          {currentBigHQ && ` and ${currentBigHQ.name}`}
+  Merging HQ: <span style={{ color: currentSmallerHQ.color }}>■</span>{currentSmallerHQ?.name}
+  {currentBigHQ && (
+    <>
+      {" and "}
+      <span style={{ color: currentBigHQ.color }}>■</span>{currentBigHQ?.name}
+    </>
+  )}
           <br /> 
           {player.name}, you have {smallerStocks} stock(s) in{" "}
           {currentSmallerHQ.name}.
@@ -871,9 +876,11 @@ const mergeAIDecision = () => {
     }
     if (option === "buy") {
       setShowBuyModal(true);
+      checkTiles();
       return;
     } else if (option === "sell") {
       setShowSellModal(true);
+      checkTiles();
       return;
     } else if (option === "start hq") {
       setStartHQ(true);
@@ -1329,7 +1336,7 @@ const mergeAIDecision = () => {
     Options
   </button>
 )}
-{!players[currentPlayerIndex]?.hasSwappedAllTiles && turnCounter > 0 && (
+{!players[currentPlayerIndex]?.hasSwappedAllTiles && turnCounter > 0 && players[currentPlayerIndex]?.email === userEmail && (
   <button onClick={handleSwapAllTiles}>
     Swap All Tiles
   </button>
@@ -1483,8 +1490,13 @@ const mergeAIDecision = () => {
             return (
                   <div className="waiting-overlay">
                 <div className="waiting-message">
-                  Merging HQ: {currentSmallerHQ.name}
-                  {currentBigHQ && ` and ${currentBigHQ.name}`}
+  Merging HQ: <span style={{ color: currentSmallerHQ.color }}>■</span>{currentSmallerHQ?.name}
+  {currentBigHQ && (
+    <>
+      {" and "}
+      <span style={{ color: currentBigHQ.color }}>■</span>{currentBigHQ?.name}
+    </>
+  )}
                   <br />
                   Waiting for {currentMergePlayer.name} to decide...
                 </div>
@@ -1496,8 +1508,13 @@ const mergeAIDecision = () => {
             return (
               <div className="waiting-overlay">
                 <div className="waiting-message">
-                  Merging HQ: {currentSmallerHQ.name}
-                  {currentBigHQ && ` and ${currentBigHQ.name}`}
+  Merging HQ: <span style={{ color: currentSmallerHQ.color }}>■</span>{currentSmallerHQ?.name}
+  {currentBigHQ && (
+    <>
+      {" and "}
+      <span style={{ color: currentBigHQ.color }}>■</span> {currentBigHQ?.name}
+    </>
+  )}
                   <br />
                   Waiting for {currentMergePlayer.name} to decide...
                 </div>
