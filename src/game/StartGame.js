@@ -33,6 +33,8 @@ const StartGame = () => {
 
   const { getTop2PlayersWithMostStocks } = ManageMergeLogic();
 
+  const [disabledTiles, setDisabledTiles] = useState(false);
+
 
   //======merge logic======
   const [isMerging, setIsMerging] = useState(false);
@@ -350,7 +352,7 @@ newHQS[bigIndex].tiles = [
 
 const mergeAIDecision = () => {
   setTimeout(() => {
-    const player = players[currentPlayerIndex];
+        const player = players[currentPlayerIndex];
     const smallerStocks =
       player.headquarters.find((h) => h.name === currentSmallerHQ.name)?.stocks || 0;
 
@@ -438,7 +440,7 @@ const mergeAIDecision = () => {
     }
 
     persistGameToFirestore(players, HQS);
-  }, 3500); // 2 second delay
+  }, 1200);
 };
 
   const persistGameToFirestore = (updatedPlayers, updatedHQS) => {
@@ -659,6 +661,7 @@ const mergeAIDecision = () => {
       !mergeInProgress &&
       winner === null &&
       userEmail === gameHost
+      
     ) {
 
       const botMoveTimeout = setTimeout(() => {
@@ -807,12 +810,13 @@ const mergeAIDecision = () => {
   const handleTileClick = (tileIndex) => {
     if (winner) return;
     if (players[currentPlayerIndex]?.email !== userEmail) return;
-
     setSelectedTile(tileIndex);
     setShowOptions(true);
   };
 
   const handleOptionClick = async (option) => {
+
+    setDisabledTiles(false);
     let checkMerge = false;
     if (selectedTile == null) return;
 
@@ -853,6 +857,7 @@ const mergeAIDecision = () => {
       console.log("getPlayers", players);
       console.log("selectedTile", selectedTile);
       checkMerge = handleMerge(neighborColors, selectedTile);
+      checkTiles();
     }
     const updatedPlayers = [...players];
     const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
@@ -985,6 +990,7 @@ const mergeAIDecision = () => {
       setPlayers(newPlayers);
 
       setStartHQ(false);
+      setDisabledTiles(true);
     } catch (err) {
       console.error("Error in handleHQSelection:", err);
     }
@@ -1003,10 +1009,12 @@ const mergeAIDecision = () => {
           backgroundColor: board[index].color,
         }}
       >
-        {isCurrentPlayer && isCurrentPlayerTile ? (
+        {isCurrentPlayer && isCurrentPlayerTile && !disabledTiles ? (
+          
           <button
             className="tile-button-board"
             onClick={() => handleTileClick(index)}
+            disabled={disabledTiles}
           >
             {board[index].label}
           </button>
@@ -1079,11 +1087,38 @@ const mergeAIDecision = () => {
         key={tileIndex}
         className="tile-button"
         onClick={() => handleTileClick(tileIndex)}
+        disabled={disabledTiles}
       >
         {board[tileIndex].label}
       </button>
     );
   };
+
+  const handleSwapAllTiles = () => {
+  const updatedPlayers = [...players];
+  const currPlayer = { ...updatedPlayers[currentPlayerIndex] };
+
+  currPlayer.tiles = [];
+
+  const newTiles = assignNewRandomTiles(6, board, updatedPlayers);
+  currPlayer.tiles.push(...newTiles);
+
+  currPlayer.hasSwappedAllTiles = true;
+
+
+  updatedPlayers[currentPlayerIndex] = currPlayer;
+
+  setPlayers(updatedPlayers);
+
+  try {
+    const gameDocRef = doc(db, "startedGames", gameId);
+    updateDoc(gameDocRef, {
+      players: updatedPlayers,
+    });
+  } catch (err) {
+    console.error("Error updating Firestore:", err);
+  }
+};
 
   const [showYourTurn, setShowYourTurn] = useState(false);
 
@@ -1108,6 +1143,18 @@ const mergeAIDecision = () => {
     }
     return null;
   };
+
+  const checkTiles = () => {
+  const hqTilesSet = new Set(HQS.flatMap(hq => hq.tiles));
+  for (const player of players) {
+    for (const tile of player.tiles) {
+      if (hqTilesSet.has(tile)) {
+        setDisabledTiles(false);
+      }
+    }
+  }
+  setDisabledTiles(true);
+  }
 
   
 
@@ -1277,6 +1324,16 @@ const mergeAIDecision = () => {
         <button onClick={toggleShowAllPlayers}>
           {showAllPlayers ? "Show Only Me" : "Show All Players"}
         </button>
+{players[currentPlayerIndex]?.email === userEmail && (
+  <button onClick={() => setShowOptions(true)}>
+    Options
+  </button>
+)}
+{!players[currentPlayerIndex]?.hasSwappedAllTiles && turnCounter > 0 && (
+  <button onClick={handleSwapAllTiles}>
+    Swap All Tiles
+  </button>
+)}
 <PlayersInfoPanel
   winner={winner}
   players={players}
@@ -1428,7 +1485,6 @@ const mergeAIDecision = () => {
                 <div className="waiting-message">
                   Merging HQ: {currentSmallerHQ.name}
                   {currentBigHQ && ` and ${currentBigHQ.name}`}
-                  <br />
                   <br />
                   Waiting for {currentMergePlayer.name} to decide...
                 </div>

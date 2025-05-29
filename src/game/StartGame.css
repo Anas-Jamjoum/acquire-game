@@ -563,6 +563,13 @@ html, body {
   box-sizing: border-box;
 }
 
+.tile-button:disabled {
+  background-color: #ccc !important;
+  color: #888 !important;
+  cursor: not-allowed;
+  border: 1px solid #aaa;
+  opacity: 1;
+}
 
 
 /* Button styling */

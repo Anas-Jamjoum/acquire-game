@@ -57,6 +57,7 @@ export const InitializePlayersFundsAndTiles = (players, boardToUpdate) => {
     players.forEach((player) => {
       player.money = 6000;
       player.tiles = assignNewRandomTiles(1, boardToUpdate, players);
+      player.hasSwappedAllTiles = false;
     });
     return players;
 };
