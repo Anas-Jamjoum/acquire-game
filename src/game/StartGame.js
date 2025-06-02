@@ -15,6 +15,18 @@ import PlayersInfoPanel from "./PlayersInfoPanel";
 import { InitializeGame } from "./InitializeGame";
 import WinnerOverlay from "./WinnerOverlay";
 import { AIMoveLogic } from "./AI/AIMoveLogic";
+import selectTileSound from '../Audio/selectTile.mp3';
+import yourTurnSound from '../Audio/yourTurn.mp3';
+import startHQSound from '../Audio/startHQ.mp3';
+import buyingSellingSound from '../Audio/buyingSelling.mp3';
+import backgroundMusic from '../Audio/background.mp3';
+import ShowPlayersSound from '../Audio/showPlayers.mp3';
+import swapAllTilesSound from '../Audio/swapingTiles.mp3';
+import mergeSound from '../Audio/merge.mp3';
+import timerSound from '../Audio/timerCountDown.mp3';
+
+
+
 
 
 const StartGame = () => {
@@ -34,6 +46,19 @@ const StartGame = () => {
   const { getTop2PlayersWithMostStocks } = ManageMergeLogic();
 
   const [disabledTiles, setDisabledTiles] = useState(false);
+
+
+  useEffect(() => {
+  const bgAudio = new Audio(backgroundMusic);
+  bgAudio.loop = true;
+  bgAudio.volume = 0.15; 
+  bgAudio.play().catch((error) => {}); 
+  return () => {
+    bgAudio.pause();
+    bgAudio.currentTime = 0; 
+  };
+}, []);
+
 
 
   //======merge logic======
@@ -184,6 +209,10 @@ newHQS[bigIndex].tiles = [
   const [mergeError, setMergeError] = useState("");
 
   const renderMergeDecision = () => {
+
+      const audio = new Audio(mergeSound);
+      audio.volume = 0.5;
+      audio.play().catch((error) => {});
     
     const order = mergePlayersOrder;
 
@@ -254,6 +283,8 @@ newHQS[bigIndex].tiles = [
       }
 
       persistGameToFirestore(updatedPlayers, newHQS);
+      const audio = new Audio(buyingSellingSound);
+      audio.play().catch((error) => {});
     };
 
     const handleSwap = () => {
@@ -324,6 +355,8 @@ newHQS[bigIndex].tiles = [
       }
     
       persistGameToFirestore(updatedPlayers, newHQS);
+      const audio = new Audio(buyingSellingSound);
+      audio.play().catch((error) => {});
     };
 
     return (
@@ -806,6 +839,10 @@ const mergeAIDecision = () => {
       players[currentPlayerIndex]?.email === userEmail &&
       timeLeft !== null
     ) {
+      if (timeLeft < 10) {
+        const audio = new Audio(timerSound); 
+        audio.play().catch((error) => {});
+      }
       return <div className="countdown">Time left: {timeLeft}s</div>;
     }
     return null;
@@ -815,12 +852,15 @@ const mergeAIDecision = () => {
   const handleTileClick = (tileIndex) => {
     if (winner) return;
     if (players[currentPlayerIndex]?.email !== userEmail) return;
+    const audio = new Audio(selectTileSound); 
+    audio.play().catch((error) => {});
     setSelectedTile(tileIndex);
     setShowOptions(true);
   };
 
   const handleOptionClick = async (option) => {
-
+    const audio = new Audio(selectTileSound); 
+    audio.play().catch((error) => {});
     setDisabledTiles(false);
     let checkMerge = false;
     if (selectedTile == null) return;
@@ -998,6 +1038,10 @@ const mergeAIDecision = () => {
 
       setStartHQ(false);
       setDisabledTiles(true);
+
+      const audio = new Audio(startHQSound);
+      audio.play().catch((error) => {});
+
     } catch (err) {
       console.error("Error in handleHQSelection:", err);
     }
@@ -1125,6 +1169,8 @@ const mergeAIDecision = () => {
   } catch (err) {
     console.error("Error updating Firestore:", err);
   }
+  const audio = new Audio(swapAllTilesSound);
+  audio.play().catch((error) => {});
 };
 
   const [showYourTurn, setShowYourTurn] = useState(false);
@@ -1132,6 +1178,8 @@ const mergeAIDecision = () => {
   useEffect(() => {
     if (players[currentPlayerIndex]?.email === userEmail) {
       setShowYourTurn(true); 
+      const audio = new Audio(yourTurnSound);
+      audio.play().catch((error) => {});
       const timeout = setTimeout(() => {
         setShowYourTurn(false); 
       }, 1500);
@@ -1227,6 +1275,8 @@ const mergeAIDecision = () => {
     setSelectedHQToBuy(null);
     setBuyAmount(0);
     setStocksBoughtThisTurn(stocksBoughtThisTurn + buyAmount);
+    const audio = new Audio(buyingSellingSound);
+    audio.play().catch((error) => {});
   };
 
   const handleSellStock = () => {
@@ -1270,9 +1320,14 @@ const mergeAIDecision = () => {
     setShowSellModal(false);
     setSelectedHQToSell(null);
     setSellAmount(0);
+    const audio = new Audio(buyingSellingSound);
+    audio.play().catch((error) => {});
   };
 
   const toggleShowAllPlayers = () => {
+    const audio = new Audio(ShowPlayersSound);
+    audio.play().catch((error) => {});
+    audio.volume = 0.3; 
     setShowAllPlayers(!showAllPlayers); 
   };
 
@@ -1332,9 +1387,15 @@ const mergeAIDecision = () => {
           {showAllPlayers ? "Show Only Me" : "Show All Players"}
         </button>
 {players[currentPlayerIndex]?.email === userEmail && (
-  <button onClick={() => setShowOptions(true)}>
-    Options
-  </button>
+<button
+  onClick={() => {
+    const audio = new Audio(selectTileSound);
+    audio.play().catch(() => {});
+    setShowOptions(true);
+  }}
+>
+  Options
+</button>
 )}
 {!players[currentPlayerIndex]?.hasSwappedAllTiles && turnCounter > 0 && players[currentPlayerIndex]?.email === userEmail && (
   <button onClick={handleSwapAllTiles}>
