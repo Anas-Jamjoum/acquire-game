@@ -15,15 +15,15 @@ import PlayersInfoPanel from "./PlayersInfoPanel";
 import { InitializeGame } from "./InitializeGame";
 import WinnerOverlay from "./WinnerOverlay";
 import { AIMoveLogic } from "./AI/AIMoveLogic";
-import selectTileSound from '../Audio/selectTile.mp3';
-import yourTurnSound from '../Audio/yourTurn.mp3';
-import startHQSound from '../Audio/startHQ.mp3';
-import buyingSellingSound from '../Audio/buyingSelling.mp3';
-import backgroundMusic from '../Audio/background.mp3';
-import ShowPlayersSound from '../Audio/showPlayers.mp3';
-import swapAllTilesSound from '../Audio/swapingTiles.mp3';
-import mergeSound from '../Audio/merge.mp3';
-import timerSound from '../Audio/timerCountDown.mp3';
+import selectTileSound from '../Audio/game/selectTile.mp3';
+import yourTurnSound from '../Audio/game/yourTurn.mp3';
+import startHQSound from '../Audio/game/startHQ.mp3';
+import buyingSellingSound from '../Audio/game/buyingSelling.mp3';
+import backgroundMusic from '../Audio/game/background.mp3';
+import ShowPlayersSound from '../Audio/game/showPlayers.mp3';
+import swapAllTilesSound from '../Audio/game/swapingTiles.mp3';
+import mergeSound from '../Audio/game/merge.mp3';
+import timerSound from '../Audio/game/timerCountDown.mp3';
 
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import images from "../menu/dashboard/imageUtils";
-import winnerSound from '../Audio/winner.mp3'; // <-- Add this line
+import winnerSound from '../Audio/game/winner.mp3'; // <-- Add this line
 
 const WinnerOverlay = ({ winner, players, handleReturnHome }) => {
   useEffect(() => {
