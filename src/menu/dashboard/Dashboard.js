@@ -124,10 +124,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            {/* Header with game logo and sign out */}
 
-
-            {/* Main player profile section */}
             <main className="dashboard-main">
                 <section className="player-card">
                     <div className="profile-section">
@@ -182,7 +179,6 @@ const Dashboard = () => {
                     </div>
                 </section>
 
-                {/* Game stats section */}
                 <section className="game-stats">
                     <h3 className="section-title">PLAYER STATS</h3>
                     <div className="stats-grid">
@@ -209,7 +205,6 @@ const Dashboard = () => {
                     </div>
                 </section>
 
-                {/* Quick actions */}
                 <section className="quick-actions">
                     <h3 className="section-title">QUICK ACTIONS</h3>
                     <div className="action-buttons">

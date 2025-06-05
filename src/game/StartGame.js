@@ -26,9 +26,6 @@ import mergeSound from '../Audio/game/merge.mp3';
 import timerSound from '../Audio/game/timerCountDown.mp3';
 
 
-
-
-
 const StartGame = () => {
     const [HQS, setHQS] = useState([
     { name: "Sackson", stocks: 25, tiles: [], price: 0, color: "red" },
@@ -1040,6 +1037,7 @@ const mergeAIDecision = () => {
       setDisabledTiles(true);
 
       const audio = new Audio(startHQSound);
+      audio.volume = 0.5;
       audio.play().catch((error) => {});
 
     } catch (err) {

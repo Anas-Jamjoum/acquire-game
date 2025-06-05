@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db, auth } from '../../Firebase';
 import {
@@ -16,6 +16,9 @@ import './WaitingRoom.css';
 import images from '../dashboard/imageUtils';
 import EditRoomDetails from './EditRoomDetails';
 import FriendList from '../../friendsManagement/FriendList';
+import playerJoinedSound from '../../Audio/waitingRoom/playerEntered.mp3';
+import startGameSound from '../../Audio/waitingRoom/startGame.mp3';
+
 
 const WaitingRoom = () => {
   const { gameId } = useParams();
@@ -23,9 +26,22 @@ const WaitingRoom = () => {
   const [gameData, setGameData] = useState(null);
   const [userEmail, setUserEmail] = useState('');
   const [playersData, setPlayersData] = useState([]);
+  const prevPlayersCount = useRef(0); 
   const [showPopup, setShowPopup] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [kickedMessage, setKickedMessage] = useState('');
+
+    useEffect(() => {
+    if (
+      prevPlayersCount.current !== undefined &&
+      playersData.length > prevPlayersCount.current
+    ) {
+      const audio = new Audio(playerJoinedSound);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    }
+    prevPlayersCount.current = playersData.length;
+  }, [playersData.length]);
 
   useEffect(() => {
     const fetchPlayerData = async (email) => {
@@ -38,6 +54,7 @@ const WaitingRoom = () => {
         return null;
       }
     };
+
 
     const subscribeToGameData = () => {
       const gameDocRef = doc(db, 'rooms', gameId);
@@ -106,6 +123,9 @@ const WaitingRoom = () => {
       await updateDoc(gameDocRef, {
         isStarted: true,
       });
+      const audio = new Audio(startGameSound);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
       navigate(`/start-game/${gameId}`);
     } else {
       alert('Only the host can start the game.');
@@ -227,7 +247,6 @@ const WaitingRoom = () => {
       {player.email === gameData.host ? ' (Host)' : ''}
     </p>
     
-    {/* Add this hover details popup */}
     <div className="PlayerDetailsPopup">
       <div className="PlayerDetailsContent">
         <p><strong>Name:</strong> {player.name}</p>

@@ -22,7 +22,6 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
     }
 
     try {
-      // Save the current user's credentials
       const currentUser = auth.currentUser;
       const currentEmail = currentUser?.email;
       const currentPassword = prompt('Please enter your password to continue:'); // Prompt for the current user's password

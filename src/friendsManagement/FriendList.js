@@ -268,8 +268,10 @@ const FriendList = () => {
           {friends.length === 0 ? (
   <p className="friend-empty-message">You have no friends yet 😢</p>
 ) : (
-  <ul className="friend-list">
-    {friends.map((f) => (
+<ul className="friend-list">
+  {[...friends]
+    .sort((a, b) => (unseenCounts[b.email] || 0) - (unseenCounts[a.email] || 0))
+    .map((f) => (
       <li key={f.email} className="friend-item">
         <div className="friend-info">
           <img src={images[f.profilePic]} alt={f.name} className="friend-pic" />
@@ -288,7 +290,7 @@ const FriendList = () => {
         </div>
       </li>
     ))}
-  </ul>
+</ul>
 )}
 
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, auth } from '../../Firebase'; // Update the path to the correct location
+import { db, auth } from '../../Firebase'; 
 import { collection, addDoc } from 'firebase/firestore';
-import './HostGameModal.css'; // Import the CSS file for styling
+import './HostGameModal.css';
+import errorSound from '../../Audio/login/error.mp3';
+import successSound from '../../Audio/login/success.mp3';
 
 const HostGameModal = ({ isOpen, onClose }) => {
   const [roomName, setRoomName] = useState('');
@@ -18,7 +20,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      // Reset the state values when the modal is opened
+
       setRoomName('');
       setRoomDescription('');
       setMode('online');
@@ -74,12 +76,18 @@ const HostGameModal = ({ isOpen, onClose }) => {
         });
         setRoomId(roomDocRef.id);
         setIsRoomCreated(true);
+        const audio = new Audio(successSound);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
         setTimeout(() => {
           onClose();
           navigate(`/waiting-room/${roomDocRef.id}`);
-        }, 2000); // Close the modal and redirect to waiting room after 2 seconds
+        }, 2000); 
       } catch (error) {
         console.error('Error creating game: ', error);
+        const audio = new Audio(errorSound);
+        audio.volume = 0.2;
+        audio.play().catch(() => {});
       }
     }
   };
@@ -100,7 +108,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
                 placeholder="Enter Room name"
-                maxLength={20} // Set maximum character limit for room name
+                maxLength={20} 
               />
               {roomNameError && <p className="ErrorMessage">{roomNameError}</p>}
             </label>
@@ -110,7 +118,7 @@ const HostGameModal = ({ isOpen, onClose }) => {
                 value={roomDescription}
                 onChange={(e) => setRoomDescription(e.target.value)}
                 placeholder="Enter room description"
-                maxLength={50} // Set maximum character limit for room description
+                maxLength={50} 
               />
             </label>
             <label>

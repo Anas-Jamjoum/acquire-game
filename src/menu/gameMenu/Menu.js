@@ -25,7 +25,7 @@ export const handleViewLeaderboard = () => {
 };
 
 const Menu = () => {
-  const [activeView, setView] = useState('dashboard'); // 'dashboard', 'join', 'updates'
+  const [activeView, setView] = useState('dashboard');
   setActiveView = setView;
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isHostGameModalOpen, setHostGameModalOpen] = useState(false);

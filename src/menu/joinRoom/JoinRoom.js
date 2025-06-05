@@ -4,6 +4,8 @@ import { db, auth } from '../../Firebase';
 import { collection, doc, updateDoc, arrayUnion, onSnapshot, deleteDoc, getDocs } from 'firebase/firestore';
 import './JoinRoom.css';
 import FriendList from '../../friendsManagement/FriendList';
+import errorSound from '../../Audio/login/error.mp3';
+import successSound from '../../Audio/login/success.mp3';
 
 
 const JoinRoom = () => {
@@ -111,9 +113,16 @@ const JoinRoom = () => {
         await updateDoc(roomDocRef, {
           players: arrayUnion(userProfile)
         });
+        const audio = new Audio(successSound);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
         navigate(`/waiting-room/${room.id}`);
       } catch (error) {
+        const audio = new Audio(errorSound);
+        audio.volume = 0.2;
+        audio.play().catch(() => {});
         console.error('Error joining room: ', error);
+
       }
     }
   };
