@@ -3,6 +3,8 @@ import './InviteModal.css';
 import { auth, db } from '../Firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import errorSound from '../Audio/login/error.mp3';
+import successSound from '../Audio/login/success.mp3';
 
 const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
   const [isSuccess, setIsSuccess] = useState(false);
@@ -46,9 +48,11 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
         currentStreak: 0,
       });
 
-      // Re-authenticate the original user
       if (currentEmail && currentPassword) {
         await signInWithEmailAndPassword(auth, currentEmail, currentPassword);
+        const audio = new Audio(successSound);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
       }
 
       setIsSuccess(true);
@@ -59,6 +63,9 @@ const InviteModal = ({ isOpen, onClose, inviteEmail, setInviteEmail }) => {
     } catch (error) {
       console.error('Error creating user: ', error);
       setError(error.message);
+      const audio = new Audio(errorSound);
+      audio.volume = 0.2;
+      audio.play().catch(() => {});
     }
   };
 

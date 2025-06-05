@@ -14,11 +14,14 @@ import {
     updateDoc,
 } from "firebase/firestore";
 import "./FriendChat.css";
-import images from "../menu/dashboard/imageUtils"; // ✅ Adjust path if needed
+import images from "../menu/dashboard/imageUtils";
+import notificationSound from '../Audio/friendList/notification.mp3';
+
 
 
 const FriendChat = ({ friendEmail, onClose }) => {
   const [messages, setMessages] = useState([]);
+  const prevMsgCount = useRef(0);
   const [newMsg, setNewMsg] = useState("");
   const [friendInfo, setFriendInfo] = useState(null);
   const [myInfo, setMyInfo] = useState(null);
@@ -34,6 +37,17 @@ const FriendChat = ({ friendEmail, onClose }) => {
   
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const msgs = snapshot.docs.map((doc) => doc.data());
+      if (
+        prevMsgCount.current &&
+        msgs.length > prevMsgCount.current &&
+        msgs[msgs.length - 1]?.from !== user.email
+      ) {
+        const audio = new Audio(notificationSound);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      }
+      prevMsgCount.current = msgs.length;
+
       setMessages(msgs);
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   
@@ -45,7 +59,7 @@ const FriendChat = ({ friendEmail, onClose }) => {
         if (!snap.exists()) {
           await setDoc(chatRef, {
             lastSeen: {
-              [user.email]: new Date(), // fallback client timestamp
+              [user.email]: new Date()
             },
           });
         } else {

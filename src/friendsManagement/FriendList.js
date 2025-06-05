@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db, auth } from "../Firebase";
 import {
   doc,
@@ -11,9 +11,13 @@ import {
     collection,
 } from "firebase/firestore";
 import { MessageSquare, UserPlus, UserMinus, Check, X } from "lucide-react";
-import images from "../menu/dashboard/imageUtils"; // Import the images
+import images from "../menu/dashboard/imageUtils"; 
 import "./FriendList.css";
 import FriendChat from "./FriendChat";
+import bellSound from '../Audio/friendList/bell.mp3';
+import errorSound from '../Audio/login/error.mp3';
+import successSound from '../Audio/login/success.mp3';
+
 
 
 const FriendList = () => {
@@ -42,7 +46,6 @@ const FriendList = () => {
       const emailList = data.friends || [];
       const pendingList = data.pendingRequests || [];
 
-      // Get full player info
       const friendData = await Promise.all(
         emailList.map(async (email) => {
           const playerRef = doc(db, "players", email);
@@ -79,7 +82,7 @@ const FriendList = () => {
       const unsub = onSnapshot(messagesRef, async (snapshot) => {
         if (chatWith === friend.email){
             console.log("Chat is open, skipping unseen count update.");
-            return; // Skip if the chat is already open
+            return; 
         }
       
         const chatSnap = await getDoc(chatRef);
@@ -119,6 +122,9 @@ const FriendList = () => {
     const email = newFriend.trim().toLowerCase();
     if (!email || email === user.email) {
       setErrorMessage("❌ Invalid email.");
+      const audio = new Audio(errorSound);
+      audio.volume = 0.2;
+      audio.play().catch(() => {});
       setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
@@ -129,6 +135,9 @@ const FriendList = () => {
   
       if (!playerSnap.exists()) {
         setErrorMessage("❌ User not found.");
+        const audio = new Audio(errorSound);
+        audio.volume = 0.2;
+        audio.play().catch(() => {});
         setTimeout(() => setErrorMessage(""), 3000);
         return;
       }
@@ -149,6 +158,9 @@ const FriendList = () => {
   
       setSuccessMessage("✔️ Friend request has been sent!");
       setNewFriend("");
+      const audio = new Audio(successSound);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
   
       setTimeout(() => {
         setSuccessMessage("");
@@ -201,13 +213,18 @@ const FriendList = () => {
       await updateDoc(friendRef, {
         friends: arrayRemove(user.email),
       });
-  
+      const audio = new Audio(successSound);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
       setSuccessMessage("✅ Friend removed successfully!");
   
       setTimeout(() => {
         setSuccessMessage("");
       }, 3000);
     } catch (err) {
+      const audio = new Audio(errorSound);
+      audio.volume = 0.2;
+      audio.play().catch(() => {});
       console.error("Error removing friend:", err);
     }
   };
@@ -215,11 +232,23 @@ const FriendList = () => {
 
   const openChatWith = (email) => {
     setChatWith(email);
-    setUnseenCounts((prev) => ({ ...prev, [email]: 0 })); // Reset unseen count when opening chat
+    setUnseenCounts((prev) => ({ ...prev, [email]: 0 })); 
   };
 
   const totalUnseenMessages = Object.values(unseenCounts).reduce((sum, count) => sum + count, 0);
-
+  const prevNotifCount = useRef(0);
+  useEffect(() => {
+    const notifCount = pending.length + totalUnseenMessages;
+    if (
+      prevNotifCount.current !== undefined &&
+      notifCount > prevNotifCount.current
+    ) {
+      const audio = new Audio(bellSound);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    }
+    prevNotifCount.current = notifCount;
+  }, [pending.length, totalUnseenMessages]);
 
   return (
     <div className="friend-list-container">
